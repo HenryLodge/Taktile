@@ -1,0 +1,13 @@
+#!/bin/sh
+# Strips AI-assistant attribution from commit messages.
+# Enable once per clone: git config core.hooksPath .githooks
+msg_file="$1"
+tmp="$(mktemp)"
+grep -v -i -E \
+  -e '^Co-Authored-By:.*(Claude|anthropic\.com)' \
+  -e '^Claude-Session:' \
+  -e 'Generated with \[?Claude Code' \
+  "$msg_file" > "$tmp"
+# Drop trailing blank lines left behind
+awk 'NF {for (i = 0; i < blank; i++) print ""; blank = 0; print; next} {blank++}' "$tmp" > "$msg_file"
+rm -f "$tmp"

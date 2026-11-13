@@ -1,0 +1,79 @@
+# Audio, checksum phrases, and input
+
+The device speaks only pre-recorded clips stored in its own flash. It never plays audio received from the host. All clips are generated once at build time with ElevenLabs (`tools/gen-audio.mjs`), which is also how ElevenLabs stays central to the project for the bounty.
+
+## Checksum phrases
+
+Three words from a 256-word list = 24 bits (about 16.7 million possibilities).
+
+```
+tx phrase:      h = SHA256("TK-TX-v1"   || message_bytes);  words = W[h[0]], W[h[1]], W[h[2]]
+address phrase: h = SHA256("TK-ADDR-v1" || wallet_pubkey);  words = W[h[0]], W[h[1]], W[h[2]]
+```
+
+- `W` = the "even" list of the **PGP word list** (256 two-syllable words designed to be distinguishable when read aloud over a phone). Check its licensing/attribution and credit it in the README. P1: alternate even/odd lists by position, as PGP intends, if flash space allows.
+- `core/checksum.c` and `app/src/checksum.ts` must produce identical output. Add shared test vectors in `tests/vectors/checksum.json`.
+
+## Clip inventory
+
+| Group | Clips | Notes |
+| --- | --- | --- |
+| Checksum words | 256 | PGP even list |
+| Digits and number words | `zero`–`nine`, `point`, `ten`…`ninety`, `hundred`, `thousand` | Amounts are read as numbers, e.g. "twelve point five" |
+| Letters | `A`–`Z` | Spelling names and recovery words |
+| Tokens | `USDC`, `SOL` | |
+| Prompts | `send`, `to`, `unknown recipient do not sign`, `press confirm to sign or reject to cancel`, `checksum`, `address phrase`, `enter pin`, `digit`, `wrong pin`, `attempts remaining`, `over your limit`, `cooldown twenty four hours`, `new contact limit`, `signed`, `cancelled`, `adding contact`, `recovery word`, `repeat`, `speaker mode on`, `wallet wiped`, `no verified time` | Keep each prompt a separate clip; compose sentences by sequence |
+
+**Recovery words** are spelled using the first 4 letters of each BIP39 word ("word one: A, B, A, N"). BIP39 English words are unique by their first four letters, so this avoids storing 2048 extra clips.
+
+**Contact names** are spelled letter by letter (first 12 characters) in P0. P1 option: a name clip recorded at enrollment and verified by the user through the earpiece, then stored on device (needs a protocol change — see `SERIAL_PROTOCOL.md` rules for changing the protocol).
+
+## Format and storage
+
+- Raw PCM, 16-bit signed LE, mono, 16 kHz, leading/trailing silence trimmed to 40 ms, peak-normalized to −3 dBFS.
+- Stored in a LittleFS partition as `/c/<id>.pcm`. `tools/` generates `firmware/main/tk_clips.h` (enum of clip IDs) and the LittleFS image from `tools/clips.json`.
+- Budget: ~0.6 s average × 32 KB/s ≈ 20 KB per clip; ~350 clips ≈ 7 MB. The Metro ESP32-S3 has 16 MB flash; give LittleFS ~10 MB in `partitions.csv`. If space gets tight, switch to IMA ADPCM (4:1) before cutting clips.
+- I2S output at 16 kHz; duplicate mono to both channels for the UDA1334A.
+
+## Generation (`tools/gen-audio.mjs`)
+
+- Reads `tools/clips.json` (`[{id, text}]`), calls ElevenLabs text-to-speech for each, requesting raw PCM at 16 kHz, trims and normalizes, writes `tools/out/<id>.pcm`.
+- Uses one fixed voice ID and fixed settings so clips sound consistent; voice ID lives in `server/.env`.
+- Caches by hash of `(text, voice, settings)` so reruns don't spend credits.
+- Verify the current ElevenLabs API parameters (endpoint, output format names) against their docs before writing this script.
+
+## Output routing
+
+- **Earpiece (UDA1334A) is the default** and the only path for checksum words, PIN entry, and recovery words.
+- **Speaker (MAX98357A) "demo mode"** is enabled only on the device (hold OK + BACK for 3 s), announced with "speaker mode on", and resets at reboot. The host cannot enable it. In speaker mode the device refuses PIN entry and recovery playback.
+
+## Buttons
+
+| Button | Physical | Use |
+| --- | --- | --- |
+| UP / DOWN | Small, in a row | Change digit during PIN entry; scroll |
+| OK | Small | Commit digit; long-press = repeat last announcement |
+| BACK | Small | Delete previous digit |
+| CONFIRM | Large round cap, right side | Approve signing |
+| REJECT | Large square cap, left side | Reject; long-press 2 s = cancel current flow |
+
+Debounce 30 ms. Presses during an announcement are ignored except long-press OK (repeat) and REJECT.
+
+## PIN entry ("rotary" scheme)
+
+For each of the 6 digits:
+
+1. Device picks a random start digit (hardware RNG) and says it in the earpiece.
+2. UP / DOWN step the digit (wrapping 0–9); the device speaks each new value.
+3. OK commits; BACK goes back one digit.
+
+An observer sees only up/down counts, which reveal nothing without the private start digit. Each press gives a short haptic tick so the user knows it registered.
+
+## Haptic patterns (DRV2605L, pick effects from its built-in library)
+
+| Pattern | Meaning |
+| --- | --- |
+| Single short tick | Button press registered |
+| Double pulse | Signed successfully |
+| Long buzz | Rejected or cancelled |
+| Three strong pulses | Warning: unknown recipient, over limit, wrong PIN |

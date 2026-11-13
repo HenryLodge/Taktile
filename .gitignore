@@ -1,0 +1,21 @@
+# secrets
+.env
+*.env
+!*.env.example
+*.keypair.json
+id.json
+.claude/settings.local.json
+
+# build output
+build/
+dist/
+node_modules/
+firmware/build/
+firmware/sdkconfig.old
+firmware/managed_components/
+
+# generated
+tools/out/
+crash-*
+leak-*
+timeout-*
