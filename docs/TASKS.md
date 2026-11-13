@@ -14,7 +14,6 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [ ] P0 `core/ata`: on-device ATA derivation; matches `getAssociatedTokenAddressSync` vectors
 - [ ] P0 `core/checksum` + `app/src/checksum.ts` with shared vectors
 - [ ] P0 `core/contacts`: fixed-size table (max 16), lookup by wallet or USDC ATA
-- [ ] P0 `core/policy`: caps, rolling window, new-contact window, fail-closed without verified time
 - [ ] P0 `core/flow`: the sign-request state machine using `tk_platform_t` (announce → PIN → confirm → sign)
 - [ ] P0 `sim/`: WebSocket server, keyboard buttons (arrows = UP/DOWN, Enter = OK, Backspace = BACK, `c` = CONFIRM, `r` = REJECT), audio printed as `[EARPIECE] …` only with `-DTK_SIM_INSECURE_AUDIO=1`
 - [ ] P0 `tools/clips.json` + `tools/gen-audio.mjs`; generate all clips
@@ -23,6 +22,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 
 - [ ] P0 Fill in the GPIO column in `HARDWARE.md` (human) and `tk_pins.h`
 - [ ] P0 `firmware/`: ESP-IDF project, USB CDC, `tk_platform_t` implementation
+- [ ] P0 `bootloader_random_enable()` early in `app_main`, before any RNG use; never disabled (I11)
 - [ ] P0 Buttons with debounce; I2S playback of clips from LittleFS; SPK_EN control
 - [ ] P0 DRV2605L haptic patterns
 - [ ] P0 NVS storage; hardware RNG; trezor-crypto component; Ed25519 sign verified on host
@@ -30,10 +30,10 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 
 ## Day 5–6 (Nov 16–17): device flows
 
-- [ ] P0 SETUP: BIP39 generation, spelled recovery-word playback with repeat, PIN setup (rotary entry)
+- [ ] P0 SETUP: BIP39 generation, spelled recovery-word playback with repeat, PIN setup (rotary entry); refused with `WALLET_EXISTS` if a wallet exists (I10)
 - [ ] P0 PIN unlock, attempt counter persisted before check, wipe at 10
+- [ ] P0 CONTACT_ADD with spelled name + 8-word address phrase + PIN + CONFIRM (needed for the demo's happy path)
 - [ ] P0 SIGN_REQUEST end to end on hardware
-- [ ] P1 CONTACT_ADD with spelled name + address phrase + confirmation
 - [ ] P1 Speaker demo mode (device-only toggle)
 
 ## Day 5–7 (Nov 16–18): app and server
@@ -47,10 +47,8 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [ ] P1 ElevenLabs Agents conversational disambiguation ("Jack Miller or Jack Chen?")
 - [ ] P1 "My address phrase" page for the contact's side of enrollment
 
-## Day 8 (Nov 19): time, hardening, docs
+## Day 8 (Nov 19): hardening, docs
 
-- [ ] P1 `server/api/time` signer + firmware pinned key + TIME_NONCE/TIME_ATTEST + monotonic check
-- [ ] P1 Over-cap pending requests that become confirmable after 24 h
 - [ ] P1 Flash encryption + secure boot on board #2 (Development mode) — **human approval required**
 - [ ] P0 README (use `README.md` template): architecture, security model + limits, program IDs, Solana usage, ElevenLabs products used, setup instructions
 - [ ] P0 Rehearse the demo script from the PRD three times
@@ -63,7 +61,6 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 ## P2 (document only)
 
 - Secure element for key storage
-- Light-client or multi-server Roughtime time
 - NFC device-to-device contact exchange
 - Token-2022, versioned messages, ATA creation in-transaction
 - Enclosure with tactile markings

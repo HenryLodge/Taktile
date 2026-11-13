@@ -27,10 +27,8 @@ Host → device in `0x01–0x7F`, device → host in `0x81–0xFF` (request type
 | --- | --- | --- | --- |
 | 0x01 | `HELLO` | — | `fw_version u16`, `proto_version u8`, `state u8` (0 = no wallet, 1 = locked, 2 = unlocked) |
 | 0x02 | `GET_PUBKEY` | — | `status u8`, `pubkey[32]` (only if a wallet exists; does not require unlock) |
-| 0x03 | `SETUP` | — | `status u8`. Device runs seed generation + recovery-word playback + PIN setup entirely on device |
+| 0x03 | `SETUP` | — | `status u8`. Device runs seed generation + recovery-word playback + PIN setup entirely on device. Refused with `WALLET_EXISTS` if a wallet already exists |
 | 0x10 | `SIGN_REQUEST` | `message[len]` (legacy message bytes, not the full transaction) | `status u8`, then `signature[64]` if `status == OK` |
-| 0x20 | `TIME_NONCE` | — | `nonce[32]` |
-| 0x21 | `TIME_ATTEST` | `unix_ms u64 LE`, `signature[64]` | `status u8` |
 | 0x30 | `CONTACT_ADD` | `name_len u8`, `name[name_len]` (UTF-8, ≤ 32 bytes), `wallet[32]` | `status u8` |
 | 0x31 | `CONTACT_LIST_COUNT` | — | `count u8` (names are NOT returned; contacts stay on device) |
 | 0x32 | `CONTACT_REMOVE` | `index u8` | `status u8` (requires PIN + CONFIRM) |
@@ -48,14 +46,11 @@ The contact name sent in `CONTACT_ADD` is what the *user* typed or said in the a
 | 0x01 | `REJECTED_BY_USER` | REJECT pressed or confirm window timed out |
 | 0x02 | `UNKNOWN_RECIPIENT` | Destination not in contacts |
 | 0x03 | `PARSE_UNSUPPORTED` | Not an allowed shape (SOLANA.md) |
-| 0x04 | `POLICY_LIMIT` | Over a cap |
-| 0x05 | `POLICY_COOLDOWN` | Cooldown or new-contact window not passed; request recorded |
-| 0x06 | `NO_VERIFIED_TIME` | Time-dependent rule needed a fresh verified timestamp |
-| 0x07 | `LOCKED_OUT` | Too many PIN failures; device wiped |
-| 0x08 | `NO_WALLET` | Run SETUP first |
-| 0x09 | `BUSY` | Another flow in progress |
-| 0x0A | `BAD_TIME` | Time attestation invalid, stale nonce, or went backwards |
-| 0x0B | `CANCELLED` | |
+| 0x04 | `LOCKED_OUT` | Too many PIN failures; device wiped |
+| 0x05 | `NO_WALLET` | Run SETUP first |
+| 0x06 | `BUSY` | Another flow in progress |
+| 0x07 | `CANCELLED` | |
+| 0x08 | `WALLET_EXISTS` | SETUP refused; a wallet already exists (I10) |
 
 ## Events (`EVENT` payload)
 

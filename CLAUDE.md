@@ -1,6 +1,6 @@
 # CLAUDE.md — Taktile
 
-Taktile is an accessible hardware wallet for blind and low-vision users, built for the UBC 2026 Hackathon (deadline **Fri Nov 20, 2026, 12:00 PM CST**). An ESP32-S3 device verifies and signs Solana devnet transactions; a companion web app handles voice input and broadcasting. The laptop is untrusted. Read `docs/SECURITY_MODEL.md` before changing anything that touches parsing, contacts, policy, keys, audio, or the serial protocol.
+Taktile is an accessible hardware wallet for blind and low-vision users, built for the UBC 2026 Hackathon (deadline **Fri Nov 20, 2026, 12:00 PM CST**). An ESP32-S3 device verifies and signs Solana devnet transactions; a companion web app handles voice input and broadcasting. The laptop is untrusted. Read `docs/SECURITY_MODEL.md` before changing anything that touches parsing, contacts, keys, randomness, audio, or the serial protocol.
 
 ## Read these first
 
@@ -17,12 +17,12 @@ Taktile is an accessible hardware wallet for blind and low-vision users, built f
 ## Repo layout
 
 ```
-core/       Portable C11 library: tx parser, contacts, policy, checksum, protocol framing.
+core/       Portable C11 library: tx parser, contacts, checksum, protocol framing.
             NO ESP-IDF or OS headers. Compiles for host and device.
 firmware/   ESP-IDF project for the Adafruit Metro ESP32-S3. Thin layer: drivers + glue around core/.
 sim/        Host simulator: core/ + a WebSocket server + keyboard "buttons" + printed/played audio.
 app/        Companion web app (Vite + TypeScript). Web Serial or WebSocket transport.
-server/     Tiny Node server: ElevenLabs proxy (keeps the API key off the client) + time attestation.
+server/     Tiny Node server: ElevenLabs proxy (keeps the API key off the client).
 tools/      Audio clip generation, test-vector generation, LittleFS packing.
 tests/      Shared test vectors (hex transactions + expected parse results).
 ```
@@ -65,6 +65,8 @@ node tools/gen-audio.mjs                    # needs ELEVENLABS_API_KEY in server
 6. **No radios.** Never initialize Wi-Fi or Bluetooth in firmware.
 7. **Bounds-check every read** in `core/`. No reads past buffer ends, no recursion, no allocation in parse paths.
 8. **Devnet only.** Never add mainnet RPC endpoints or mainnet mint addresses.
+9. **SETUP never overwrites an existing wallet.** It returns `WALLET_EXISTS` if a wallet is present.
+10. **Entropy source on at boot.** Firmware calls `bootloader_random_enable()` early in `app_main`, before any randomness is used, and never disables it.
 
 ## Things you must ask the human before doing
 
@@ -85,7 +87,7 @@ This repo is the team's own hackathon submission. Claude Code assists but is nev
 ## Working style
 
 - Keep `core/` portable and well tested; most logic belongs there, not in `firmware/`.
-- Every parser or policy change gets a test vector in `tests/vectors/` and a ctest case. Include at least one malicious vector (wrong destination, extra instruction, wrong mint, oversized length).
+- Every parser or contacts change gets a test vector in `tests/vectors/` and a ctest case. Include at least one malicious vector (wrong destination, extra instruction, wrong mint, oversized length).
 - Firmware language is **C (ESP-IDF)** — decided. Because C isn't memory-safe, `core/` tests always run under AddressSanitizer + UndefinedBehaviorSanitizer on the host, and the parser and frame decoder each have a libFuzzer target (`core/fuzz/`). Run the fuzzers for at least a few minutes after any parser or protocol change.
 - Get it working in `sim/` before flashing hardware.
 - Small, reviewable commits. Commit messages: `area: what changed` (e.g. `core/parser: reject v0 messages`).

@@ -4,12 +4,14 @@ The device speaks only pre-recorded clips stored in its own flash. It never play
 
 ## Checksum phrases
 
-Three words from a 256-word list = 24 bits (about 16.7 million possibilities).
+Each word comes from a 256-word list, so each word carries 8 bits.
 
 ```
-tx phrase:      h = SHA256("TK-TX-v1"   || message_bytes);  words = W[h[0]], W[h[1]], W[h[2]]
-address phrase: h = SHA256("TK-ADDR-v1" || wallet_pubkey);  words = W[h[0]], W[h[1]], W[h[2]]
+tx phrase (3 words, 24 bits):      h = SHA256("TK-TX-v1"   || message_bytes);  words = W[h[0]], W[h[1]], W[h[2]]
+address phrase (8 words, 64 bits): h = SHA256("TK-ADDR-v1" || wallet_pubkey);  words = W[h[0]] … W[h[7]]
 ```
+
+The address phrase is longer because at enrollment the attacker chooses the address: 24 bits could be matched by brute-forcing keypairs against a known target address in minutes. The tx phrase is a secondary check (see `SECURITY_MODEL.md`), so 3 words is enough there.
 
 - `W` = the "even" list of the **PGP word list** (256 two-syllable words designed to be distinguishable when read aloud over a phone). Check its licensing/attribution and credit it in the README. P1: alternate even/odd lists by position, as PGP intends, if flash space allows.
 - `core/checksum.c` and `app/src/checksum.ts` must produce identical output. Add shared test vectors in `tests/vectors/checksum.json`.
@@ -22,7 +24,7 @@ address phrase: h = SHA256("TK-ADDR-v1" || wallet_pubkey);  words = W[h[0]], W[h
 | Digits and number words | `zero`–`nine`, `point`, `ten`…`ninety`, `hundred`, `thousand` | Amounts are read as numbers, e.g. "twelve point five" |
 | Letters | `A`–`Z` | Spelling names and recovery words |
 | Tokens | `USDC`, `SOL` | |
-| Prompts | `send`, `to`, `unknown recipient do not sign`, `press confirm to sign or reject to cancel`, `checksum`, `address phrase`, `enter pin`, `digit`, `wrong pin`, `attempts remaining`, `over your limit`, `cooldown twenty four hours`, `new contact limit`, `signed`, `cancelled`, `adding contact`, `recovery word`, `repeat`, `speaker mode on`, `wallet wiped`, `no verified time` | Keep each prompt a separate clip; compose sentences by sequence |
+| Prompts | `send`, `to`, `unknown recipient do not sign`, `press confirm to sign or reject to cancel`, `checksum`, `address phrase`, `enter pin`, `digit`, `wrong pin`, `attempts remaining`, `signed`, `cancelled`, `adding contact`, `recovery word`, `repeat`, `speaker mode on`, `wallet wiped` | Keep each prompt a separate clip; compose sentences by sequence |
 
 **Recovery words** are spelled using the first 4 letters of each BIP39 word ("word one: A, B, A, N"). BIP39 English words are unique by their first four letters, so this avoids storing 2048 extra clips.
 
@@ -76,4 +78,4 @@ An observer sees only up/down counts, which reveal nothing without the private s
 | Single short tick | Button press registered |
 | Double pulse | Signed successfully |
 | Long buzz | Rejected or cancelled |
-| Three strong pulses | Warning: unknown recipient, over limit, wrong PIN |
+| Three strong pulses | Warning: unknown recipient, wrong PIN |

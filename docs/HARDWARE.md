@@ -40,12 +40,13 @@ Power: USB-C from the laptop powers everything. UDA1334A and MAX98357A VIN from 
 ## Bring-up order (one test sketch / ESP-IDF example per step)
 
 1. Blink + USB CDC echo: confirm `idf.py monitor` and that the laptop sees the serial device.
-2. Buttons: print each press with debounce.
-3. I2S tone to UDA1334A at 16 kHz; then to speaker with SPK_EN high.
-4. Play one PCM clip from LittleFS.
-5. DRV2605L: play each of the four haptic patterns.
-6. NVS read/write with NVS encryption enabled (does not burn eFuses for flash encryption; confirm in ESP-IDF docs before enabling anything).
-7. Ed25519 sign a fixed message with trezor-crypto; verify on the laptop with `tweetnacl`.
+2. Entropy: call `bootloader_random_enable()` early in `app_main`, before anything uses randomness, and never disable it (SECURITY_MODEL I11). Without radios this is what makes the hardware RNG truly random.
+3. Buttons: print each press with debounce.
+4. I2S tone to UDA1334A at 16 kHz; then to speaker with SPK_EN high. Confirm I2S playback works with the entropy source left enabled (ESP-IDF documents conflicts between it and ADC/I2S on some chips; verify on the S3).
+5. Play one PCM clip from LittleFS.
+6. DRV2605L: play each of the four haptic patterns.
+7. NVS read/write with NVS encryption enabled (does not burn eFuses for flash encryption; confirm in ESP-IDF docs before enabling anything).
+8. Ed25519 sign a fixed message with trezor-crypto; verify on the laptop with `tweetnacl`.
 
 ## Flash encryption and secure boot
 

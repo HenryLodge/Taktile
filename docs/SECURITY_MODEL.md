@@ -8,7 +8,7 @@
 | The user's PIN (in their head) | `app/` and `server/` code at runtime |
 | Physical button presses | USB serial link contents |
 | Audio from the device's own earpiece | Anything spoken by the laptop |
-| Pinned public keys compiled into firmware | RPC responses, ElevenLabs output |
+| Pinned constants compiled into firmware (program IDs, devnet USDC mint) | RPC responses, ElevenLabs output |
 
 ## Invariants (never break these; changing one requires human sign-off and a doc update)
 
@@ -18,31 +18,15 @@
 4. **I4 — Allowlist parsing.** Only the transaction shapes in `SOLANA.md` are accepted. Everything else is rejected.
 5. **I5 — Fee payer is us.** The message's fee payer (account key 0) must equal the device's own public key, and the device must be the only required signer.
 6. **I6 — Confirmation after announcement.** CONFIRM presses that happen before the announcement finishes are ignored (prevents "press-ahead"). The confirm window times out after 30 s → reject.
-7. **I7 — PIN protection.** 6-digit PIN. Seed is encrypted under a key derived with PBKDF2-HMAC-SHA256 (≥ 100,000 iterations, tune for ~1 s on device) from PIN + a device-unique salt in NVS. Failed-attempt counter is persisted *before* checking the PIN. 10 failures → wipe seed and contacts.
-8. **I8 — Policy cannot be bypassed by the host.** Caps and cooldowns are evaluated on device from device-stored state. Time-based rules use only verified timestamps (see below). If no verified time is available, time-dependent rules fail closed (treat as "cooldown not yet passed").
-9. **I9 — No radios.** Wi-Fi and Bluetooth are never initialized.
-10. **I10 — Devnet only** for the hackathon build. The USDC mint is pinned in firmware.
+7. **I7 — PIN protection.** 6-digit PIN. Seed is encrypted under a key derived with PBKDF2-HMAC-SHA256 (≥ 100,000 iterations, tune for ~1 s on device) from PIN + a device-unique salt in NVS. Failed-attempt counter is persisted *before* checking the PIN. 10 failures → wipe seed and contacts. This defends against online guessing only: with a raw flash dump, a 6-digit PIN can be brute-forced offline. Flash encryption (P1, board #2) is the defense for that.
+8. **I8 — No radios.** Wi-Fi and Bluetooth are never initialized.
+9. **I9 — Devnet only** for the hackathon build. The USDC mint is pinned in firmware.
+10. **I10 — No silent wallet replacement.** `SETUP` is refused with `WALLET_EXISTS` while a wallet exists. The only way to a new wallet is the 10-failure wipe (or a future on-device wipe that requires PIN + CONFIRM).
+11. **I11 — True entropy.** With radios off, the ESP32-S3 RNG is only truly random when its internal entropy source is enabled. Firmware calls `bootloader_random_enable()` early in `app_main`, before anything uses `random_bytes` (seed generation, PIN start digits), and never disables it.
 
-## Policy defaults (in `core/policy.c`, overridable only on device with PIN + CONFIRM)
+## Transaction limits
 
-| Rule | Default |
-| --- | --- |
-| Per-transaction cap | 50 USDC / 1 SOL |
-| Rolling 24 h cap | 200 USDC / 5 SOL |
-| New contact (added < 24 h ago) cap | 10 USDC / 0.1 SOL per tx |
-| Over-cap request | Device records a pending request with verified time; same request can be confirmed after 24 h |
-
-Amounts are compared in base units (USDC: 6 decimals; SOL: lamports).
-
-## Time
-
-The device has no trusted clock. It gets time by:
-
-1. Device generates a 32-byte random nonce → `TIME_NONCE`.
-2. Host relays the nonce to `server /api/time`, which returns `{unix_ms, signature}` where the signature is Ed25519 over `"TK-TIME-v1" || nonce || unix_ms (u64 LE)`.
-3. Device verifies against the server public key pinned in firmware, checks the nonce matches the one it issued in the last 60 s, and that time never goes backwards versus the last stored verified time.
-
-**Known limitation (state this in the README):** this trusts the team-run time server. Future work: multiple independent Roughtime servers with a quorum, or light-client verification of chain time.
+There are none, by design. The user is in control of all of their transactions: no caps, cooldowns, delays, or new-contact limits. The device's job is to tell the user the truth (I1, I3) and require their physical approval (I6, I7), not to second-guess them.
 
 ## What the checksum phrase does and does not do
 
@@ -50,18 +34,20 @@ Be precise about this in the README and pitch.
 
 - The **primary** defense against a compromised laptop is I1 + I3: the device itself announces the real amount and the real recipient name (or "unknown recipient"). Full laptop compromise cannot change what the device says.
 - The **checksum phrase** binds the user's request to the exact bytes. The app computes it from the bytes it built; the device computes it from the bytes it received. A mismatch catches tampering *between* the app and the device (malicious extension, a different app grabbing the serial port, a stale or queued request) and confirms "this is the request I just made." It does **not** by itself defeat malware that controls the app, since that malware would compute a matching phrase for its own bytes.
+- The **address phrase** used at contact enrollment is 8 words (64 bits), not 3. Enrollment is the one place an attacker can choose the address, and a 24-bit phrase could be matched by brute-forcing keypairs against a known target address in minutes.
 
 ## Threats and status
 
 | Threat | Defense | Status |
 | --- | --- | --- |
 | Laptop malware swaps destination | I1, I3: "unknown recipient" | P0, demoed |
-| Malware changes amount | I1: device speaks real amount; policy caps | P0 |
+| Malware changes amount | I1: device speaks real amount | P0 |
 | Speech-to-text mishears | Device speaks contact name from its store | P0 |
 | Injected audio / bystander commands | PIN session + physical CONFIRM | P0 |
 | Shoulder surfing the PIN | Rotary PIN entry with private random start digit (`AUDIO.md`) | P0 |
-| Device theft without PIN | I7 | P0 |
-| Coercion, scam calls | Caps, 24 h delay, new-contact limits | P0 (firmware), P1 (verified time) |
-| Malicious contact enrollment | Out-of-band address phrase + new-contact limits | P1 |
+| Device theft without PIN | I7 (online guessing) | P0 |
+| Host replaces the wallet via SETUP | I10 | P0 |
+| Weak RNG with radios off | I11 | P0 |
+| Malicious contact enrollment | Out-of-band 8-word (64-bit) address phrase | P0 |
+| Coercion, scam calls | Out of scope by design: the user controls all transactions; the device announces the real recipient and amount | — |
 | Physical flash dump | NVS encryption + flash encryption (board #2) | P1; secure element is future work |
-| Replay of an old signed time | Device-issued nonce, monotonic check | P1 |

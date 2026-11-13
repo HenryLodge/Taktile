@@ -7,21 +7,21 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 ## Components
 
 ```
-            ElevenLabs API        Solana devnet RPC       Time attestation server
-                  │                      │                          │
-┌─────────────────┼──────────────────────┼──────────────────────────┼──────────┐
+            ElevenLabs API        Solana devnet RPC
+                  │                      │
+┌─────────────────┼──────────────────────┼─────────────────────────────────────┐
 │ LAPTOP (untrusted)                                                           │
 │  app/ (browser)                          server/ (Node, localhost)           │
 │   ├─ Voice UI: push-to-talk, intent      ├─ /api/stt   → ElevenLabs STT      │
-│   ├─ Tx builder (@solana/web3.js)        ├─ /api/tts   → ElevenLabs TTS      │
-│   ├─ App-side checksum phrase (TTS)      └─ /api/time  → signed timestamp    │
+│   ├─ Tx builder (@solana/web3.js)        └─ /api/tts   → ElevenLabs TTS      │
+│   ├─ App-side checksum phrase (TTS)                                          │
 │   ├─ Malware-mode toggle (demo)                                              │
 │   └─ Transport: WebSerial | WebSocket(sim)                                   │
 └────────────────────────────┬─────────────────────────────────────────────────┘
                              │  USB CDC serial: framed messages (SERIAL_PROTOCOL.md)
 ┌────────────────────────────┴─────────────────────────────────────────────────┐
 │ DEVICE (trusted) — firmware/ + core/                                         │
-│   proto → parser → contacts/policy → announce (audio) → PIN/confirm → signer │
+│   proto → parser → contacts → announce (audio) → PIN/confirm → signer        │
 │   Storage: encrypted NVS (seed, PIN verifier, counters), LittleFS (clips)    │
 └────────────────────────────┬─────────────────────────────────────────────────┘
                              │
@@ -37,28 +37,27 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 5. `app` sends `SIGN_REQUEST{message}` to the device.
 6. Device `core/parser` parses the message (rules in `SOLANA.md`). On failure → `SIGN_RESULT{PARSE_UNSUPPORTED}`.
 7. Device resolves the destination token account against its contact book. Unknown → plays "unknown recipient, do not sign", warning haptic, `SIGN_RESULT{UNKNOWN_RECIPIENT}`.
-8. Device `core/policy` checks caps and cooldowns (needs a fresh verified timestamp for time-based rules). Blocked → plays the reason, returns `POLICY_*`.
-9. Device plays: amount, token, recipient name, then checksum phrase — earpiece only.
-10. If not unlocked, device runs PIN entry (see `AUDIO.md`).
-11. User presses CONFIRM (or REJECT). Device signs with Ed25519 and returns `SIGN_RESULT{OK, signature}`.
-12. `app` attaches the signature, broadcasts to devnet, and announces the result.
+8. Device plays: amount, token, recipient name, then checksum phrase — earpiece only.
+9. If not unlocked, device runs PIN entry (see `AUDIO.md`).
+10. User presses CONFIRM (or REJECT). Device signs with Ed25519 and returns `SIGN_RESULT{OK, signature}`.
+11. `app` attaches the signature, broadcasts to devnet, and announces the result.
 
 ## Contact enrollment flow
 
 1. `app` sends `CONTACT_ADD{name, wallet_address}`.
-2. Device derives the contact's USDC associated token account itself (see `SOLANA.md`), computes a 3-word address phrase, and plays "Adding <spelled name>. Address phrase: …".
+2. Device derives the contact's USDC associated token account itself (see `SOLANA.md`), computes an 8-word address phrase, and plays "Adding <spelled name>. Address phrase: …".
 3. User calls the contact; the contact reads the same phrase from their own wallet tool (`app` has a "show my address phrase" page).
-4. User confirms with PIN + CONFIRM. Device stores `{name, wallet, usdc_ata, added_at}` with the current verified timestamp. New contacts are rate-limited for 24 h by policy.
+4. User confirms with PIN + CONFIRM. Device stores `{name, wallet, usdc_ata}`.
 
 ## Build targets
 
 | Target | Contents | Purpose |
 | --- | --- | --- |
-| `core` (static lib + tests) | parser, contacts, policy, checksum, proto, policy clock | All security logic; host-tested with ctest |
+| `core` (static lib + tests) | parser, contacts, checksum, ata, flow, proto | All security logic; host-tested with ctest |
 | `sim` | core + WebSocket server on `ws://localhost:8765` + keyboard buttons + audio as printed text (optionally plays clips via `afplay`/`aplay`) | Develop the whole flow before hardware arrives |
 | `firmware` | core + ESP-IDF drivers (USB CDC, I2S, GPIO, I2C haptics, NVS, LittleFS) | The real device |
 | `app` | Vite + TS | User-facing frontend (required by the Consumer track) |
-| `server` | Node + Express | Holds the ElevenLabs key; time attestation signer |
+| `server` | Node + Express | Holds the ElevenLabs key (STT/TTS proxy) |
 
 ## Abstractions in core/ that firmware and sim implement
 
@@ -68,7 +67,7 @@ typedef struct {
     void (*play_clip)(uint16_t clip_id);           // blocking until clip finished
     void (*haptic)(tk_haptic_t pattern);
     tk_button_t (*wait_button)(uint32_t timeout_ms);
-    bool (*random_bytes)(uint8_t *out, size_t len); // hardware RNG on device
+    bool (*random_bytes)(uint8_t *out, size_t len); // hardware RNG on device (entropy source enabled at boot, I11)
     bool (*storage_get)(const char *key, void *buf, size_t *len);
     bool (*storage_set)(const char *key, const void *buf, size_t len);
 } tk_platform_t;

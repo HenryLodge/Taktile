@@ -19,8 +19,9 @@ Built for the UBC 2026 Hackathon · Consumer Applications track · Best use of S
 - The laptop is untrusted. The device parses raw transactions itself and speaks the real amount and recipient through a private earpiece.
 - Recipients are resolved address → name from the device's own contact book; anything else is announced as "unknown recipient."
 - PIN entry uses a private random start digit, so watching button presses reveals nothing.
-- Firmware enforces spending caps, a rolling 24 h limit, and limits on new contacts.
-- **Limitations (honest list):** <no secure element; time from a single team-run signer; devnet only; only SOL and USDC transfers.>
+- No spending limits: the user is in control of every transaction. The device's job is to tell the truth and require a PIN plus a physical CONFIRM.
+- New contacts are verified with an 8-word address phrase read out on the device and by the contact.
+- **Limitations (honest list):** <no secure element; no defense against coercion or scams beyond accurate announcements; devnet only; only SOL and USDC transfers.>
 
 Full details: [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md)
 
@@ -52,7 +53,7 @@ cp server/.env.example server/.env   # add ELEVENLABS_API_KEY and voice ID
 
 ## What's next
 
-<Secure element; multi-server time; NFC contact exchange; enclosure; mainnet.>
+<Secure element; NFC contact exchange; enclosure; mainnet.>
 
 ## Credits
 
