@@ -12,5 +12,6 @@ Portable C11 library holding all of Taktile's security logic: transaction parser
 | `src/` | Implementation |
 | `tests/` | ctest cases, driven by `tests/vectors/` at the repo root |
 | `fuzz/` | libFuzzer targets (`-DTK_FUZZ=ON`, clang) |
+| `third_party/` | Vendored trezor-crypto subset (see `trezor-crypto/VENDORED.md`) and the glue that supplies its platform hooks |
 
 See `docs/SOLANA.md`, `docs/SERIAL_PROTOCOL.md`, and `docs/SECURITY_MODEL.md`.

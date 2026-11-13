@@ -33,6 +33,9 @@ tests/      Shared test vectors (hex transactions + expected parse results).
 # one-time, after cloning (enables the attribution-stripping commit hook)
 git config core.hooksPath .githooks
 
+# On Windows, build core/ and sim/ inside WSL (Ubuntu): MinGW gcc has no AddressSanitizer.
+# WSL needs: sudo apt update && sudo apt install -y cmake clang
+
 # core tests with sanitizers, and fuzzers (clang required for fuzzing)
 cmake -S core -B build/asan -DTK_SANITIZE=ON && cmake --build build/asan && ctest --test-dir build/asan
 cmake -S core -B build/fuzz -DTK_FUZZ=ON -DCMAKE_C_COMPILER=clang && cmake --build build/fuzz
