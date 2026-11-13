@@ -19,3 +19,9 @@ tools/out/
 crash-*
 leak-*
 timeout-*
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
