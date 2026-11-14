@@ -9,7 +9,7 @@ The device signs Solana **legacy** messages on **devnet** only, and only the two
 | System Program | `11111111111111111111111111111111` | |
 | SPL Token Program | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA` | Token-2022 is not supported |
 | Associated Token Account Program | `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL` | Used only for on-device ATA derivation |
-| Devnet USDC mint | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | **Verify against Circle's "USDC contract addresses" page before pinning.** Decimals = 6 |
+| Devnet USDC mint | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | Verified against Circle's "USDC contract addresses" page on 2026-11-13. Decimals = 6 |
 
 Store these as 32-byte arrays decoded at build time (a `tools/` script emits the header), not base58 strings parsed at runtime.
 

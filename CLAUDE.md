@@ -54,6 +54,8 @@ cd app && npm install && npm run dev        # Chrome or Edge only (Web Serial)
 cd server && npm install && npm run dev
 
 # tools
+node tools/gen-consts.mjs                   # regenerates core/{include,src}/tk_solana_consts.*; add --check to verify
+node --test tools/*.test.mjs                # tests for the tools/ scripts
 node tools/gen-vectors.mjs                  # writes tests/vectors/*.json from web3.js-built txs
 node tools/gen-audio.mjs                    # needs ELEVENLABS_API_KEY in server/.env
 ```
