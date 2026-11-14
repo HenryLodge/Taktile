@@ -40,5 +40,33 @@
     "mint": "3b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
     "ata": "6e05dc8fd47acd98374b5f25d98f671abd21647c66a6ac1f4ac86e4d67741059",
     "bump": 255
+  },
+  {
+    "name": "device_other_mint",
+    "wallet": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "mint": "8e888cc831f851f05fa5c6dd502861134201c4c817f139de5ff68040b8b416d0",
+    "ata": "1989ed732dd92e42bbda7006aab21df0ba59820ff8c1e4e1db959d1cd6805026",
+    "bump": 255
+  },
+  {
+    "name": "alice_other_mint",
+    "wallet": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
+    "mint": "8e888cc831f851f05fa5c6dd502861134201c4c817f139de5ff68040b8b416d0",
+    "ata": "c7ee8e58e4aa391e1158fbb4c6c5029d6f93c396a1237d7ea3fdcb207485c6b6",
+    "bump": 253
+  },
+  {
+    "name": "deep_2",
+    "wallet": "05123c521006db581c49b60b5a74d08a2740c2f90187a1984f66f604bf2dde48",
+    "mint": "3b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
+    "ata": "a1486f47edf0c181f8774b35cdd6852b380688d06b754ba92fb3dcfb35c35e1e",
+    "bump": 242
+  },
+  {
+    "name": "deep_49",
+    "wallet": "f25ad2f3829d48dca0dc20de8b160dbd8b14b9cd3cd336157e64e8d66679faf4",
+    "mint": "3b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
+    "ata": "57d8c29430f3b1dca4d18b9e7c7b4f360a0366a254bba35e262f28294cd6fb95",
+    "bump": 251
   }
 ]

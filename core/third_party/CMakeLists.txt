@@ -20,11 +20,13 @@ add_library(trezor_crypto STATIC
     ${TREZOR_DIR}/ed25519-donna/ed25519.c
     ${TREZOR_DIR}/ed25519-donna/modm-donna-32bit.c
     ${CMAKE_CURRENT_SOURCE_DIR}/tk_trezor_glue.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/tk_ed25519_point.c
 )
 
 target_include_directories(trezor_crypto PUBLIC
     ${TREZOR_DIR}
     ${TREZOR_DIR}/ed25519-donna
+    ${CMAKE_CURRENT_SOURCE_DIR} # tk_ed25519_point.h
 )
 
 target_compile_definitions(trezor_crypto

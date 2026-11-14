@@ -1,0 +1,162 @@
+[
+  {
+    "name": "curve_0",
+    "bytes": "0e0b988f92a3bd31b0b4ee292a2b0f75ba90ad96f24c6011f4b702d8dc756c04",
+    "on_curve": false
+  },
+  {
+    "name": "curve_1",
+    "bytes": "ed5fc7f13e7daa0bbd7c57d3c061b68d719c2f91188cc95a069b9b0f0454fbf0",
+    "on_curve": true
+  },
+  {
+    "name": "curve_2",
+    "bytes": "d096ca85d6d204f9c6714eda130059f303ebf4331c7ef2143e094d47f144d574",
+    "on_curve": false
+  },
+  {
+    "name": "curve_3",
+    "bytes": "9a6f3fdd58f17973dc08607016113188f7b5bf0a9aa924cf23094a2b420a324b",
+    "on_curve": false
+  },
+  {
+    "name": "curve_4",
+    "bytes": "43391b45d08963721da82c38b4aa142877fb3850bc5fbe50d566bc8114fac5fe",
+    "on_curve": false
+  },
+  {
+    "name": "curve_5",
+    "bytes": "f28eddfdc404e856abdbfc0ed0cbbadd45510588b84c3e98e4f885793b3b6ed9",
+    "on_curve": false
+  },
+  {
+    "name": "curve_6",
+    "bytes": "0c3339281f1a83ed8ee13ab97f75d057816570c6e61027e097fdea6cce250dda",
+    "on_curve": false
+  },
+  {
+    "name": "curve_7",
+    "bytes": "19ae8f78d177cb1dd155f57cda074e1436dbada0e00c20ec198127c9cc13c007",
+    "on_curve": true
+  },
+  {
+    "name": "curve_8",
+    "bytes": "673e5a53c9c6b98f0f62442c38cc94008f348ec17d7332927362e2207f4bf6db",
+    "on_curve": false
+  },
+  {
+    "name": "curve_9",
+    "bytes": "db1af2c90e9d094a213494186ad59f290ade878de97e261fe627488f27627eb1",
+    "on_curve": true
+  },
+  {
+    "name": "curve_10",
+    "bytes": "d558bc4ff8a6afeaec7b7b815c1403ce78cd52d5dc01f5faf7a126872b1af077",
+    "on_curve": false
+  },
+  {
+    "name": "curve_11",
+    "bytes": "604c6b9a48cab53231c72c1403d617b8a063b8a80b2a3a5e3f5d7b32ac8ac2cd",
+    "on_curve": false
+  },
+  {
+    "name": "curve_12",
+    "bytes": "88e69cae1b23237a0811def305abc789c98cac5acae1ca1acc6b7c03ff0e77fd",
+    "on_curve": true
+  },
+  {
+    "name": "curve_13",
+    "bytes": "7e7c51d19f8e301060a305f96784ffe4f1e80c69f6f11d718ef31b01b3fe3dac",
+    "on_curve": false
+  },
+  {
+    "name": "curve_14",
+    "bytes": "ce4d63bb211845a93d0055c99e904afc43c64aa73f6a58d302137f4549ba61a9",
+    "on_curve": false
+  },
+  {
+    "name": "curve_15",
+    "bytes": "14718f3029de3830065b22da8d4fbdc6f9e8d73561aaa303a17b626f06b39ebf",
+    "on_curve": true
+  },
+  {
+    "name": "curve_16",
+    "bytes": "a758b362da0038da582eb452bfd5bc5550d0c6ed312fc3f7800baffb8cfdbe34",
+    "on_curve": true
+  },
+  {
+    "name": "curve_17",
+    "bytes": "2d7288504f5930d5419e6e644ba9a9aa02a4368bd272c569fe4fba9666981006",
+    "on_curve": false
+  },
+  {
+    "name": "curve_18",
+    "bytes": "2e0dc654206d338df831bf204fbb7ec6f7d641dc19c84de766c614926723857c",
+    "on_curve": true
+  },
+  {
+    "name": "curve_19",
+    "bytes": "e3cf48784501021605627e288f5af6d580864f7421580ab14109e54f0160790b",
+    "on_curve": false
+  },
+  {
+    "name": "curve_20",
+    "bytes": "fe8a2c18bdf00d2e406f4ed00ed8807406b20cf0a725648eac87483f8364864f",
+    "on_curve": false
+  },
+  {
+    "name": "curve_21",
+    "bytes": "b5a5a9348861f0a5e53bd94e3d254e278667b7fa7f0530fbf243c13c67091744",
+    "on_curve": false
+  },
+  {
+    "name": "curve_22",
+    "bytes": "bb4b26a32fb9e437c8e79b835dd92e98f5f82f767005f2e1b9d93b23eddad3ff",
+    "on_curve": true
+  },
+  {
+    "name": "curve_23",
+    "bytes": "3a8fa678a4f95d1a3568953a829a88ab6a6c9ec501fc7c6bae01f47fff189a4f",
+    "on_curve": true
+  },
+  {
+    "name": "curve_24",
+    "bytes": "1390e947d0e1c75a98134bad5ed0e66a6aa1e191368a492d6b46d01a74e5f472",
+    "on_curve": false
+  },
+  {
+    "name": "curve_25",
+    "bytes": "71a6d31a71a2192f877676b4f8b9785d610d753bc89fb1c9086c11ae33f58941",
+    "on_curve": false
+  },
+  {
+    "name": "curve_26",
+    "bytes": "bcc50e83eb715d0d08e351274ec63457f0545c3dc6c2fefe603be99d4ddeab73",
+    "on_curve": true
+  },
+  {
+    "name": "curve_27",
+    "bytes": "70c2c4eb5a1cc6727a5c205b3d7f1b1591390a2ffe77c3f7161239868ccdb8b9",
+    "on_curve": false
+  },
+  {
+    "name": "curve_28",
+    "bytes": "bb5d187fce6685b0f2f2392dcf6e11c207aedfa89974116a0b46f6770402f027",
+    "on_curve": false
+  },
+  {
+    "name": "curve_29",
+    "bytes": "583c3af5179b09691a658dc4306a90dea5be1a597262f3e7076dce7956e01836",
+    "on_curve": true
+  },
+  {
+    "name": "curve_30",
+    "bytes": "661b7fa94e0ecd10b4c1c590021ecc9d419aed16f21836f082ce8e5407fe0e78",
+    "on_curve": true
+  },
+  {
+    "name": "curve_31",
+    "bytes": "c1e92a1ca99ff0c6d28ca0e1a9097d146a925c4e0e28dd15be09dff295b6589a",
+    "on_curve": false
+  }
+]

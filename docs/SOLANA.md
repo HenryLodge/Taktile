@@ -90,7 +90,11 @@ for bump in 255 down to 0:
     if h is NOT a valid ed25519 point: return h
 ```
 
-Use trezor-crypto / ed25519-donna point decompression to test "is on curve" (decompression fails → off curve → valid PDA). Add test vectors comparing against `@solana/spl-token` `getAssociatedTokenAddressSync` for at least 5 wallets.
+Implemented in `core/src/tk_ata.c` (`tk_ata_derive`). "Is on curve" is ed25519-donna point decompression (`tk_ed25519_on_curve`, a wrapper in `core/third_party/tk_ed25519_point.c`): decompression fails → off curve → valid PDA.
+
+The rule must match Solana on-chain, which uses curve25519-dalek `CompressedEdwardsY::decompress()`: the top bit is the sign of x and is ignored when reading y; y ≥ p is reduced mod p; the point is valid exactly when (y² − 1)/(d·y² + 1) is a square; x = 0 with the sign bit set is accepted. donna behaves the same way. web3.js `PublicKey.isOnCurve` is stricter on the last two cases (probability ~2⁻²⁵⁰ for a hash); the device follows the on-chain rule, and `test_ata.c` pins both edge cases.
+
+The wallet's own USDC ATA is derived once when the wallet loads and passed to the parser as `device_usdc_ata`.
 
 ## Keys
 
@@ -99,7 +103,11 @@ Use trezor-crypto / ed25519-donna point decompression to test "is on curve" (dec
 
 ## Test vectors (`tests/vectors/*.json`)
 
-Generate with `tools/gen-vectors.mjs` using web3.js. Outputs are committed: `tests/vectors/parser.json`, `tests/vectors/ata.json`, and the same data as C tables in `core/tests/gen/tk_parser_vectors.h` and `tk_ata_vectors.h` (so ctest never parses JSON).
+Generate with `tools/gen-vectors.mjs` using web3.js. Outputs are committed: `tests/vectors/{parser,ata,curve}.json`, and the same data as C tables in `core/tests/gen/tk_{parser,ata,curve}_vectors.h` (so ctest never parses JSON).
+
+Each ATA vector: `{name, wallet, mint, ata, bump}` (hex keys), checked against `getAssociatedTokenAddressSync` and `findProgramAddressSync`. The six named wallets use devnet USDC; two more use a second test mint (label `other-mint`, so a derivation that ignores the mint fails); two `deep_*` vectors need a bump ≤ 251.
+
+Each curve vector: `{name, bytes, on_curve}`: `sha256("taktile-curve:<i>")` for i in 0..31 and web3.js `PublicKey.isOnCurve`.
 
 Each parser vector: `{name, message_hex, device_pubkey, device_usdc_ata, expect: {status, reason, kind, amount, destination}}`.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Build Solana legacy messages with web3.js / spl-token and write the parser and ATA test vectors.
 //
-//   node tools/gen-vectors.mjs           write tests/vectors/{parser,ata}.json and core/tests/gen/*.h
+//   node tools/gen-vectors.mjs           write tests/vectors/{parser,ata,curve}.json and core/tests/gen/*.h
 //   node tools/gen-vectors.mjs --check   write nothing; exit 1 if any committed file is stale
 //
 // Needs `cd tools && npm ci` once. Never touches the network: it only builds messages.
@@ -374,19 +374,44 @@ export function buildParserVectors() {
     return vectors;
 }
 
+// A second, never-funded test mint, so a derivation that ignores the mint is caught.
+const OTHER_MINT = wallet('other-mint');
+const DEEP_BUMP_MAX = 251; // "deep" vectors need at least 5 tries
+
+function ataVector(name, label, mint) {
+    const w = wallet(label);
+    const ata = getAssociatedTokenAddressSync(mint, w, false, TOKEN_PROGRAM, ATA_PROGRAM);
+    const [pda, bump] = PublicKey.findProgramAddressSync([w.toBuffer(), TOKEN_PROGRAM.toBuffer(), mint.toBuffer()], ATA_PROGRAM);
+    if (!pda.equals(ata)) {
+        throw new Error(`ATA mismatch for ${name}`);
+    }
+    return { name, wallet: hex(w.toBuffer()), mint: hex(mint.toBuffer()), ata: hex(ata.toBuffer()), bump };
+}
+
 export function buildAtaVectors() {
-    return ['device', 'alice', 'bob', 'carol', 'dave', 'mallory'].map((label) => {
-        const w = wallet(label);
-        const ata = usdcAta(w);
-        const [pda, bump] = PublicKey.findProgramAddressSync(
-            [w.toBuffer(), TOKEN_PROGRAM.toBuffer(), USDC_MINT.toBuffer()],
-            ATA_PROGRAM,
-        );
-        if (!pda.equals(ata)) {
-            throw new Error(`ATA mismatch for ${label}`);
+    const vectors = ['device', 'alice', 'bob', 'carol', 'dave', 'mallory'].map((l) => ataVector(l, l, USDC_MINT));
+    vectors.push(ataVector('device_other_mint', 'device', OTHER_MINT));
+    vectors.push(ataVector('alice_other_mint', 'alice', OTHER_MINT));
+    // Labels deep-0, deep-1, ... in order; keep the first two that need a long bump search.
+    let found = 0;
+    for (let i = 0; found < 2; i++) {
+        const v = ataVector(`deep_${i}`, `deep-${i}`, USDC_MINT);
+        if (v.bump <= DEEP_BUMP_MAX) {
+            vectors.push(v);
+            found++;
         }
-        return { name: label, wallet: hex(w.toBuffer()), mint: hex(USDC_MINT.toBuffer()), ata: hex(ata.toBuffer()), bump };
-    });
+    }
+    return vectors;
+}
+
+// sha256("taktile-curve:<i>") with web3.js's answer to "is this an ed25519 point?".
+export function buildCurveVectors() {
+    const vectors = [];
+    for (let i = 0; i < 32; i++) {
+        const bytes = createHash('sha256').update(`taktile-curve:${i}`).digest();
+        vectors.push({ name: `curve_${i}`, bytes: hex(bytes), on_curve: PublicKey.isOnCurve(bytes) });
+    }
+    return vectors;
 }
 
 // ---- Rendering ----
@@ -492,15 +517,43 @@ function renderAtaHeader(vectors) {
     return out.join('\n');
 }
 
+function renderCurveHeader(vectors) {
+    const out = [
+        BANNER,
+        '#ifndef TK_CURVE_VECTORS_H',
+        '#define TK_CURVE_VECTORS_H',
+        '',
+        '#include <stdbool.h>',
+        '#include <stdint.h>',
+        '',
+        'typedef struct {',
+        '    const char *name;',
+        '    uint8_t bytes[32];',
+        '    bool on_curve; // web3.js PublicKey.isOnCurve',
+        '} tk_curve_vector_t;',
+        '',
+        'static const tk_curve_vector_t tk_curve_vectors[] = {',
+    ];
+    for (const v of vectors) {
+        out.push('    {', `        "${v.name}",`, '        {', cBytes(Buffer.from(v.bytes, 'hex'), '            '), '        },');
+        out.push(`        ${v.on_curve},`, '    },');
+    }
+    out.push('};', '', '#define TK_CURVE_VECTOR_COUNT (sizeof(tk_curve_vectors) / sizeof(tk_curve_vectors[0]))', '', '#endif', '');
+    return out.join('\n');
+}
+
 // Returns [[relativePath, contents], ...]. Deterministic, LF only.
 export function generate() {
     const parser = buildParserVectors();
     const ata = buildAtaVectors();
+    const curve = buildCurveVectors();
     return [
         ['tests/vectors/parser.json', JSON.stringify(parser, null, 2) + '\n'],
         ['tests/vectors/ata.json', JSON.stringify(ata, null, 2) + '\n'],
+        ['tests/vectors/curve.json', JSON.stringify(curve, null, 2) + '\n'],
         ['core/tests/gen/tk_parser_vectors.h', renderParserHeader(parser)],
         ['core/tests/gen/tk_ata_vectors.h', renderAtaHeader(ata)],
+        ['core/tests/gen/tk_curve_vectors.h', renderCurveHeader(curve)],
     ];
 }
 

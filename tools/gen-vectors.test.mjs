@@ -93,13 +93,24 @@ test('truncations are strict prefixes of their base message', () => {
     }
 });
 
-test('ATA vectors: 6 distinct wallets, valid bumps', () => {
+test('ATA vectors: distinct, two mints, at least two deep bump searches', () => {
     const ata = buildAtaVectors();
-    assert.equal(ata.length, 6);
-    assert.equal(new Set(ata.map((a) => a.ata)).size, 6);
+    assert.ok(ata.length >= 10);
+    assert.equal(new Set(ata.map((a) => a.ata)).size, ata.length);
+    assert.equal(new Set(ata.map((a) => a.name)).size, ata.length);
+    assert.equal(new Set(ata.map((a) => a.mint)).size, 2);
+    assert.ok(ata.filter((a) => a.bump <= 251).length >= 2);
     for (const a of ata) {
         assert.ok(Number.isInteger(a.bump) && a.bump >= 0 && a.bump <= 255);
     }
+});
+
+test('curve vectors: both answers occur', async () => {
+    const { buildCurveVectors } = await import('./gen-vectors.mjs');
+    const curve = buildCurveVectors();
+    assert.equal(curve.length, 32);
+    assert.ok(curve.some((c) => c.on_curve));
+    assert.ok(curve.some((c) => !c.on_curve));
 });
 
 test('PARSE_REASONS matches tk_parse_result_t in tk_parser.h, in order', async () => {
