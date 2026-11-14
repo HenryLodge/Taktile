@@ -35,11 +35,11 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 3. `app` looks up Jack's wallet in its own (untrusted) contact cache, builds a devnet `TransferChecked` transaction to Jack's USDC associated token account, serializes the **message bytes**.
 4. `app` computes its checksum phrase from the message bytes and speaks it via `/api/tts`.
 5. `app` sends `SIGN_REQUEST{message}` to the device.
-6. Device `core/parser` parses the message (rules in `SOLANA.md`). On failure → `SIGN_RESULT{PARSE_UNSUPPORTED}`.
-7. Device resolves the destination token account against its contact book. Unknown → plays "unknown recipient, do not sign", warning haptic, `SIGN_RESULT{UNKNOWN_RECIPIENT}`.
+6. Device `core/parser` parses the message (rules in `SOLANA.md`). On failure → `SIGN_REQUEST` response with status `PARSE_UNSUPPORTED`.
+7. Device resolves the destination token account against its contact book. Unknown → plays "unknown recipient, do not sign", warning haptic, `SIGN_REQUEST` response with status `UNKNOWN_RECIPIENT`.
 8. Device plays: amount, token, recipient name, then checksum phrase — earpiece only.
 9. If not unlocked, device runs PIN entry (see `AUDIO.md`).
-10. User presses CONFIRM (or REJECT). Device signs with Ed25519 and returns `SIGN_RESULT{OK, signature}`.
+10. User presses CONFIRM (or REJECT). Device signs with Ed25519 and returns `SIGN_REQUEST` response with status `OK` and the 64-byte signature.
 11. `app` attaches the signature, broadcasts to devnet, and announces the result.
 
 ## Contact enrollment flow
