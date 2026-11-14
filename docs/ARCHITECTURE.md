@@ -47,7 +47,9 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 1. `app` sends `CONTACT_ADD{name, wallet_address}`.
 2. Device derives the contact's USDC associated token account itself (see `SOLANA.md`), computes an 8-word address phrase, and plays "Adding <spelled name>. Address phrase: …".
 3. User calls the contact; the contact reads the same phrase from their own wallet tool (`app` has a "show my address phrase" page).
-4. User confirms with PIN + CONFIRM. Device stores `{name, wallet, usdc_ata}`.
+4. User confirms with PIN + CONFIRM. Device stores `{name, wallet, usdc_ata}` (`core/contacts`: up to 16; names 1–12 ASCII characters, unique ignoring case; no duplicate wallets).
+
+When signing, a SOL destination is looked up only among contacts' wallets and a USDC destination only among their USDC token accounts; anything else is "unknown recipient".
 
 ## Build targets
 

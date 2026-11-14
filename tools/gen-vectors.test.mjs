@@ -151,3 +151,21 @@ test('checksum vectors: every OK transfer plus edge cases, words match indices',
     const b = tx.find((v) => v.name === 'sol_ok_amount_bit_flipped');
     assert.notDeepEqual(a.indices, b.indices);
 });
+
+test('contacts vectors: book of 3, every contact found by both kinds, malicious cases unknown', async () => {
+    const { buildContactsVectors } = await import('./gen-vectors.mjs');
+    const { book, lookups } = buildContactsVectors();
+    assert.equal(book.length, 3);
+    for (let i = 0; i < book.length; i++) {
+        assert.ok(lookups.some((l) => l.kind === 'sol' && l.expect_index === i && l.destination === book[i].wallet));
+        assert.ok(lookups.some((l) => l.kind === 'usdc' && l.expect_index === i && l.destination === book[i].usdc_ata));
+    }
+    for (const name of [
+        'alice_ata_as_sol', 'alice_wallet_as_usdc', 'mallory_wallet_sol', 'mallory_ata_usdc',
+        'alice_ata_one_bit_flipped', 'alice_other_mint_ata_usdc', 'device_wallet_sol',
+    ]) {
+        const l = lookups.find((x) => x.name === name);
+        assert.ok(l, `missing ${name}`);
+        assert.equal(l.expect_index, -1, name);
+    }
+});

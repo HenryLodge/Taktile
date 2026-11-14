@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Build Solana legacy messages with web3.js / spl-token and write the parser and ATA test vectors.
 //
-//   node tools/gen-vectors.mjs           write tests/vectors/{parser,ata,curve,checksum}.json and core/tests/gen/*.h
+//   node tools/gen-vectors.mjs           write tests/vectors/{parser,ata,curve,checksum,contacts}.json and core/tests/gen/*.h
 //   node tools/gen-vectors.mjs --check   write nothing; exit 1 if any committed file is stale
 //
 // Needs `cd tools && npm ci` once. Never touches the network: it only builds messages.
@@ -438,6 +438,34 @@ export function buildChecksumVectors(parser = buildParserVectors(), ata = buildA
     return { tx, addr };
 }
 
+// Contact book lookups (decision 5: SOL -> wallets only, USDC -> USDC ATAs only). The book is
+// alice, bob, carol; usdc_ata comes from spl-token so core/contacts' derivation is checked too.
+export function buildContactsVectors() {
+    const book = [
+        ['Alice', ALICE],
+        ['Bob', BOB],
+        ['Carol', CAROL],
+    ].map(([name, w]) => ({ name, wallet: hex(w.toBuffer()), usdc_ata: hex(usdcAta(w).toBuffer()) }));
+    const lookups = [];
+    const add = (name, kind, dest, expect_index) => lookups.push({ name, kind, destination: hex(dest), expect_index });
+    book.forEach((c, i) => {
+        add(`${c.name.toLowerCase()}_wallet_sol`, 'sol', Buffer.from(c.wallet, 'hex'), i);
+        add(`${c.name.toLowerCase()}_ata_usdc`, 'usdc', Buffer.from(c.usdc_ata, 'hex'), i);
+    });
+    // Malicious or unknown: all must be "unknown recipient" (-1).
+    add('alice_ata_as_sol', 'sol', ALICE_ATA.toBuffer(), -1);
+    add('alice_wallet_as_usdc', 'usdc', ALICE.toBuffer(), -1);
+    add('mallory_wallet_sol', 'sol', MALLORY.toBuffer(), -1);
+    add('mallory_ata_usdc', 'usdc', MALLORY_ATA.toBuffer(), -1);
+    const flipped = Buffer.from(ALICE_ATA.toBuffer());
+    flipped[31] ^= 0x01;
+    add('alice_ata_one_bit_flipped', 'usdc', flipped, -1);
+    const otherMintAta = getAssociatedTokenAddressSync(OTHER_MINT, ALICE, false, TOKEN_PROGRAM, ATA_PROGRAM);
+    add('alice_other_mint_ata_usdc', 'usdc', otherMintAta.toBuffer(), -1);
+    add('device_wallet_sol', 'sol', DEVICE.toBuffer(), -1);
+    return { book, lookups };
+}
+
 // sha256("taktile-curve:<i>") with web3.js's answer to "is this an ed25519 point?".
 export function buildCurveVectors() {
     const vectors = [];
@@ -630,13 +658,66 @@ function renderChecksumHeader({ tx, addr }) {
     return out.join('\n');
 }
 
+function renderContactsHeader({ book, lookups }) {
+    const out = [
+        BANNER,
+        '#ifndef TK_CONTACTS_VECTORS_H',
+        '#define TK_CONTACTS_VECTORS_H',
+        '',
+        '#include <stdint.h>',
+        '',
+        '#include "tk_parser.h"',
+        '',
+        'typedef struct {',
+        '    const char *name;',
+        '    uint8_t wallet[32];',
+        '    uint8_t usdc_ata[32]; // getAssociatedTokenAddressSync(USDC, wallet)',
+        '} tk_contacts_book_entry_t;',
+        '',
+        'typedef struct {',
+        '    const char *name;',
+        '    tk_tx_kind_t kind;',
+        '    uint8_t destination[32];',
+        '    int expect_index; // -1: unknown recipient',
+        '} tk_contacts_lookup_vector_t;',
+        '',
+        'static const tk_contacts_book_entry_t tk_contacts_book[] = {',
+    ];
+    for (const c of book) {
+        out.push('    {', `        "${c.name}",`);
+        for (const k of ['wallet', 'usdc_ata']) {
+            out.push('        {', cBytes(Buffer.from(c[k], 'hex'), '            '), '        },');
+        }
+        out.push('    },');
+    }
+    out.push('};', '', 'static const tk_contacts_lookup_vector_t tk_contacts_lookups[] = {');
+    for (const l of lookups) {
+        const kind = l.kind === 'sol' ? 'TK_TX_SOL' : 'TK_TX_USDC';
+        out.push('    {', `        "${l.name}", ${kind},`, '        {', cBytes(Buffer.from(l.destination, 'hex'), '            '), '        },');
+        out.push(`        ${l.expect_index},`, '    },');
+    }
+    out.push(
+        '};',
+        '',
+        '#define TK_CONTACTS_BOOK_COUNT (sizeof(tk_contacts_book) / sizeof(tk_contacts_book[0]))',
+        '#define TK_CONTACTS_LOOKUP_COUNT (sizeof(tk_contacts_lookups) / sizeof(tk_contacts_lookups[0]))',
+        '',
+        '#endif',
+        '',
+    );
+    return out.join('\n');
+}
+
 // Returns [[relativePath, contents], ...]. Deterministic, LF only.
 export function generate() {
     const parser = buildParserVectors();
     const ata = buildAtaVectors();
     const curve = buildCurveVectors();
     const checksum = buildChecksumVectors(parser, ata);
+    const contacts = buildContactsVectors();
     return [
+        ['tests/vectors/contacts.json', JSON.stringify(contacts, null, 2) + '\n'],
+        ['core/tests/gen/tk_contacts_vectors.h', renderContactsHeader(contacts)],
         ['tests/vectors/parser.json', JSON.stringify(parser, null, 2) + '\n'],
         ['tests/vectors/ata.json', JSON.stringify(ata, null, 2) + '\n'],
         ['tests/vectors/curve.json', JSON.stringify(curve, null, 2) + '\n'],

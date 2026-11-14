@@ -24,12 +24,13 @@ The address phrase is longer because at enrollment the attacker chooses the addr
 | Checksum words | 256 | PGP even list |
 | Digits and number words | `zero`–`nine`, `point`, `ten`…`ninety`, `hundred`, `thousand` | Amounts are read as numbers, e.g. "twelve point five" |
 | Letters | `A`–`Z` | Spelling names and recovery words |
+| Name punctuation | `space`, `hyphen`, `apostrophe` | Spelling contact names |
 | Tokens | `USDC`, `SOL` | |
-| Prompts | `send`, `to`, `unknown recipient do not sign`, `press confirm to sign or reject to cancel`, `checksum`, `address phrase`, `enter pin`, `digit`, `wrong pin`, `attempts remaining`, `signed`, `cancelled`, `adding contact`, `recovery word`, `repeat`, `speaker mode on`, `wallet wiped` | Keep each prompt a separate clip; compose sentences by sequence |
+| Prompts | `send`, `to`, `unknown recipient do not sign`, `press confirm to sign or reject to cancel`, `checksum`, `address phrase`, `enter pin`, `digit`, `wrong pin`, `attempts remaining`, `signed`, `cancelled`, `adding contact`, `remove`, `contact book full`, `already a contact`, `recovery word`, `repeat`, `speaker mode on`, `wallet wiped` | Keep each prompt a separate clip; compose sentences by sequence |
 
 **Recovery words** are spelled using the first 4 letters of each BIP39 word ("word one: A, B, A, N"). BIP39 English words are unique by their first four letters, so this avoids storing 2048 extra clips.
 
-**Contact names** are spelled letter by letter (first 12 characters) in P0. P1 option: a name clip recorded at enrollment and verified by the user through the earpiece, then stored on device (needs a protocol change — see `SERIAL_PROTOCOL.md` rules for changing the protocol).
+**Contact names** are at most 12 characters (`SERIAL_PROTOCOL.md`) and are spelled in full, character by character, using the letter, digit, `space`, `hyphen` and `apostrophe` clips, in P0. P1 option: a name clip recorded at enrollment and verified by the user through the earpiece, then stored on device (needs a protocol change — see `SERIAL_PROTOCOL.md` rules for changing the protocol).
 
 ## Format and storage
 

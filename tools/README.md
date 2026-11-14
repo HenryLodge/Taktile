@@ -14,7 +14,7 @@ npm --prefix tools run check             # both generators' --check
 | --- | --- |
 | `gen-consts.mjs` | Decode pinned base58 constants → `core/include/tk_solana_consts.h` + `core/src/tk_solana_consts.c` (committed; rerun after changing a constant, `--check` to verify) |
 | `gen-words.mjs` | PGP "even" word list (`data/pgp-even-words.txt`) → `core/include/tk_words.h`, `core/src/tk_words.c`, `app/src/words.ts` (committed; `--check` to verify) |
-| `gen-vectors.mjs` | Build SOL/USDC messages with web3.js (each parser vector names the exact `tk_parse_result_t` it must produce) → `tests/vectors/{parser,ata,curve,checksum}.json` + `core/tests/gen/tk_{parser,ata,curve,checksum}_vectors.h` (committed; `--check` to verify). Offline: builds messages, never calls an RPC |
+| `gen-vectors.mjs` | Build SOL/USDC messages with web3.js (each parser vector names the exact `tk_parse_result_t` it must produce) → `tests/vectors/{parser,ata,curve,checksum,contacts}.json` + `core/tests/gen/tk_{parser,ata,curve,checksum,contacts}_vectors.h` (committed; `--check` to verify). Offline: builds messages, never calls an RPC |
 | `gen-audio.mjs` | Generate clips from `clips.json` with ElevenLabs → `tools/out/` (needs `server/.env`) |
 | `setup-devnet.mjs` | Airdrop SOL, fund devnet USDC, create contacts' ATAs |
 
