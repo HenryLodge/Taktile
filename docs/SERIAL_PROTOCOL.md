@@ -17,7 +17,13 @@ offset  size  field
 6+len   4     crc32     CRC-32 (IEEE) over bytes 0 .. 6+len-1, u32 LE
 ```
 
-On bad magic, version, length, or CRC the device discards bytes until the next `0xE5` and replies `ERROR{BAD_FRAME}` if it can recover a `seq`.
+Framing errors (implemented in `core/src/tk_proto.c`):
+
+- Bytes before a `0xE5` are skipped silently, with no reply.
+- Bad `version` or bad CRC → `ERROR{BAD_FRAME}`. `len > 2048` → `ERROR{TOO_LARGE}` (checked as soon as the header arrives).
+- These `ERROR` replies echo the rejected header's `seq` as a best-effort hint. It may itself be corrupt; that is harmless, because only one request is in flight and `seq` carries no security meaning.
+- After an error, the device resumes scanning at the next `0xE5` *inside* the rejected bytes, so a real frame that began inside a corrupt one is still found.
+- A partial frame is dropped after an idle timeout on the link (firmware sets the timeout), so a corrupt `len` can't stall the decoder.
 
 ## Message types
 
