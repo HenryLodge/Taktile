@@ -4,7 +4,7 @@ Build-time scripts (Node).
 
 | Script | Purpose |
 | --- | --- |
-| `gen-consts.mjs` | Decode pinned base58 constants → `core/include/tk_solana_consts.h` |
+| `gen-consts.mjs` | Decode pinned base58 constants → `core/include/tk_solana_consts.h` + `core/src/tk_solana_consts.c` (committed; rerun after changing a constant, `--check` to verify) |
 | `gen-vectors.mjs` | Build SOL/USDC transactions with web3.js → `tests/vectors/*.json` |
 | `gen-audio.mjs` | Generate clips from `clips.json` with ElevenLabs → `tools/out/` (needs `server/.env`) |
 | `setup-devnet.mjs` | Airdrop SOL, fund devnet USDC, create contacts' ATAs |

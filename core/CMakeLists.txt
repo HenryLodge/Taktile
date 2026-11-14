@@ -13,6 +13,7 @@ set(TK_WARNINGS -Wall -Wextra -Werror -Wvla -Wshadow -Wstrict-prototypes)
 add_library(tk_core STATIC
     src/tk_crc32.c
     src/tk_proto.c
+    src/tk_solana_consts.c
     src/tk_util.c
 )
 target_include_directories(tk_core PUBLIC include)

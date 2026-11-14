@@ -3,6 +3,7 @@ set(TK_TESTS
     test_crypto
     test_crc32
     test_proto
+    test_solana_consts
 )
 
 foreach(t ${TK_TESTS})
