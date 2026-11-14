@@ -101,3 +101,25 @@ test('ATA vectors: 6 distinct wallets, valid bumps', () => {
         assert.ok(Number.isInteger(a.bump) && a.bump >= 0 && a.bump <= 255);
     }
 });
+
+test('PARSE_REASONS matches tk_parse_result_t in tk_parser.h, in order', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { PARSE_REASONS } = await import('./gen-vectors.mjs');
+    const h = readFileSync(new URL('../core/include/tk_parser.h', import.meta.url), 'utf8');
+    const body = h.slice(h.indexOf('typedef enum {\n    TK_PARSE_OK'.replace(/\n/g, h.includes('\r\n') ? '\r\n' : '\n')));
+    const names = [...body.slice(0, body.indexOf('} tk_parse_result_t;')).matchAll(/\bTK_PARSE_([A-Z0-9_]+)/g)].map((m) => m[1]);
+    assert.deepEqual(names, PARSE_REASONS);
+});
+
+test('every vector has a known reason, and every rejection reason is exercised', async () => {
+    const { PARSE_REASONS } = await import('./gen-vectors.mjs');
+    for (const v of vectors) {
+        assert.ok(PARSE_REASONS.includes(v.expect.reason), `${v.name}: ${v.expect.reason}`);
+        assert.equal(v.expect.reason === 'OK', v.expect.status === 'OK', v.name);
+        assert.match(v.device_usdc_ata, /^[0-9a-f]{64}$/);
+    }
+    const used = new Set(vectors.map((v) => v.expect.reason));
+    for (const r of PARSE_REASONS) {
+        assert.ok(used.has(r), `no vector for ${r}`);
+    }
+});

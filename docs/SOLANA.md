@@ -29,17 +29,34 @@ instructions:      compact-u16 M, then M × {
 ```
 
 - If the first byte has the high bit set (`& 0x80`), it is a versioned (v0) message → reject.
-- compact-u16: 1–3 bytes, 7 bits per byte, little-endian, continuation bit `0x80`. Reject non-canonical encodings and values > 0xFFFF.
-- Reject if any length runs past the buffer, or if bytes remain after the last instruction.
+- compact-u16: 7 bits per byte, little-endian, continuation bit `0x80`. Canonical encodings only, matching Solana's own `short_vec` decoder:
+  - at most 3 bytes;
+  - a final byte of `0x00` is rejected unless it is the only byte (otherwise a shorter encoding exists);
+  - the 3rd byte must be ≤ `0x03` (so the value is ≤ `0xFFFF`) and has no continuation bit.
+- Reject if any length runs past the buffer, or if bytes remain after the last instruction. The parser walks all `M` instructions for this, even though only one is allowed.
 - Max message size accepted: 1232 bytes.
 
 ## Common checks (both shapes)
 
-1. `num_required_signatures == 1`.
+1. Header: `num_required_signatures == 1`, `num_readonly_signed_accounts == 0`, and `num_readonly_unsigned_accounts < N` (so the fee payer is writable). Other accounts' writable flags are not checked: a wrong flag only makes the transaction fail on-chain.
 2. `account_keys[0] == device_pubkey` (fee payer and sole signer).
-3. Exactly **one** instruction (`M == 1`).
-4. `program_id_index < N`, every `account_index < N`.
-5. Recent blockhash is not inspected (the host chooses it; it only affects validity window).
+3. No key appears twice in `account_keys` (Solana rejects such transactions too). Every identity check (device, mint, program, source) compares the full 32-byte key, never an index position.
+4. Exactly **one** instruction (`M == 1`).
+5. `program_id_index < N`, every `account_index < N`.
+6. Recent blockhash is not inspected (the host chooses it; it only affects validity window).
+
+A zero amount is allowed in both shapes: the user is in control, and the device announces the amount.
+
+## Order of checks (`core/src/tk_parser.c`)
+
+The first failing check decides the result. Each rejection has an on-device reason (`tk_parse_result_t` in `tk_parser.h`) so tests can prove each vector fails for the intended rule; on the wire every rejection is `PARSE_UNSUPPORTED`.
+
+1. Size (`TOO_LARGE`), empty (`TRUNCATED`), version bit (`VERSIONED`).
+2. Structure, in reading order: `TRUNCATED`, `BAD_COMPACT_U16`, then `TRAILING_BYTES`.
+3. Common checks 1–5 above: `BAD_HEADER`, `FEE_PAYER`, `DUPLICATE_KEY`, `INSTRUCTION_COUNT`, `INDEX_OUT_OF_RANGE`.
+4. Program: System → Shape A, Token → Shape B, anything else (including Token-2022) → `UNSUPPORTED_PROGRAM`.
+5. Shape A: `SOL_LAYOUT` (K, L, discriminator), then `SOL_FROM_NOT_DEVICE`.
+6. Shape B: `TOKEN_LAYOUT` (K, L, discriminator), then `TOKEN_WRONG_MINT`, `TOKEN_WRONG_DECIMALS`, `TOKEN_WRONG_SOURCE`, `TOKEN_OWNER_NOT_DEVICE`.
 
 ## Shape A — SOL transfer (System Program)
 
@@ -55,7 +72,7 @@ instructions:      compact-u16 M, then M × {
 - `K == 4`; accounts = `[source, mint, destination, owner]`
 - `owner == account_keys[0]` (device)
 - `mint == DEVNET_USDC_MINT`
-- `source == ATA(device_pubkey, USDC)` computed on device
+- `source == ATA(device_pubkey, USDC)` computed on device. `core/ata` computes it once when the wallet loads; the parser takes it as an argument.
 - Data: `L == 10`, byte 0 = `12` (TransferChecked), bytes `1..9` = `u64 LE amount`, byte 9 = `decimals`, must equal `6`
 - Destination to resolve against contacts: `destination` (a token account), matched against each contact's stored `usdc_ata`
 
@@ -84,10 +101,11 @@ Use trezor-crypto / ed25519-donna point decompression to test "is on curve" (dec
 
 Generate with `tools/gen-vectors.mjs` using web3.js. Outputs are committed: `tests/vectors/parser.json`, `tests/vectors/ata.json`, and the same data as C tables in `core/tests/gen/tk_parser_vectors.h` and `tk_ata_vectors.h` (so ctest never parses JSON).
 
-Each parser vector: `{name, message_hex, device_pubkey, expect: {status, kind, amount, destination}}`.
+Each parser vector: `{name, message_hex, device_pubkey, device_usdc_ata, expect: {status, reason, kind, amount, destination}}`.
 
-- `message_hex`, `device_pubkey`, `destination`: lowercase hex.
+- `message_hex`, `device_pubkey`, `device_usdc_ata`, `destination`: lowercase hex.
 - `status`: `"OK"` or `"PARSE_UNSUPPORTED"`.
+- `reason`: the `tk_parse_result_t` name without the `TK_PARSE_` prefix (`"OK"`, `"TRUNCATED"`, `"DUPLICATE_KEY"`, …). Every reason has at least one vector.
 - `kind`: `"sol"` or `"usdc"`.
 - `amount`: a decimal string (lamports, or USDC base units), because u64 doesn't fit in a JSON number.
 - `destination`: the address to resolve against contacts (Shape A `to`, Shape B destination token account).
@@ -102,3 +120,4 @@ Required negative cases:
 - source ATA not the device's; owner not the device
 - truncated buffer at every field boundary; non-canonical compact-u16; trailing bytes
 - Token-2022 program ID
+- readonly signed count != 0; readonly unsigned count == N; duplicate account key (device repeated, program repeated)
