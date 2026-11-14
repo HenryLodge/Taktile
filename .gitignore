@@ -19,6 +19,11 @@ tools/out/
 crash-*
 leak-*
 timeout-*
+oom-*
+slow-unit-*
+# local fuzz corpus (grows as libFuzzer finds inputs; seeds are rebuilt from tests/vectors/)
+tests/corpus/*/*
+!tests/corpus/*/.gitkeep
 
 # editor / OS
 .vscode/

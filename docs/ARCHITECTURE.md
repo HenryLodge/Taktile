@@ -53,7 +53,8 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 
 | Target | Contents | Purpose |
 | --- | --- | --- |
-| `core` (static lib + tests) | parser, contacts, checksum, ata, flow, proto | All security logic; host-tested with ctest |
+| `core` (static lib + tests) | parser, contacts, checksum, ata, flow, proto | All security logic; host-tested with ctest (`-DTK_SANITIZE=ON` for ASan + UBSan) |
+| `core` fuzz targets | `fuzz_parser`, `fuzz_frame` (`-DTK_FUZZ=ON`, clang) | libFuzzer on the two untrusted-input decoders, seeded from `tests/vectors/` |
 | `sim` | core + WebSocket server on `ws://localhost:8765` + keyboard buttons + audio as printed text (optionally plays clips via `afplay`/`aplay`) | Develop the whole flow before hardware arrives |
 | `firmware` | core + ESP-IDF drivers (USB CDC, I2S, GPIO, I2C haptics, NVS, LittleFS) | The real device |
 | `app` | Vite + TS | User-facing frontend (required by the Consumer track) |

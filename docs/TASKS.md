@@ -10,7 +10,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [x] P0 `tools/gen-consts.mjs`: decode pinned base58 constants → `tk_solana_consts.h`
 - [x] P0 `tools/gen-vectors.mjs`: SOL and USDC transfer vectors + every negative case in `SOLANA.md`
 - [x] P0 `core/parser`: legacy message parser, Shapes A and B, all checks; passes all vectors
-- [ ] P0 `TK_SANITIZE` CMake option (ASan + UBSan) and `core/fuzz/` libFuzzer targets for the parser and frame decoder, seeded from `tests/vectors/`
+- [x] P0 `TK_SANITIZE` CMake option (ASan + UBSan) and `core/fuzz/` libFuzzer targets for the parser and frame decoder, seeded from `tests/vectors/`
 - [ ] P0 `core/ata`: on-device ATA derivation; matches `getAssociatedTokenAddressSync` vectors
 - [ ] P0 `core/checksum` + `app/src/checksum.ts` with shared vectors
 - [ ] P0 `core/contacts`: fixed-size table (max 16), lookup by wallet or USDC ATA

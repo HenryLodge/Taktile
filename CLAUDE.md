@@ -39,7 +39,8 @@ git config core.hooksPath .githooks
 # core tests with sanitizers, and fuzzers (clang required for fuzzing)
 cmake -S core -B build/asan -DTK_SANITIZE=ON && cmake --build build/asan && ctest --test-dir build/asan
 cmake -S core -B build/fuzz -DTK_FUZZ=ON -DCMAKE_C_COMPILER=clang && cmake --build build/fuzz
-./build/fuzz/fuzz_parser -max_total_time=300 tests/corpus/parser
+./build/fuzz/fuzz_parser -max_total_time=300 -max_len=1300 tests/corpus/parser build/fuzz/seeds/parser
+./build/fuzz/fuzz_frame -max_total_time=300 -max_len=4200 tests/corpus/frame build/fuzz/seeds/frame
 
 # core + simulator (host)
 cmake -S core -B build/core && cmake --build build/core && ctest --test-dir build/core
