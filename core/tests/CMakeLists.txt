@@ -1,6 +1,8 @@
 set(TK_TESTS
     test_util
     test_crypto
+    test_crc32
+    test_proto
 )
 
 foreach(t ${TK_TESTS})

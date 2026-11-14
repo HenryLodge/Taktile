@@ -6,7 +6,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 
 - [x] P0 Repo skeleton per `CLAUDE.md` layout; `.gitignore` (`.env`, `build/`, `node_modules/`, `*.keypair.json`, `tools/out/`); human runs `git config core.hooksPath .githooks`
 - [x] P0 `core/`: CMake library + ctest harness; vendor trezor-crypto (host build)
-- [ ] P0 `core/proto`: frame encode/decode + CRC-32, with fuzz-style tests on random/truncated input
+- [x] P0 `core/proto`: frame encode/decode + CRC-32, with fuzz-style tests on random/truncated input
 - [ ] P0 `tools/gen-consts.mjs`: decode pinned base58 constants → `tk_solana_consts.h`
 - [ ] P0 `tools/gen-vectors.mjs`: SOL and USDC transfer vectors + every negative case in `SOLANA.md`
 - [ ] P0 `core/parser`: legacy message parser, Shapes A and B, all checks; passes all vectors
