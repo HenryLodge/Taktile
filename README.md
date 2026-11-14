@@ -57,4 +57,7 @@ cp server/.env.example server/.env   # add ELEVENLABS_API_KEY and voice ID
 
 ## Credits
 
-<Team. PGP word list attribution. trezor-crypto (MIT).>
+<Team.>
+
+- **PGP word list** (checksum phrase words) by Patrick Juola and Philip Zimmermann, 1995. See Juola & Zimmermann, "Whole-word phonetic distances and the PGPfone alphabet", ICSLP 96. Our copy comes from [magic-wormhole](https://github.com/magic-wormhole/magic-wormhole) (MIT), transcribed by Warren Guy.
+- **trezor-crypto** (MIT).

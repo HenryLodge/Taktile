@@ -12,7 +12,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [x] P0 `core/parser`: legacy message parser, Shapes A and B, all checks; passes all vectors
 - [x] P0 `TK_SANITIZE` CMake option (ASan + UBSan) and `core/fuzz/` libFuzzer targets for the parser and frame decoder, seeded from `tests/vectors/`
 - [x] P0 `core/ata`: on-device ATA derivation; matches `getAssociatedTokenAddressSync` vectors
-- [ ] P0 `core/checksum` + `app/src/checksum.ts` with shared vectors
+- [x] P0 `core/checksum` + `app/src/checksum.ts` with shared vectors
 - [ ] P0 `core/contacts`: fixed-size table (max 16), lookup by wallet or USDC ATA
 - [ ] P0 `core/flow`: the sign-request state machine using `tk_platform_t` (announce → PIN → confirm → sign)
 - [ ] P0 `sim/`: WebSocket server, keyboard buttons (arrows = UP/DOWN, Enter = OK, Backspace = BACK, `c` = CONFIRM, `r` = REJECT), audio printed as `[EARPIECE] …` only with `-DTK_SIM_INSECURE_AUDIO=1`

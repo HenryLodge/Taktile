@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Build Solana legacy messages with web3.js / spl-token and write the parser and ATA test vectors.
 //
-//   node tools/gen-vectors.mjs           write tests/vectors/{parser,ata,curve}.json and core/tests/gen/*.h
+//   node tools/gen-vectors.mjs           write tests/vectors/{parser,ata,curve,checksum}.json and core/tests/gen/*.h
 //   node tools/gen-vectors.mjs --check   write nothing; exit 1 if any committed file is stale
 //
 // Needs `cd tools && npm ci` once. Never touches the network: it only builds messages.
@@ -29,6 +29,7 @@ import {
 } from '@solana/web3.js';
 
 import { CONSTANTS } from './gen-consts.mjs';
+import { loadWords } from './gen-words.mjs';
 
 const MAX_MESSAGE_LEN = 1232; // docs/SOLANA.md
 
@@ -404,6 +405,39 @@ export function buildAtaVectors() {
     return vectors;
 }
 
+// Checksum phrases (docs/AUDIO.md), computed with node:crypto: a third implementation, separate
+// from core/src/tk_checksum.c and app/src/checksum.ts.
+export const TX_TAG = 'TK-TX-v1';
+export const ADDR_TAG = 'TK-ADDR-v1';
+
+function phrase(tag, bytes, n) {
+    const words = loadWords();
+    const h = createHash('sha256').update(Buffer.from(tag, 'ascii')).update(bytes).digest();
+    const indices = [...h.subarray(0, n)];
+    return { indices, words: indices.map((i) => words[i]) };
+}
+
+export function buildChecksumVectors(parser = buildParserVectors(), ata = buildAtaVectors()) {
+    const tx = [];
+    const addTx = (name, bytes) => tx.push({ name, message_hex: hex(bytes), ...phrase(TX_TAG, bytes, 3) });
+    for (const v of parser.filter((p) => p.expect.status === 'OK')) {
+        addTx(v.name, Buffer.from(v.message_hex, 'hex'));
+    }
+    addTx('empty', Buffer.alloc(0));
+    addTx('one_byte', Buffer.from([0x01]));
+    addTx('max_len', Buffer.from(Array.from({ length: MAX_MESSAGE_LEN }, (_, i) => (i * 7 + 3) & 0xff)));
+    // Same transfer, amount differs in one bit: the phrases must differ.
+    const base = parser.find((p) => p.name === 'sol_ok');
+    const flipped = Buffer.from(base.message_hex, 'hex');
+    flipped[flipped.length - 8] ^= 0x01; // lowest bit of the u64 amount
+    addTx('sol_ok_amount_bit_flipped', flipped);
+
+    const addr = ata
+        .filter((a) => !a.name.includes('other_mint'))
+        .map((a) => ({ name: a.name, wallet: a.wallet, ...phrase(ADDR_TAG, Buffer.from(a.wallet, 'hex'), 8) }));
+    return { tx, addr };
+}
+
 // sha256("taktile-curve:<i>") with web3.js's answer to "is this an ed25519 point?".
 export function buildCurveVectors() {
     const vectors = [];
@@ -542,18 +576,75 @@ function renderCurveHeader(vectors) {
     return out.join('\n');
 }
 
+function renderChecksumHeader({ tx, addr }) {
+    const words = (ws) => ws.map((w) => `"${w}"`).join(', ');
+    const out = [
+        BANNER,
+        '#ifndef TK_CHECKSUM_VECTORS_H',
+        '#define TK_CHECKSUM_VECTORS_H',
+        '',
+        '#include <stddef.h>',
+        '#include <stdint.h>',
+        '',
+        'typedef struct {',
+        '    const char *name;',
+        '    const uint8_t *msg; // msg_len bytes',
+        '    size_t msg_len;',
+        '    uint8_t indices[3];',
+        '    const char *words[3];',
+        '} tk_checksum_tx_vector_t;',
+        '',
+        'typedef struct {',
+        '    const char *name;',
+        '    uint8_t wallet[32];',
+        '    uint8_t indices[8];',
+        '    const char *words[8];',
+        '} tk_checksum_addr_vector_t;',
+        '',
+    ];
+    for (const v of tx) {
+        const bytes = Buffer.from(v.message_hex, 'hex');
+        out.push(`static const uint8_t tk_ck_msg_${cIdent(v.name)}[] = {`);
+        out.push(bytes.length ? cBytes(bytes) : '    0x00, // placeholder: msg_len is 0');
+        out.push('};');
+    }
+    out.push('', 'static const tk_checksum_tx_vector_t tk_checksum_tx_vectors[] = {');
+    for (const v of tx) {
+        out.push('    {', `        "${v.name}", tk_ck_msg_${cIdent(v.name)}, ${v.message_hex.length / 2},`);
+        out.push(`        {${v.indices.join(', ')}},`, `        {${words(v.words)}},`, '    },');
+    }
+    out.push('};', '', 'static const tk_checksum_addr_vector_t tk_checksum_addr_vectors[] = {');
+    for (const v of addr) {
+        out.push('    {', `        "${v.name}",`, '        {', cBytes(Buffer.from(v.wallet, 'hex'), '            '), '        },');
+        out.push(`        {${v.indices.join(', ')}},`, `        {${words(v.words)}},`, '    },');
+    }
+    out.push(
+        '};',
+        '',
+        '#define TK_CHECKSUM_TX_VECTOR_COUNT (sizeof(tk_checksum_tx_vectors) / sizeof(tk_checksum_tx_vectors[0]))',
+        '#define TK_CHECKSUM_ADDR_VECTOR_COUNT (sizeof(tk_checksum_addr_vectors) / sizeof(tk_checksum_addr_vectors[0]))',
+        '',
+        '#endif',
+        '',
+    );
+    return out.join('\n');
+}
+
 // Returns [[relativePath, contents], ...]. Deterministic, LF only.
 export function generate() {
     const parser = buildParserVectors();
     const ata = buildAtaVectors();
     const curve = buildCurveVectors();
+    const checksum = buildChecksumVectors(parser, ata);
     return [
         ['tests/vectors/parser.json', JSON.stringify(parser, null, 2) + '\n'],
         ['tests/vectors/ata.json', JSON.stringify(ata, null, 2) + '\n'],
         ['tests/vectors/curve.json', JSON.stringify(curve, null, 2) + '\n'],
+        ['tests/vectors/checksum.json', JSON.stringify(checksum, null, 2) + '\n'],
         ['core/tests/gen/tk_parser_vectors.h', renderParserHeader(parser)],
         ['core/tests/gen/tk_ata_vectors.h', renderAtaHeader(ata)],
         ['core/tests/gen/tk_curve_vectors.h', renderCurveHeader(curve)],
+        ['core/tests/gen/tk_checksum_vectors.h', renderChecksumHeader(checksum)],
     ];
 }
 

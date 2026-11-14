@@ -1,0 +1,338 @@
+{
+  "tx": [
+    {
+      "name": "sol_ok",
+      "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
+      "indices": [
+        197,
+        0,
+        176
+      ],
+      "words": [
+        "solo",
+        "aardvark",
+        "ruffled"
+      ]
+    },
+    {
+      "name": "sol_ok_u64_max",
+      "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c02000000ffffffffffffffff",
+      "indices": [
+        119,
+        30,
+        52
+      ],
+      "words": [
+        "involve",
+        "berserk",
+        "choking"
+      ]
+    },
+    {
+      "name": "sol_ok_zero_lamports",
+      "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c020000000000000000000000",
+      "indices": [
+        194,
+        224,
+        165
+      ],
+      "words": [
+        "snapshot",
+        "tapeworm",
+        "reindeer"
+      ]
+    },
+    {
+      "name": "usdc_ok",
+      "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0ca02526000000000006",
+      "indices": [
+        137,
+        68,
+        149
+      ],
+      "words": [
+        "nightbird",
+        "crumpled",
+        "preclude"
+      ]
+    },
+    {
+      "name": "usdc_ok_amount_one",
+      "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0c010000000000000006",
+      "indices": [
+        152,
+        79,
+        228
+      ],
+      "words": [
+        "printer",
+        "dropper",
+        "tonic"
+      ]
+    },
+    {
+      "name": "usdc_ok_zero",
+      "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0c000000000000000006",
+      "indices": [
+        55,
+        244,
+        236
+      ],
+      "words": [
+        "clamshell",
+        "upshot",
+        "tumor"
+      ]
+    },
+    {
+      "name": "empty",
+      "message_hex": "",
+      "indices": [
+        71,
+        36,
+        90
+      ],
+      "words": [
+        "dashboard",
+        "bluebird",
+        "enlist"
+      ]
+    },
+    {
+      "name": "one_byte",
+      "message_hex": "01",
+      "indices": [
+        80,
+        204,
+        177
+      ],
+      "words": [
+        "drumbeat",
+        "spigot",
+        "sailboat"
+      ]
+    },
+    {
+      "name": "max_len",
+      "message_hex": "030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5acb3bac1c8cfd6dde4ebf2f900070e151c232a31383f464d545b626970777e858c939aa1a8afb6bdc4cbd2d9e0e7eef5fc030a11181f262d343b424950575e656c737a81888f969da4abb2b9c0c7ced5dce3eaf1f8ff060d141b222930373e454c535a61686f767d848b9299a0a7aeb5bcc3cad1d8dfe6edf4fb020910171e252c333a41484f565d646b727980878e959ca3aab1b8bfc6cdd4dbe2e9f0f7fe050c131a21282f363d444b525960676e757c838a91989fa6adb4bbc2c9d0d7dee5ecf3fa01080f161d242b323940474e555c636a71787f868d949ba2a9b0b7bec5ccd3dae1e8eff6fd040b121920272e353c434a51585f666d747b828990979ea5ac",
+      "indices": [
+        202,
+        192,
+        169
+      ],
+      "words": [
+        "spellbind",
+        "slowdown",
+        "revenge"
+      ]
+    },
+    {
+      "name": "sol_ok_amount_bit_flipped",
+      "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000061e3160000000000",
+      "indices": [
+        150,
+        171,
+        38
+      ],
+      "words": [
+        "prefer",
+        "rhythm",
+        "bookshelf"
+      ]
+    }
+  ],
+  "addr": [
+    {
+      "name": "device",
+      "wallet": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+      "indices": [
+        0,
+        4,
+        38,
+        166,
+        182,
+        173,
+        231,
+        101
+      ],
+      "words": [
+        "aardvark",
+        "adrift",
+        "bookshelf",
+        "rematch",
+        "Scotland",
+        "ringbolt",
+        "transit",
+        "fracture"
+      ]
+    },
+    {
+      "name": "alice",
+      "wallet": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
+      "indices": [
+        35,
+        107,
+        172,
+        95,
+        72,
+        101,
+        32,
+        171
+      ],
+      "words": [
+        "blowtorch",
+        "glitter",
+        "ribcage",
+        "eyetooth",
+        "deadbolt",
+        "fracture",
+        "bison",
+        "rhythm"
+      ]
+    },
+    {
+      "name": "bob",
+      "wallet": "d63b4e6b0e6a2116ee20adc673f5fa229ad3daddd5fe37bf8d98784ba30a64b3",
+      "indices": [
+        140,
+        208,
+        17,
+        218,
+        108,
+        95,
+        114,
+        98
+      ],
+      "words": [
+        "offload",
+        "stagnate",
+        "Athens",
+        "surmount",
+        "glucose",
+        "eyetooth",
+        "highchair",
+        "flagpole"
+      ]
+    },
+    {
+      "name": "carol",
+      "wallet": "ca868adadd946083950fc71afecf144c632e00ba0cced50787064815548fb2bb",
+      "indices": [
+        151,
+        60,
+        204,
+        154,
+        200,
+        193,
+        38,
+        141
+      ],
+      "words": [
+        "preshrunk",
+        "cobra",
+        "spigot",
+        "pupil",
+        "spaniel",
+        "snapline",
+        "bookshelf",
+        "optic"
+      ]
+    },
+    {
+      "name": "dave",
+      "wallet": "80404f721ee1bfe79a60d3708e8c48f11b03659cf8b35a0639b93bad62b1e3f8",
+      "indices": [
+        82,
+        159,
+        171,
+        138,
+        227,
+        160,
+        88,
+        158
+      ],
+      "words": [
+        "Dupont",
+        "quota",
+        "rhythm",
+        "Oakland",
+        "tissue",
+        "ragtime",
+        "endorse",
+        "quiver"
+      ]
+    },
+    {
+      "name": "mallory",
+      "wallet": "bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d1428",
+      "indices": [
+        157,
+        120,
+        9,
+        133,
+        76,
+        202,
+        217,
+        226
+      ],
+      "words": [
+        "quadrant",
+        "island",
+        "Algol",
+        "music",
+        "drainage",
+        "spellbind",
+        "sugar",
+        "tiger"
+      ]
+    },
+    {
+      "name": "deep_2",
+      "wallet": "05123c521006db581c49b60b5a74d08a2740c2f90187a1984f66f604bf2dde48",
+      "indices": [
+        223,
+        71,
+        136,
+        8,
+        182,
+        203,
+        23,
+        254
+      ],
+      "words": [
+        "talon",
+        "dashboard",
+        "newborn",
+        "aimless",
+        "Scotland",
+        "spheroid",
+        "banjo",
+        "woodlark"
+      ]
+    },
+    {
+      "name": "deep_49",
+      "wallet": "f25ad2f3829d48dca0dc20de8b160dbd8b14b9cd3cd336157e64e8d66679faf4",
+      "indices": [
+        109,
+        24,
+        31,
+        225,
+        252,
+        248,
+        60,
+        116
+      ],
+      "words": [
+        "goggles",
+        "beaming",
+        "billiard",
+        "tempest",
+        "wayside",
+        "Vulcan",
+        "cobra",
+        "indoors"
+      ]
+    }
+  ]
+}
