@@ -3,8 +3,10 @@
     "name": "common_account_index_255",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200ff0c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "INDEX_OUT_OF_RANGE",
       "kind": null,
       "amount": null,
       "destination": null
@@ -14,8 +16,36 @@
     "name": "common_account_index_out_of_range",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200030c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "INDEX_OUT_OF_RANGE",
+      "kind": null,
+      "amount": null,
+      "destination": null
+    }
+  },
+  {
+    "name": "common_duplicate_device_key",
+    "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "DUPLICATE_KEY",
+      "kind": null,
+      "amount": null,
+      "destination": null
+    }
+  },
+  {
+    "name": "common_duplicate_program_key",
+    "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "DUPLICATE_KEY",
       "kind": null,
       "amount": null,
       "destination": null
@@ -25,8 +55,10 @@
     "name": "common_program_id_index_255",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101ff0200010c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "INDEX_OUT_OF_RANGE",
       "kind": null,
       "amount": null,
       "destination": null
@@ -36,8 +68,36 @@
     "name": "common_program_id_index_out_of_range",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101030200010c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "INDEX_OUT_OF_RANGE",
+      "kind": null,
+      "amount": null,
+      "destination": null
+    }
+  },
+  {
+    "name": "common_readonly_signed_nonzero",
+    "message_hex": "01010103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "BAD_HEADER",
+      "kind": null,
+      "amount": null,
+      "destination": null
+    }
+  },
+  {
+    "name": "common_readonly_unsigned_all",
+    "message_hex": "01000303427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "BAD_HEADER",
       "kind": null,
       "amount": null,
       "destination": null
@@ -47,8 +107,10 @@
     "name": "common_two_instructions",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded102020200010c020000000100000000000000020200010c020000000200000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "INSTRUCTION_COUNT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -58,8 +120,10 @@
     "name": "common_two_signers",
     "message_hex": "02000104427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bcd63b4e6b0e6a2116ee20adc673f5fa229ad3daddd5fe37bf8d98784ba30a64b327e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101030201020c020000000100000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "BAD_HEADER",
       "kind": null,
       "amount": null,
       "destination": null
@@ -69,8 +133,10 @@
     "name": "common_wrong_fee_payer",
     "message_hex": "01000103bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142827e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c020000000100000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "FEE_PAYER",
       "kind": null,
       "amount": null,
       "destination": null
@@ -80,8 +146,10 @@
     "name": "common_zero_signers",
     "message_hex": "00000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "BAD_HEADER",
       "kind": null,
       "amount": null,
       "destination": null
@@ -91,8 +159,10 @@
     "name": "msg_compact_u16_four_bytes",
     "message_hex": "01000183808000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "BAD_COMPACT_U16",
       "kind": null,
       "amount": null,
       "destination": null
@@ -102,8 +172,10 @@
     "name": "msg_compact_u16_over_ffff",
     "message_hex": "010001ffff04427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "BAD_COMPACT_U16",
       "kind": null,
       "amount": null,
       "destination": null
@@ -113,8 +185,10 @@
     "name": "msg_empty_after_header",
     "message_hex": "010001",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -124,8 +198,10 @@
     "name": "msg_noncanonical_compact_u16_data_len",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200018c000200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "BAD_COMPACT_U16",
       "kind": null,
       "amount": null,
       "destination": null
@@ -135,8 +211,10 @@
     "name": "msg_noncanonical_compact_u16_keys",
     "message_hex": "0100018300427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "BAD_COMPACT_U16",
       "kind": null,
       "amount": null,
       "destination": null
@@ -146,8 +224,10 @@
     "name": "msg_oversized",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102020001dc090200000060e31600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOO_LARGE",
       "kind": null,
       "amount": null,
       "destination": null
@@ -157,8 +237,10 @@
     "name": "msg_trailing_byte_sol",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e316000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRAILING_BYTES",
       "kind": null,
       "amount": null,
       "destination": null
@@ -168,8 +250,10 @@
     "name": "msg_trailing_byte_usdc",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0ca0252600000000000600",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRAILING_BYTES",
       "kind": null,
       "amount": null,
       "destination": null
@@ -179,8 +263,10 @@
     "name": "msg_truncated_sol_at_000",
     "message_hex": "",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -190,8 +276,10 @@
     "name": "msg_truncated_sol_at_001",
     "message_hex": "01",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -201,8 +289,10 @@
     "name": "msg_truncated_sol_at_002",
     "message_hex": "0100",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -212,8 +302,10 @@
     "name": "msg_truncated_sol_at_003",
     "message_hex": "010001",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -223,8 +315,10 @@
     "name": "msg_truncated_sol_at_004",
     "message_hex": "01000103",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -234,8 +328,10 @@
     "name": "msg_truncated_sol_at_036",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -245,8 +341,10 @@
     "name": "msg_truncated_sol_at_068",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -256,8 +354,10 @@
     "name": "msg_truncated_sol_at_100",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -267,8 +367,10 @@
     "name": "msg_truncated_sol_at_132",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -278,8 +380,10 @@
     "name": "msg_truncated_sol_at_133",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -289,8 +393,10 @@
     "name": "msg_truncated_sol_at_134",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -300,8 +406,10 @@
     "name": "msg_truncated_sol_at_135",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010202",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -311,8 +419,10 @@
     "name": "msg_truncated_sol_at_136",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -322,8 +432,10 @@
     "name": "msg_truncated_sol_at_137",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102020001",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -333,8 +445,10 @@
     "name": "msg_truncated_sol_at_138",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -344,8 +458,10 @@
     "name": "msg_truncated_sol_at_149",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e31600000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -355,8 +471,10 @@
     "name": "msg_truncated_usdc_at_000",
     "message_hex": "",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -366,8 +484,10 @@
     "name": "msg_truncated_usdc_at_001",
     "message_hex": "01",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -377,8 +497,10 @@
     "name": "msg_truncated_usdc_at_002",
     "message_hex": "0100",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -388,8 +510,10 @@
     "name": "msg_truncated_usdc_at_003",
     "message_hex": "010002",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -399,8 +523,10 @@
     "name": "msg_truncated_usdc_at_004",
     "message_hex": "01000205",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -410,8 +536,10 @@
     "name": "msg_truncated_usdc_at_036",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -421,8 +549,10 @@
     "name": "msg_truncated_usdc_at_068",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -432,8 +562,10 @@
     "name": "msg_truncated_usdc_at_100",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -443,8 +575,10 @@
     "name": "msg_truncated_usdc_at_132",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -454,8 +588,10 @@
     "name": "msg_truncated_usdc_at_164",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -465,8 +601,10 @@
     "name": "msg_truncated_usdc_at_196",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -476,8 +614,10 @@
     "name": "msg_truncated_usdc_at_197",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -487,8 +627,10 @@
     "name": "msg_truncated_usdc_at_198",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10104",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -498,8 +640,10 @@
     "name": "msg_truncated_usdc_at_199",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -509,8 +653,10 @@
     "name": "msg_truncated_usdc_at_200",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101040402",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -520,8 +666,10 @@
     "name": "msg_truncated_usdc_at_201",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10104040203",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -531,8 +679,10 @@
     "name": "msg_truncated_usdc_at_202",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -542,8 +692,10 @@
     "name": "msg_truncated_usdc_at_203",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101040402030100",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -553,8 +705,10 @@
     "name": "msg_truncated_usdc_at_204",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -564,8 +718,10 @@
     "name": "msg_truncated_usdc_at_213",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0ca025260000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -575,8 +731,10 @@
     "name": "msg_v0",
     "message_hex": "8001000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c02000000010000000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "VERSIONED",
       "kind": null,
       "amount": null,
       "destination": null
@@ -586,8 +744,10 @@
     "name": "sol_data_len_11",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010b0200000001000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -597,8 +757,10 @@
     "name": "sol_data_len_13",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010d02000000010000000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -608,8 +770,10 @@
     "name": "sol_from_is_recipient_index",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020201010c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_FROM_NOT_DEVICE",
       "kind": null,
       "amount": null,
       "destination": null
@@ -619,8 +783,10 @@
     "name": "sol_from_not_device",
     "message_hex": "01000104427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5ed63b4e6b0e6a2116ee20adc673f5fa229ad3daddd5fe37bf8d98784ba30a64b30000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101030202010c020000000100000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_FROM_NOT_DEVICE",
       "kind": null,
       "amount": null,
       "destination": null
@@ -630,8 +796,10 @@
     "name": "sol_instruction_assign",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0100000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -641,8 +809,10 @@
     "name": "sol_instruction_assign_real",
     "message_hex": "01000102427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101010100240100000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -652,8 +822,10 @@
     "name": "sol_instruction_create_account",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0000000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -663,8 +835,10 @@
     "name": "sol_instruction_transfer_with_seed",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0b00000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -674,8 +848,10 @@
     "name": "sol_ok",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c0200000060e3160000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "OK",
+      "reason": "OK",
       "kind": "sol",
       "amount": "1500000",
       "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e"
@@ -685,8 +861,10 @@
     "name": "sol_ok_u64_max",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c02000000ffffffffffffffff",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "OK",
+      "reason": "OK",
       "kind": "sol",
       "amount": "18446744073709551615",
       "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e"
@@ -696,8 +874,10 @@
     "name": "sol_ok_zero_lamports",
     "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200010c020000000000000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "OK",
+      "reason": "OK",
       "kind": "sol",
       "amount": "0",
       "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e"
@@ -707,8 +887,10 @@
     "name": "sol_one_account",
     "message_hex": "01000102427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010101000c020000000100000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -718,8 +900,10 @@
     "name": "sol_three_accounts",
     "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e0000000000000000000000000000000000000000000000000000000000000000ca868adadd946083950fc71afecf144c632e00ba0cced50787064815548fb2bb338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030001030c020000000100000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -729,8 +913,10 @@
     "name": "usdc_data_len_11",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000b0c01000000000000000600",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -740,8 +926,10 @@
     "name": "usdc_data_len_9",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101040402030100090c0100000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -751,8 +939,10 @@
     "name": "usdc_decimals_0",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0c010000000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_WRONG_DECIMALS",
       "kind": null,
       "amount": null,
       "destination": null
@@ -762,8 +952,10 @@
     "name": "usdc_decimals_9",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0c010000000000000009",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_WRONG_DECIMALS",
       "kind": null,
       "amount": null,
       "destination": null
@@ -773,8 +965,10 @@
     "name": "usdc_ok",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0ca02526000000000006",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "OK",
+      "reason": "OK",
       "kind": "usdc",
       "amount": "2500000",
       "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8"
@@ -784,10 +978,25 @@
     "name": "usdc_ok_amount_one",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0c010000000000000006",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "OK",
+      "reason": "OK",
       "kind": "usdc",
       "amount": "1",
+      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8"
+    }
+  },
+  {
+    "name": "usdc_ok_zero",
+    "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0c000000000000000006",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "OK",
+      "reason": "OK",
+      "kind": "usdc",
+      "amount": "0",
       "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8"
     }
   },
@@ -795,8 +1004,10 @@
     "name": "usdc_owner_not_device",
     "message_hex": "01000306427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142806ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010504020301040a0c010000000000000006",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_OWNER_NOT_DEVICE",
       "kind": null,
       "amount": null,
       "destination": null
@@ -806,8 +1017,10 @@
     "name": "usdc_plain_transfer",
     "message_hex": "01000104427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d51306ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101030302010009030100000000000000",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -817,8 +1030,10 @@
     "name": "usdc_plain_transfer_padded",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a03a02526000000000006",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -828,8 +1043,10 @@
     "name": "usdc_source_is_owner_wallet",
     "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba83b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010304000201000a0c010000000000000006",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_WRONG_SOURCE",
       "kind": null,
       "amount": null,
       "destination": null
@@ -839,8 +1056,10 @@
     "name": "usdc_source_not_device_ata",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc6e05dc8fd47acd98374b5f25d98f671abd21647c66a6ac1f4ac86e4d67741059848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba83b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404010302000a0c010000000000000006",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_WRONG_SOURCE",
       "kind": null,
       "amount": null,
       "destination": null
@@ -850,8 +1069,10 @@
     "name": "usdc_three_accounts",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10104030203010a0c010000000000000006",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
       "destination": null
@@ -861,8 +1082,10 @@
     "name": "usdc_token_2022_program",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d5133b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea706ddf6e1ee758fde18425dbce46ccddab61afc4d83b90d27febdf928d8a18bfc338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0c010000000000000006",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "UNSUPPORTED_PROGRAM",
       "kind": null,
       "amount": null,
       "destination": null
@@ -872,8 +1095,10 @@
     "name": "usdc_wrong_mint",
     "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513e17b18731ade3394e780418b650dcb970d0f8c89996a12aa00b0356b5b41df7e06ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010404020301000a0c010000000000000006",
     "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
     "expect": {
       "status": "PARSE_UNSUPPORTED",
+      "reason": "TOKEN_WRONG_MINT",
       "kind": null,
       "amount": null,
       "destination": null

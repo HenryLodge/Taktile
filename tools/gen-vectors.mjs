@@ -31,6 +31,15 @@ import {
 import { CONSTANTS } from './gen-consts.mjs';
 
 const MAX_MESSAGE_LEN = 1232; // docs/SOLANA.md
+
+// Must list tk_parse_result_t in core/include/tk_parser.h, in order, without the TK_PARSE_ prefix.
+export const PARSE_REASONS = [
+    'OK',
+    'TOO_LARGE', 'TRUNCATED', 'VERSIONED', 'BAD_COMPACT_U16', 'TRAILING_BYTES',
+    'BAD_HEADER', 'FEE_PAYER', 'DUPLICATE_KEY', 'INSTRUCTION_COUNT', 'INDEX_OUT_OF_RANGE', 'UNSUPPORTED_PROGRAM',
+    'SOL_LAYOUT', 'SOL_FROM_NOT_DEVICE',
+    'TOKEN_LAYOUT', 'TOKEN_WRONG_MINT', 'TOKEN_WRONG_DECIMALS', 'TOKEN_WRONG_SOURCE', 'TOKEN_OWNER_NOT_DEVICE',
+];
 const U64_MAX = (1n << 64n) - 1n;
 
 // ---- Pinned constants: always the same values as tk_solana_consts.h ----
@@ -245,17 +254,23 @@ export function buildParserVectors() {
             name,
             message_hex: hex(bytes),
             device_pubkey: hex(DEVICE.toBuffer()),
-            expect: { status: 'OK', kind, amount: amount.toString(), destination: hex(destination.toBuffer()) },
+            device_usdc_ata: hex(DEVICE_ATA.toBuffer()),
+            expect: { status: 'OK', reason: 'OK', kind, amount: amount.toString(), destination: hex(destination.toBuffer()) },
         };
         selfCheckOk(v, kind === 'sol' ? SYSTEM_PROGRAM : TOKEN_PROGRAM, destination, amount);
         vectors.push(v);
     };
-    const bad = (name, bytes) => {
+    // reason: the tk_parse_result_t the parser must return (without the TK_PARSE_ prefix).
+    const bad = (name, reason, bytes) => {
+        if (!PARSE_REASONS.includes(reason) || reason === 'OK') {
+            throw new Error(`${name}: unknown reason ${reason}`);
+        }
         vectors.push({
             name,
             message_hex: hex(bytes),
             device_pubkey: hex(DEVICE.toBuffer()),
-            expect: { status: 'PARSE_UNSUPPORTED', kind: null, amount: null, destination: null },
+            device_usdc_ata: hex(DEVICE_ATA.toBuffer()),
+            expect: { status: 'PARSE_UNSUPPORTED', reason, kind: null, amount: null, destination: null },
         });
     };
 
@@ -267,26 +282,27 @@ export function buildParserVectors() {
     const usdcOk = legacy([usdcTransfer(2_500_000n)]);
     ok('usdc_ok', usdcOk, 'usdc', 2_500_000n, ALICE_ATA);
     ok('usdc_ok_amount_one', legacy([usdcTransfer(1n)]), 'usdc', 1n, ALICE_ATA);
+    ok('usdc_ok_zero', legacy([usdcTransfer(0n)]), 'usdc', 0n, ALICE_ATA);
 
     const solLay = walkLegacy(solOk);
     const usdcLay = walkLegacy(usdcOk);
 
     // -- Message format --
-    bad('msg_v0', Buffer.from(MessageV0.compile({ payerKey: DEVICE, instructions: [solTransfer(1n)], recentBlockhash: BLOCKHASH }).serialize()));
+    bad('msg_v0', 'VERSIONED', Buffer.from(MessageV0.compile({ payerKey: DEVICE, instructions: [solTransfer(1n)], recentBlockhash: BLOCKHASH }).serialize()));
     for (const [label, base, lay] of [['sol', solOk, solLay], ['usdc', usdcOk, usdcLay]]) {
         const cuts = new Set(lay.fields.map((f) => f.start));
         cuts.add(base.length - 1);
         for (const cut of [...cuts].sort((a, b) => a - b)) {
-            bad(`msg_truncated_${label}_at_${String(cut).padStart(3, '0')}`, base.subarray(0, cut));
+            bad(`msg_truncated_${label}_at_${String(cut).padStart(3, '0')}`, 'TRUNCATED', base.subarray(0, cut));
         }
-        bad(`msg_trailing_byte_${label}`, Buffer.concat([base, Buffer.from([0x00])]));
+        bad(`msg_trailing_byte_${label}`, 'TRAILING_BYTES', Buffer.concat([base, Buffer.from([0x00])]));
     }
     const nKeys = fieldOf(solLay, 'num_account_keys');
-    bad('msg_noncanonical_compact_u16_keys', splice(solOk, nKeys.start, nKeys.end, [solOk[nKeys.start] | 0x80, 0x00]));
+    bad('msg_noncanonical_compact_u16_keys', 'BAD_COMPACT_U16', splice(solOk, nKeys.start, nKeys.end, [solOk[nKeys.start] | 0x80, 0x00]));
     const dLen = fieldOf(solLay, 'data_len');
-    bad('msg_noncanonical_compact_u16_data_len', splice(solOk, dLen.start, dLen.end, [solOk[dLen.start] | 0x80, 0x00]));
-    bad('msg_compact_u16_over_ffff', splice(solOk, nKeys.start, nKeys.end, [0xff, 0xff, 0x04]));
-    bad('msg_compact_u16_four_bytes', splice(solOk, nKeys.start, nKeys.end, [0x83, 0x80, 0x80, 0x00]));
+    bad('msg_noncanonical_compact_u16_data_len', 'BAD_COMPACT_U16', splice(solOk, dLen.start, dLen.end, [solOk[dLen.start] | 0x80, 0x00]));
+    bad('msg_compact_u16_over_ffff', 'BAD_COMPACT_U16', splice(solOk, nKeys.start, nKeys.end, [0xff, 0xff, 0x04]));
+    bad('msg_compact_u16_four_bytes', 'BAD_COMPACT_U16', splice(solOk, nKeys.start, nKeys.end, [0x83, 0x80, 0x80, 0x00]));
     // web3.js serializes into a fixed 1232-byte buffer, so grow the data field by hand.
     const dataF = fieldOf(solLay, 'data');
     const bigData = Buffer.concat([solOk.subarray(dataF.start, dataF.end), Buffer.alloc(MAX_MESSAGE_LEN)]);
@@ -294,49 +310,61 @@ export function buildParserVectors() {
     if (big.length <= MAX_MESSAGE_LEN) {
         throw new Error('oversize vector is not oversize');
     }
-    bad('msg_oversized', big);
-    bad('msg_empty_after_header', solOk.subarray(0, 3));
+    bad('msg_oversized', 'TOO_LARGE', big);
+    bad('msg_empty_after_header', 'TRUNCATED', solOk.subarray(0, 3));
 
     // -- Common checks --
-    bad('common_two_instructions', legacy([solTransfer(1n), solTransfer(2n)]));
-    bad('common_wrong_fee_payer', legacy([solTransfer(1n, MALLORY, ALICE)], MALLORY));
-    bad('common_two_signers', legacy([solTransfer(1n, BOB, ALICE)]));
-    bad('common_zero_signers', patch(solOk, 0, [0x00]));
+    bad('common_two_instructions', 'INSTRUCTION_COUNT', legacy([solTransfer(1n), solTransfer(2n)]));
+    bad('common_wrong_fee_payer', 'FEE_PAYER', legacy([solTransfer(1n, MALLORY, ALICE)], MALLORY));
+    bad('common_two_signers', 'BAD_HEADER', legacy([solTransfer(1n, BOB, ALICE)]));
+    bad('common_zero_signers', 'BAD_HEADER', patch(solOk, 0, [0x00]));
+    bad('common_readonly_signed_nonzero', 'BAD_HEADER', patch(solOk, 1, [0x01]));
+    bad('common_readonly_unsigned_all', 'BAD_HEADER', patch(solOk, 2, [solLay.keys.length]));
+    const key1 = fieldOf(solLay, 'account_keys[1]');
+    const systemIdx = solLay.keys.findIndex((k) => k.equals(SYSTEM_PROGRAM.toBuffer()));
+    const recipientIdx = solLay.keys.findIndex((k) => k.equals(ALICE.toBuffer()));
+    if (systemIdx < 0 || recipientIdx < 0 || recipientIdx === 0) {
+        throw new Error('unexpected SOL key layout');
+    }
+    const recipientKey = fieldOf(solLay, `account_keys[${recipientIdx}]`);
+    bad('common_duplicate_device_key', 'DUPLICATE_KEY', patch(solOk, recipientKey.start, DEVICE.toBuffer()));
+    const notSystem = systemIdx === 1 ? fieldOf(solLay, 'account_keys[2]') : key1;
+    bad('common_duplicate_program_key', 'DUPLICATE_KEY', patch(solOk, notSystem.start, SYSTEM_PROGRAM.toBuffer()));
     const prog = fieldOf(solLay, 'program_id_index');
-    bad('common_program_id_index_out_of_range', patch(solOk, prog.start, [solLay.keys.length]));
-    bad('common_program_id_index_255', patch(solOk, prog.start, [0xff]));
+    bad('common_program_id_index_out_of_range', 'INDEX_OUT_OF_RANGE', patch(solOk, prog.start, [solLay.keys.length]));
+    bad('common_program_id_index_255', 'INDEX_OUT_OF_RANGE', patch(solOk, prog.start, [0xff]));
     const acc1 = fieldOf(solLay, 'account_index[1]');
-    bad('common_account_index_out_of_range', patch(solOk, acc1.start, [solLay.keys.length]));
-    bad('common_account_index_255', patch(solOk, acc1.start, [0xff]));
+    bad('common_account_index_out_of_range', 'INDEX_OUT_OF_RANGE', patch(solOk, acc1.start, [solLay.keys.length]));
+    bad('common_account_index_255', 'INDEX_OUT_OF_RANGE', patch(solOk, acc1.start, [0xff]));
 
     // -- Shape A: SOL --
     const t = solTransfer(1n);
-    bad('sol_from_not_device', legacy([rebuild(t, { keys: [{ pubkey: BOB, isSigner: false, isWritable: true }, t.keys[1]] })]));
-    bad('sol_from_is_recipient_index', patch(solOk, fieldOf(solLay, 'account_index[0]').start, [solLay.accounts[1]]));
+    bad('sol_from_not_device', 'SOL_FROM_NOT_DEVICE', legacy([rebuild(t, { keys: [{ pubkey: BOB, isSigner: false, isWritable: true }, t.keys[1]] })]));
+    bad('sol_from_is_recipient_index', 'SOL_FROM_NOT_DEVICE', patch(solOk, fieldOf(solLay, 'account_index[0]').start, [solLay.accounts[1]]));
     const disc = fieldOf(solLay, 'data').start;
-    bad('sol_instruction_create_account', patch(solOk, disc, [0x00]));
-    bad('sol_instruction_assign', patch(solOk, disc, [0x01]));
-    bad('sol_instruction_transfer_with_seed', patch(solOk, disc, [0x0b]));
-    bad('sol_instruction_assign_real', legacy([SystemProgram.assign({ accountPubkey: DEVICE, programId: TOKEN_PROGRAM })]));
-    bad('sol_data_len_11', legacy([rebuild(t, { data: t.data.subarray(0, 11) })]));
-    bad('sol_data_len_13', legacy([rebuild(t, { data: Buffer.concat([t.data, Buffer.from([0])]) })]));
-    bad('sol_three_accounts', legacy([rebuild(t, { keys: [...t.keys, { pubkey: CAROL, isSigner: false, isWritable: false }] })]));
-    bad('sol_one_account', legacy([rebuild(t, { keys: [t.keys[0]] })]));
+    bad('sol_instruction_create_account', 'SOL_LAYOUT', patch(solOk, disc, [0x00]));
+    bad('sol_instruction_assign', 'SOL_LAYOUT', patch(solOk, disc, [0x01]));
+    bad('sol_instruction_transfer_with_seed', 'SOL_LAYOUT', patch(solOk, disc, [0x0b]));
+    bad('sol_instruction_assign_real', 'SOL_LAYOUT', legacy([SystemProgram.assign({ accountPubkey: DEVICE, programId: TOKEN_PROGRAM })]));
+    bad('sol_data_len_11', 'SOL_LAYOUT', legacy([rebuild(t, { data: t.data.subarray(0, 11) })]));
+    bad('sol_data_len_13', 'SOL_LAYOUT', legacy([rebuild(t, { data: Buffer.concat([t.data, Buffer.from([0])]) })]));
+    bad('sol_three_accounts', 'SOL_LAYOUT', legacy([rebuild(t, { keys: [...t.keys, { pubkey: CAROL, isSigner: false, isWritable: false }] })]));
+    bad('sol_one_account', 'SOL_LAYOUT', legacy([rebuild(t, { keys: [t.keys[0]] })]));
 
     // -- Shape B: USDC --
     const u = usdcTransfer(1n);
-    bad('usdc_plain_transfer', legacy([createTransferInstruction(DEVICE_ATA, ALICE_ATA, DEVICE, 1n, [], TOKEN_PROGRAM)]));
-    bad('usdc_plain_transfer_padded', patch(usdcOk, fieldOf(usdcLay, 'data').start, [0x03]));
-    bad('usdc_wrong_mint', legacy([usdcTransfer(1n, { mint: FAKE_MINT })]));
-    bad('usdc_decimals_9', legacy([usdcTransfer(1n, { decimals: 9 })]));
-    bad('usdc_decimals_0', legacy([usdcTransfer(1n, { decimals: 0 })]));
-    bad('usdc_source_not_device_ata', legacy([usdcTransfer(1n, { source: MALLORY_ATA })]));
-    bad('usdc_source_is_owner_wallet', legacy([usdcTransfer(1n, { source: DEVICE })]));
-    bad('usdc_owner_not_device', legacy([rebuild(u, { keys: [u.keys[0], u.keys[1], u.keys[2], { pubkey: MALLORY, isSigner: false, isWritable: false }] })]));
-    bad('usdc_token_2022_program', legacy([usdcTransfer(1n, { programId: TOKEN_2022_PROGRAM_ID })]));
-    bad('usdc_three_accounts', legacy([rebuild(u, { keys: [u.keys[0], u.keys[1], u.keys[2]] })]));
-    bad('usdc_data_len_9', legacy([rebuild(u, { data: u.data.subarray(0, 9) })]));
-    bad('usdc_data_len_11', legacy([rebuild(u, { data: Buffer.concat([u.data, Buffer.from([0])]) })]));
+    bad('usdc_plain_transfer', 'TOKEN_LAYOUT', legacy([createTransferInstruction(DEVICE_ATA, ALICE_ATA, DEVICE, 1n, [], TOKEN_PROGRAM)]));
+    bad('usdc_plain_transfer_padded', 'TOKEN_LAYOUT', patch(usdcOk, fieldOf(usdcLay, 'data').start, [0x03]));
+    bad('usdc_wrong_mint', 'TOKEN_WRONG_MINT', legacy([usdcTransfer(1n, { mint: FAKE_MINT })]));
+    bad('usdc_decimals_9', 'TOKEN_WRONG_DECIMALS', legacy([usdcTransfer(1n, { decimals: 9 })]));
+    bad('usdc_decimals_0', 'TOKEN_WRONG_DECIMALS', legacy([usdcTransfer(1n, { decimals: 0 })]));
+    bad('usdc_source_not_device_ata', 'TOKEN_WRONG_SOURCE', legacy([usdcTransfer(1n, { source: MALLORY_ATA })]));
+    bad('usdc_source_is_owner_wallet', 'TOKEN_WRONG_SOURCE', legacy([usdcTransfer(1n, { source: DEVICE })]));
+    bad('usdc_owner_not_device', 'TOKEN_OWNER_NOT_DEVICE', legacy([rebuild(u, { keys: [u.keys[0], u.keys[1], u.keys[2], { pubkey: MALLORY, isSigner: false, isWritable: false }] })]));
+    bad('usdc_token_2022_program', 'UNSUPPORTED_PROGRAM', legacy([usdcTransfer(1n, { programId: TOKEN_2022_PROGRAM_ID })]));
+    bad('usdc_three_accounts', 'TOKEN_LAYOUT', legacy([rebuild(u, { keys: [u.keys[0], u.keys[1], u.keys[2]] })]));
+    bad('usdc_data_len_9', 'TOKEN_LAYOUT', legacy([rebuild(u, { data: u.data.subarray(0, 9) })]));
+    bad('usdc_data_len_11', 'TOKEN_LAYOUT', legacy([rebuild(u, { data: Buffer.concat([u.data, Buffer.from([0])]) })]));
 
     vectors.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
     const names = new Set(vectors.map((v) => v.name));
@@ -386,6 +414,7 @@ function renderParserHeader(vectors) {
         '#include <stddef.h>',
         '#include <stdint.h>',
         '',
+        '#include "tk_parser.h"',
         '#include "tk_proto.h"',
         '',
         'typedef enum { TK_VEC_KIND_NONE = 0, TK_VEC_KIND_SOL, TK_VEC_KIND_USDC } tk_vec_kind_t;',
@@ -395,7 +424,9 @@ function renderParserHeader(vectors) {
         '    const uint8_t *msg; // msg_len bytes',
         '    size_t msg_len;',
         '    uint8_t device_pubkey[32];',
+        '    uint8_t device_usdc_ata[32];',
         '    tk_status_t status;',
+        '    tk_parse_result_t reason;',
         '    tk_vec_kind_t kind;',
         '    uint64_t amount;         // valid when status == TK_STATUS_OK',
         '    uint8_t destination[32]; // valid when status == TK_STATUS_OK',
@@ -419,7 +450,10 @@ function renderParserHeader(vectors) {
         out.push('        {');
         out.push(cBytes(Buffer.from(v.device_pubkey, 'hex'), '            '));
         out.push('        },');
-        out.push(`        TK_STATUS_${e.status}, ${kind}, ${e.amount ?? 0}u,`);
+        out.push('        {');
+        out.push(cBytes(Buffer.from(v.device_usdc_ata, 'hex'), '            '));
+        out.push('        },');
+        out.push(`        TK_STATUS_${e.status}, TK_PARSE_${e.reason}, ${kind}, UINT64_C(${e.amount ?? 0}),`);
         out.push('        {');
         out.push(cBytes(dest, '            '));
         out.push('        },');

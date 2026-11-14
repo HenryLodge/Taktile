@@ -13,7 +13,7 @@ npm --prefix tools run check             # both generators' --check
 | Script | Purpose |
 | --- | --- |
 | `gen-consts.mjs` | Decode pinned base58 constants → `core/include/tk_solana_consts.h` + `core/src/tk_solana_consts.c` (committed; rerun after changing a constant, `--check` to verify) |
-| `gen-vectors.mjs` | Build SOL/USDC messages with web3.js → `tests/vectors/{parser,ata}.json` + `core/tests/gen/tk_{parser,ata}_vectors.h` (committed; `--check` to verify). Offline: builds messages, never calls an RPC |
+| `gen-vectors.mjs` | Build SOL/USDC messages with web3.js (each parser vector names the exact `tk_parse_result_t` it must produce) → `tests/vectors/{parser,ata}.json` + `core/tests/gen/tk_{parser,ata}_vectors.h` (committed; `--check` to verify). Offline: builds messages, never calls an RPC |
 | `gen-audio.mjs` | Generate clips from `clips.json` with ElevenLabs → `tools/out/` (needs `server/.env`) |
 | `setup-devnet.mjs` | Airdrop SOL, fund devnet USDC, create contacts' ATAs |
 
