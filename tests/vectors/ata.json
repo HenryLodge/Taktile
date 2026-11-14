@@ -1,0 +1,44 @@
+[
+  {
+    "name": "device",
+    "wallet": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "mint": "3b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
+    "ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "bump": 253
+  },
+  {
+    "name": "alice",
+    "wallet": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
+    "mint": "3b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
+    "ata": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8",
+    "bump": 254
+  },
+  {
+    "name": "bob",
+    "wallet": "d63b4e6b0e6a2116ee20adc673f5fa229ad3daddd5fe37bf8d98784ba30a64b3",
+    "mint": "3b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
+    "ata": "14bcabb7b1c0e2b3d4dd74af229b72649bd4fa00554eb5f2bb7df960f0015c8c",
+    "bump": 254
+  },
+  {
+    "name": "carol",
+    "wallet": "ca868adadd946083950fc71afecf144c632e00ba0cced50787064815548fb2bb",
+    "mint": "3b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
+    "ata": "acf86b98540c9f3556de8d3c8a98107e3b21ba50dd6464b3746c058983d7f345",
+    "bump": 255
+  },
+  {
+    "name": "dave",
+    "wallet": "80404f721ee1bfe79a60d3708e8c48f11b03659cf8b35a0639b93bad62b1e3f8",
+    "mint": "3b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
+    "ata": "b82cc2a8ca54275fc77146110582f2b434329c8c44217bc8ae34a6ca173069ab",
+    "bump": 255
+  },
+  {
+    "name": "mallory",
+    "wallet": "bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d1428",
+    "mint": "3b442cb3912157f13a933d0134282d032b5ffecd01a2dbf1b7790608df002ea7",
+    "ata": "6e05dc8fd47acd98374b5f25d98f671abd21647c66a6ac1f4ac86e4d67741059",
+    "bump": 255
+  }
+]
