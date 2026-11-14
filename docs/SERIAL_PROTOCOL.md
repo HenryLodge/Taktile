@@ -4,6 +4,16 @@ Transport: USB CDC-ACM on the ESP32-S3 native USB port (Web Serial in the browse
 
 Request/response, one request in flight at a time. The device may also send unsolicited `EVENT` frames while handling a request.
 
+**Requests during an on-device flow** (e.g. a `SIGN_REQUEST` waiting for PIN or CONFIRM; `core/src/tk_flow.c`):
+
+- `HELLO` is answered normally.
+- `CANCEL` gets `OK` (with the CANCEL's seq) and ends the flow; the original request then gets `CANCELLED` (with its own seq). `CANCEL` with no flow running also gets `OK`.
+- Any other request, including an unknown type, gets an immediate `BUSY` status reply with its own seq.
+- `EVENT` frames carry the seq of the request whose flow sent them.
+- The device never checks seq order; seq only pairs replies with requests.
+
+**Not implemented yet:** `SETUP`, `CONTACT_ADD`, `CONTACT_REMOVE` get `ERROR{UNKNOWN_TYPE}` until their tasks land (TASKS.md, Day 5–6). Requests whose payload must be empty get `ERROR{BAD_PAYLOAD}` if it isn't.
+
 ## Frame
 
 ```
@@ -31,7 +41,7 @@ Host → device in `0x01–0x7F`, device → host in `0x81–0xFF` (request type
 
 | Type | Name | Payload (host → device) | Response payload |
 | --- | --- | --- | --- |
-| 0x01 | `HELLO` | — | `fw_version u16`, `proto_version u8`, `state u8` (0 = no wallet, 1 = locked, 2 = unlocked) |
+| 0x01 | `HELLO` | — | `fw_version u16` (LE), `proto_version u8`, `state u8` (0 = no wallet, 1 = locked, 2 = unlocked) |
 | 0x02 | `GET_PUBKEY` | — | `status u8`, `pubkey[32]` (only if a wallet exists; does not require unlock) |
 | 0x03 | `SETUP` | — | `status u8`. Device runs seed generation + recovery-word playback + PIN setup entirely on device. Refused with `WALLET_EXISTS` if a wallet already exists |
 | 0x10 | `SIGN_REQUEST` | `message[len]` (legacy message bytes, not the full transaction) | `status u8`, then `signature[64]` if `status == OK` |
