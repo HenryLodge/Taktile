@@ -45,6 +45,7 @@ add_subdirectory(third_party)
 set(TK_WARNINGS -Wall -Wextra -Werror -Wvla -Wshadow -Wstrict-prototypes)
 
 add_library(tk_core STATIC
+    src/tk_ata.c
     src/tk_crc32.c
     src/tk_parser.c
     src/tk_proto.c
