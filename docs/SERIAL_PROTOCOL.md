@@ -35,14 +35,16 @@ Host → device in `0x01–0x7F`, device → host in `0x81–0xFF` (request type
 | 0x02 | `GET_PUBKEY` | — | `status u8`, `pubkey[32]` (only if a wallet exists; does not require unlock) |
 | 0x03 | `SETUP` | — | `status u8`. Device runs seed generation + recovery-word playback + PIN setup entirely on device. Refused with `WALLET_EXISTS` if a wallet already exists |
 | 0x10 | `SIGN_REQUEST` | `message[len]` (legacy message bytes, not the full transaction) | `status u8`, then `signature[64]` if `status == OK` |
-| 0x30 | `CONTACT_ADD` | `name_len u8`, `name[name_len]` (UTF-8, ≤ 32 bytes), `wallet[32]` | `status u8` |
+| 0x30 | `CONTACT_ADD` | `name_len u8` (1–12), `name[name_len]` (ASCII, rules below), `wallet[32]` | `status u8`: `OK`, `CONTACTS_FULL`, `CONTACT_EXISTS`, `REJECTED_BY_USER`, `CANCELLED`, `NO_WALLET`. A name that breaks the rules gets `ERROR{BAD_PAYLOAD}` |
 | 0x31 | `CONTACT_LIST_COUNT` | — | `count u8` (names are NOT returned; contacts stay on device) |
-| 0x32 | `CONTACT_REMOVE` | `index u8` | `status u8` (requires PIN + CONFIRM) |
+| 0x32 | `CONTACT_REMOVE` | `index u8` (insertion order; removal keeps the order of the rest) | `status u8`: `NOT_FOUND` if `index ≥ count`; otherwise the device says "remove <spelled name>", then requires PIN + CONFIRM (`OK`, `REJECTED_BY_USER`, `CANCELLED`) |
 | 0x7E | `CANCEL` | — | `status u8` — aborts the current on-device flow |
 | — | `EVENT` (0xF0, device → host only) | — | `event u8` (below) |
 | — | `ERROR` (0xFF, device → host only) | — | `code u8` |
 
 The contact name sent in `CONTACT_ADD` is what the *user* typed or said in the app; the device spells it back letter by letter during enrollment so the user verifies it. After enrollment the device only ever speaks its stored copy.
+
+Contact name rules (`core/src/tk_contacts.c`): 1–12 characters from ASCII letters, digits, space, hyphen and apostrophe; no leading, trailing or double space (spaces are silent when spelled); unique ignoring case. A wallet already in the book is refused with `CONTACT_EXISTS`. The app validates names before sending. Lookup is by kind: a SOL destination is matched only against contacts' wallets, a USDC destination only against their USDC token accounts (derived on device).
 
 ## Status codes (`u8`)
 
@@ -57,6 +59,9 @@ The contact name sent in `CONTACT_ADD` is what the *user* typed or said in the a
 | 0x06 | `BUSY` | Another flow in progress |
 | 0x07 | `CANCELLED` | |
 | 0x08 | `WALLET_EXISTS` | SETUP refused; a wallet already exists (I10) |
+| 0x09 | `CONTACTS_FULL` | CONTACT_ADD refused; the book holds 16 contacts |
+| 0x0A | `CONTACT_EXISTS` | CONTACT_ADD refused; same name (ignoring case) or same wallet already stored |
+| 0x0B | `NOT_FOUND` | CONTACT_REMOVE index is not in the book |
 
 ## Events (`EVENT` payload)
 

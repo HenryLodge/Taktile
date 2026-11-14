@@ -1,0 +1,99 @@
+{
+  "book": [
+    {
+      "name": "Alice",
+      "wallet": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
+      "usdc_ata": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8"
+    },
+    {
+      "name": "Bob",
+      "wallet": "d63b4e6b0e6a2116ee20adc673f5fa229ad3daddd5fe37bf8d98784ba30a64b3",
+      "usdc_ata": "14bcabb7b1c0e2b3d4dd74af229b72649bd4fa00554eb5f2bb7df960f0015c8c"
+    },
+    {
+      "name": "Carol",
+      "wallet": "ca868adadd946083950fc71afecf144c632e00ba0cced50787064815548fb2bb",
+      "usdc_ata": "acf86b98540c9f3556de8d3c8a98107e3b21ba50dd6464b3746c058983d7f345"
+    }
+  ],
+  "lookups": [
+    {
+      "name": "alice_wallet_sol",
+      "kind": "sol",
+      "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
+      "expect_index": 0
+    },
+    {
+      "name": "alice_ata_usdc",
+      "kind": "usdc",
+      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8",
+      "expect_index": 0
+    },
+    {
+      "name": "bob_wallet_sol",
+      "kind": "sol",
+      "destination": "d63b4e6b0e6a2116ee20adc673f5fa229ad3daddd5fe37bf8d98784ba30a64b3",
+      "expect_index": 1
+    },
+    {
+      "name": "bob_ata_usdc",
+      "kind": "usdc",
+      "destination": "14bcabb7b1c0e2b3d4dd74af229b72649bd4fa00554eb5f2bb7df960f0015c8c",
+      "expect_index": 1
+    },
+    {
+      "name": "carol_wallet_sol",
+      "kind": "sol",
+      "destination": "ca868adadd946083950fc71afecf144c632e00ba0cced50787064815548fb2bb",
+      "expect_index": 2
+    },
+    {
+      "name": "carol_ata_usdc",
+      "kind": "usdc",
+      "destination": "acf86b98540c9f3556de8d3c8a98107e3b21ba50dd6464b3746c058983d7f345",
+      "expect_index": 2
+    },
+    {
+      "name": "alice_ata_as_sol",
+      "kind": "sol",
+      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8",
+      "expect_index": -1
+    },
+    {
+      "name": "alice_wallet_as_usdc",
+      "kind": "usdc",
+      "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
+      "expect_index": -1
+    },
+    {
+      "name": "mallory_wallet_sol",
+      "kind": "sol",
+      "destination": "bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d1428",
+      "expect_index": -1
+    },
+    {
+      "name": "mallory_ata_usdc",
+      "kind": "usdc",
+      "destination": "6e05dc8fd47acd98374b5f25d98f671abd21647c66a6ac1f4ac86e4d67741059",
+      "expect_index": -1
+    },
+    {
+      "name": "alice_ata_one_bit_flipped",
+      "kind": "usdc",
+      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba9",
+      "expect_index": -1
+    },
+    {
+      "name": "alice_other_mint_ata_usdc",
+      "kind": "usdc",
+      "destination": "c7ee8e58e4aa391e1158fbb4c6c5029d6f93c396a1237d7ea3fdcb207485c6b6",
+      "expect_index": -1
+    },
+    {
+      "name": "device_wallet_sol",
+      "kind": "sol",
+      "destination": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+      "expect_index": -1
+    }
+  ]
+}

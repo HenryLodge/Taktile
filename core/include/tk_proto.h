@@ -42,6 +42,9 @@ typedef enum {
     TK_STATUS_BUSY = 0x06,
     TK_STATUS_CANCELLED = 0x07,
     TK_STATUS_WALLET_EXISTS = 0x08,
+    TK_STATUS_CONTACTS_FULL = 0x09,  // CONTACT_ADD: the book already holds 16 contacts
+    TK_STATUS_CONTACT_EXISTS = 0x0A, // CONTACT_ADD: same name (ignoring case) or same wallet
+    TK_STATUS_NOT_FOUND = 0x0B,      // CONTACT_REMOVE: index >= count
 } tk_status_t;
 
 typedef enum {
