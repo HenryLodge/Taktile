@@ -134,3 +134,20 @@ test('every vector has a known reason, and every rejection reason is exercised',
         assert.ok(used.has(r), `no vector for ${r}`);
     }
 });
+
+test('checksum vectors: every OK transfer plus edge cases, words match indices', async () => {
+    const { buildChecksumVectors } = await import('./gen-vectors.mjs');
+    const { loadWords } = await import('./gen-words.mjs');
+    const words = loadWords();
+    const { tx, addr } = buildChecksumVectors();
+    const okCount = vectors.filter((v) => v.expect.status === 'OK').length;
+    assert.equal(tx.length, okCount + 4);
+    assert.ok(addr.length >= 6);
+    for (const v of [...tx, ...addr]) {
+        assert.deepEqual(v.words, v.indices.map((i) => words[i]), v.name);
+    }
+    assert.deepEqual(tx.find((v) => v.name === 'empty').indices, [0x47, 0x24, 0x5a]); // sha256sum
+    const a = tx.find((v) => v.name === 'sol_ok');
+    const b = tx.find((v) => v.name === 'sol_ok_amount_bit_flipped');
+    assert.notDeepEqual(a.indices, b.indices);
+});

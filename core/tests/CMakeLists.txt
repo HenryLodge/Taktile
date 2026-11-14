@@ -3,6 +3,7 @@ set(TK_TESTS
     test_crypto
     test_crc32
     test_ata
+    test_checksum
     test_parser
     test_proto
     test_solana_consts

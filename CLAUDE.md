@@ -56,9 +56,11 @@ cd server && npm install && npm run dev
 
 # tools
 node tools/gen-consts.mjs                   # regenerates core/{include,src}/tk_solana_consts.*; add --check to verify
+node tools/gen-words.mjs                    # regenerates the checksum word table (core/src/tk_words.c, app/src/words.ts); add --check to verify
 node --test tools/*.test.mjs                # tests for the tools/ scripts
 (cd tools && npm ci --ignore-scripts)       # once, for gen-vectors (pinned web3.js + spl-token)
 node tools/gen-vectors.mjs                  # writes tests/vectors/*.json + core/tests/gen/*.h; add --check to verify
+node --experimental-strip-types --test app/src/*.test.ts   # app checksum tests (no install needed)
 node tools/gen-audio.mjs                    # needs ELEVENLABS_API_KEY in server/.env
 ```
 
