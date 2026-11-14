@@ -82,7 +82,20 @@ Use trezor-crypto / ed25519-donna point decompression to test "is on curve" (dec
 
 ## Test vectors (`tests/vectors/*.json`)
 
-Generate with `tools/gen-vectors.mjs` using web3.js. Each vector: `{name, message_hex, device_pubkey, expect: {status, kind, amount, destination}}`. Required negative cases:
+Generate with `tools/gen-vectors.mjs` using web3.js. Outputs are committed: `tests/vectors/parser.json`, `tests/vectors/ata.json`, and the same data as C tables in `core/tests/gen/tk_parser_vectors.h` and `tk_ata_vectors.h` (so ctest never parses JSON).
+
+Each parser vector: `{name, message_hex, device_pubkey, expect: {status, kind, amount, destination}}`.
+
+- `message_hex`, `device_pubkey`, `destination`: lowercase hex.
+- `status`: `"OK"` or `"PARSE_UNSUPPORTED"`.
+- `kind`: `"sol"` or `"usdc"`.
+- `amount`: a decimal string (lamports, or USDC base units), because u64 doesn't fit in a JSON number.
+- `destination`: the address to resolve against contacts (Shape A `to`, Shape B destination token account).
+- `kind`, `amount` and `destination` are `null` unless `status` is `"OK"`.
+
+Test wallets come from `Keypair.fromSeed(sha256("taktile-vector:<label>"))`. They are public test labels, never funded, and only public keys are written out.
+
+Required negative cases:
 
 - v0 message; two instructions; wrong fee payer; `num_required_signatures == 2`
 - Token `Transfer` (3) instead of `TransferChecked`; wrong mint; decimals 9

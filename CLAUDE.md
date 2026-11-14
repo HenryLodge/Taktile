@@ -56,7 +56,8 @@ cd server && npm install && npm run dev
 # tools
 node tools/gen-consts.mjs                   # regenerates core/{include,src}/tk_solana_consts.*; add --check to verify
 node --test tools/*.test.mjs                # tests for the tools/ scripts
-node tools/gen-vectors.mjs                  # writes tests/vectors/*.json from web3.js-built txs
+(cd tools && npm ci --ignore-scripts)       # once, for gen-vectors (pinned web3.js + spl-token)
+node tools/gen-vectors.mjs                  # writes tests/vectors/*.json + core/tests/gen/*.h; add --check to verify
 node tools/gen-audio.mjs                    # needs ELEVENLABS_API_KEY in server/.env
 ```
 

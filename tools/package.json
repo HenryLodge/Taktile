@@ -1,0 +1,19 @@
+{
+  "name": "taktile-tools",
+  "private": true,
+  "type": "module",
+  "description": "Build-time scripts for Taktile (test vectors, constants, audio).",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test *.test.mjs",
+    "gen-vectors": "node gen-vectors.mjs",
+    "gen-consts": "node gen-consts.mjs",
+    "check": "node gen-consts.mjs --check && node gen-vectors.mjs --check"
+  },
+  "dependencies": {
+    "@solana/spl-token": "0.4.14",
+    "@solana/web3.js": "1.98.4"
+  }
+}
