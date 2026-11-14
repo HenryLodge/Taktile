@@ -65,18 +65,34 @@ When signing, a SOL destination is looked up only among contacts' wallets and a 
 ## Abstractions in core/ that firmware and sim implement
 
 ```c
-// core/include/tk_platform.h
+// core/include/tk_platform.h (every function also takes the platform's ctx pointer)
 typedef struct {
-    void (*play_clip)(uint16_t clip_id);           // blocking until clip finished
-    void (*haptic)(tk_haptic_t pattern);
-    tk_button_t (*wait_button)(uint32_t timeout_ms);
-    bool (*random_bytes)(uint8_t *out, size_t len); // hardware RNG on device (entropy source enabled at boot, I11)
-    bool (*storage_get)(const char *key, void *buf, size_t *len);
-    bool (*storage_set)(const char *key, const void *buf, size_t len);
+    void *ctx;
+    void (*play_clip)(void *ctx, uint16_t clip);               // blocks until the clip has finished
+    void (*haptic)(void *ctx, tk_haptic_t pattern);
+    tk_button_t (*wait_button)(void *ctx, uint32_t timeout_ms); // presses that start during a clip are discarded (I6)
+    uint32_t (*now_ms)(void *ctx);
+    bool (*random_bytes)(void *ctx, uint8_t *out, size_t len);  // hardware RNG (entropy source enabled at boot, I11)
+    bool (*storage_get)(void *ctx, const char *key, void *buf, size_t *len);
+    bool (*storage_set)(void *ctx, const char *key, const void *buf, size_t len);
+    size_t (*serial_read)(void *ctx, uint8_t *buf, size_t cap); // non-blocking
+    void (*serial_write)(void *ctx, const uint8_t *buf, size_t len);
 } tk_platform_t;
+
+// core/include/tk_wallet.h: the key store as flows see it (implemented by the SETUP / PIN-unlock tasks)
+typedef struct {
+    void *ctx;
+    bool (*has_wallet)(void *ctx);
+    bool (*get_pubkey)(void *ctx, uint8_t out[32]);
+    bool (*is_unlocked)(void *ctx);
+    tk_unlock_result_t (*unlock)(void *ctx, const uint8_t pin[6], uint8_t *attempts_left);
+    bool (*sign)(void *ctx, const uint8_t *msg, size_t len, uint8_t sig[64]); // refuses unless unlocked
+} tk_wallet_ops_t;
 ```
 
-`core/` never calls ESP-IDF or POSIX directly; it only uses this struct. This is what lets the simulator and the firmware share every line of security logic.
+`core/` never calls ESP-IDF or POSIX directly; it only uses these structs. This is what lets the simulator and the firmware share every line of security logic.
+
+**Single-threaded request handling** (`core/include/tk_device.h`). The platform's main loop calls `tk_device_poll()` over and over. Core owns the serial protocol: it reads bytes with `serial_read`, decodes frames, and answers. A `SIGN_REQUEST` runs its whole flow (announce → PIN → confirm → sign) inside that call. While the flow runs, core keeps reading the link between clips and between button waits of at most 100 ms, so it can answer `BUSY` and act on `CANCEL` (SERIAL_PROTOCOL.md) without threads or locks. A mid-flow reply waits at most one clip.
 
 ## Key third-party pieces
 

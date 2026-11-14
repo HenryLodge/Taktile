@@ -5,6 +5,9 @@ set(TK_TESTS
     test_ata
     test_checksum
     test_contacts
+    test_speech
+    test_pin_entry
+    test_flow
     test_parser
     test_proto
     test_solana_consts

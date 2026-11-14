@@ -22,11 +22,13 @@ The address phrase is longer because at enrollment the attacker chooses the addr
 | Group | Clips | Notes |
 | --- | --- | --- |
 | Checksum words | 256 | PGP even list |
-| Digits and number words | `zero`–`nine`, `point`, `ten`…`ninety`, `hundred`, `thousand` | Amounts are read as numbers, e.g. "twelve point five" |
+| Digits and number words | `zero`–`nineteen`, `twenty`…`ninety`, `hundred`, `thousand`, `million`, `billion`, `trillion`, `point` | Amounts are read as numbers, e.g. "twelve point five" (see below) |
 | Letters | `A`–`Z` | Spelling names and recovery words |
 | Name punctuation | `space`, `hyphen`, `apostrophe` | Spelling contact names |
 | Tokens | `USDC`, `SOL` | |
-| Prompts | `send`, `to`, `unknown recipient do not sign`, `press confirm to sign or reject to cancel`, `checksum`, `address phrase`, `enter pin`, `digit`, `wrong pin`, `attempts remaining`, `signed`, `cancelled`, `adding contact`, `remove`, `contact book full`, `already a contact`, `recovery word`, `repeat`, `speaker mode on`, `wallet wiped` | Keep each prompt a separate clip; compose sentences by sequence |
+| Prompts | `send`, `to`, `unknown recipient do not sign`, `cannot sign this transaction`, `press confirm to sign or reject to cancel`, `checksum`, `address phrase`, `enter pin`, `digit`, `wrong pin`, `attempts remaining`, `signed`, `cancelled`, `adding contact`, `remove`, `contact book full`, `already a contact`, `recovery word`, `repeat`, `speaker mode on`, `wallet wiped` | Keep each prompt a separate clip; compose sentences by sequence |
+
+**Amounts** (`core/src/tk_speech.c`) are read in tokens: SOL has 9 decimals, USDC 6. The whole part is read in English words without "and" ("one thousand two hundred five"); the digits after the point are read one by one with trailing zeros dropped (1,500,000 lamports → "zero point zero zero one five"). The largest u64 amount in USDC is about 18 trillion, hence the `trillion` clip.
 
 **Recovery words** are spelled using the first 4 letters of each BIP39 word ("word one: A, B, A, N"). BIP39 English words are unique by their first four letters, so this avoids storing 2048 extra clips.
 
@@ -35,7 +37,7 @@ The address phrase is longer because at enrollment the attacker chooses the addr
 ## Format and storage
 
 - Raw PCM, 16-bit signed LE, mono, 16 kHz, leading/trailing silence trimmed to 40 ms, peak-normalized to −3 dBFS.
-- Stored in a LittleFS partition as `/c/<id>.pcm`. `tools/` generates `firmware/main/tk_clips.h` (enum of clip IDs) and the LittleFS image from `tools/clips.json`.
+- Stored in a LittleFS partition as `/c/<id>.pcm`. Clip IDs are defined by core in `core/include/tk_clips.h`; `tools/clips.json` must match it, and `tools/` generates the LittleFS image from `clips.json`.
 - Budget: ~0.6 s average × 32 KB/s ≈ 20 KB per clip; ~350 clips ≈ 7 MB. The Metro ESP32-S3 has 16 MB flash; give LittleFS ~10 MB in `partitions.csv`. If space gets tight, switch to IMA ADPCM (4:1) before cutting clips.
 - I2S output at 16 kHz; duplicate mono to both channels for the UDA1334A.
 
