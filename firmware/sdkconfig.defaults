@@ -1,0 +1,30 @@
+# Taktile protocol firmware (the default build). The bring-up build layers sdkconfig.bringup on top.
+# The generated sdkconfig is not committed; this file is the source of truth.
+
+CONFIG_IDF_TARGET="esp32s3"
+
+# Flash and partitions (Metro ESP32-S3: 16 MB flash)
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# No radios (I8) and no PSRAM (keeps secrets out of external RAM): the minimal build
+# (set(COMPONENTS main)) leaves esp_wifi, bt, esp_phy and esp_psram out entirely, so they have no
+# options to set here. README.md shows how to check the component list.
+
+# USB carries only protocol frames: no console, no logs (app and bootloader).
+CONFIG_ESP_CONSOLE_NONE=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+CONFIG_LOG_DEFAULT_LEVEL_NONE=y
+CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
+
+# Runtime
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=16384
+CONFIG_FREERTOS_HZ=1000
+CONFIG_ESP_SYSTEM_PANIC_PRINT_REBOOT=y
+
+# One board: nothing may burn eFuses. Keep every option that would off (docs/HARDWARE.md).
+CONFIG_SECURE_FLASH_ENC_ENABLED=n
+CONFIG_SECURE_BOOT=n
+CONFIG_EFUSE_VIRTUAL=n
+# When nvs_flash joins the build (NVS task), add: CONFIG_NVS_ENCRYPTION=n

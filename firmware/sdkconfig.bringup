@@ -1,0 +1,12 @@
+# Bring-up build overlay (applied after sdkconfig.defaults; see README.md).
+# Console and logs on the USB port so `idf.py monitor` works. Never ship this build.
+
+CONFIG_TK_BRINGUP=y
+
+CONFIG_ESP_CONSOLE_NONE=n
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+CONFIG_LOG_DEFAULT_LEVEL_NONE=n
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_BOOTLOADER_LOG_LEVEL_NONE=n
+CONFIG_BOOTLOADER_LOG_LEVEL_INFO=y
