@@ -32,8 +32,11 @@ typedef enum {
 typedef struct {
     void *ctx; // passed back to every call
 
-    // Plays one clip (tk_clip_t) to the earpiece and returns when it has finished.
-    void (*play_clip)(void *ctx, uint16_t clip);
+    // Plays one clip (tk_clip_t) to the earpiece and returns when it has finished. secret marks
+    // private audio (I2): checksum words and PIN digit values. A secret clip must never be logged
+    // or printed (sim/ prints only "(private)" unless built with TK_SIM_INSECURE_AUDIO) and never
+    // leaves the earpiece.
+    void (*play_clip)(void *ctx, uint16_t clip, bool secret);
     void (*haptic)(void *ctx, tk_haptic_t pattern);
 
     // Waits up to timeout_ms for a press and returns it (TK_BTN_NONE on timeout; returning early

@@ -19,9 +19,9 @@ static bool random_digit(const tk_ui_t *ui, uint8_t *digit) {
 }
 
 static void announce_digit(const tk_ui_t *ui, size_t index, uint8_t value) {
-    ui->play(ui->ctx, TK_CLIP_DIGIT);
-    ui->play(ui->ctx, (uint16_t)(TK_CLIP_ZERO + index + 1)); // "digit three"
-    ui->play(ui->ctx, (uint16_t)(TK_CLIP_ZERO + value));
+    ui->play(ui->ctx, TK_CLIP_DIGIT, false);
+    ui->play(ui->ctx, (uint16_t)(TK_CLIP_ZERO + index + 1), false); // "digit three"
+    ui->play(ui->ctx, (uint16_t)(TK_CLIP_ZERO + value), true); // digit values are secret (I2)
 }
 
 static tk_pin_result_t entry(const tk_ui_t *ui, uint8_t pin[TK_PIN_LEN]) {
@@ -44,7 +44,7 @@ static tk_pin_result_t entry(const tk_ui_t *ui, uint8_t pin[TK_PIN_LEN]) {
         case TK_BTN_DOWN:
             ui->haptic(ui->ctx, TK_HAPTIC_TICK);
             value = (uint8_t)(b == TK_BTN_UP ? (value + 1) % 10 : (value + 9) % 10);
-            ui->play(ui->ctx, (uint16_t)(TK_CLIP_ZERO + value));
+            ui->play(ui->ctx, (uint16_t)(TK_CLIP_ZERO + value), true); // digit values are secret (I2)
             break;
         case TK_BTN_OK:
             ui->haptic(ui->ctx, TK_HAPTIC_TICK);

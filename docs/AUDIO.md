@@ -50,6 +50,9 @@ The address phrase is longer because at enrollment the attacker chooses the addr
 
 ## Output routing
 
+Core marks each clip it plays as public or secret (`play_clip(..., secret)`): the three checksum words and every PIN digit value are secret; prompts, amounts, tokens, spelled names and PIN positions ("digit three") are public.
+
+
 - **Earpiece (UDA1334A) is the default** and the only path for checksum words, PIN entry, and recovery words.
 - **Speaker (MAX98357A) "demo mode"** is enabled only on the device (hold OK + BACK for 3 s), announced with "speaker mode on", and resets at reboot. The host cannot enable it. In speaker mode the device refuses PIN entry and recovery playback.
 

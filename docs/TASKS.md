@@ -15,7 +15,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [x] P0 `core/checksum` + `app/src/checksum.ts` with shared vectors
 - [x] P0 `core/contacts`: fixed-size table (max 16), lookup by wallet or USDC ATA
 - [x] P0 `core/flow`: the sign-request state machine using `tk_platform_t` (announce → PIN → confirm → sign)
-- [ ] P0 `sim/`: WebSocket server, keyboard buttons (arrows = UP/DOWN, Enter = OK, Backspace = BACK, `c` = CONFIRM, `r` = REJECT), audio printed as `[EARPIECE] …` only with `-DTK_SIM_INSECURE_AUDIO=1`
+- [x] P0 `sim/`: WebSocket server, keyboard buttons (arrows = UP/DOWN, Enter = OK, Backspace = BACK, `c` = CONFIRM, `r` = REJECT), audio printed as `[EARPIECE] …` only with `-DTK_SIM_INSECURE_AUDIO=1`
 - [ ] P0 `tools/clips.json` + `tools/gen-audio.mjs`; generate all clips
 
 ## Day 3–4 (Nov 14–15): hardware bring-up

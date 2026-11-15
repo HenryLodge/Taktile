@@ -30,7 +30,8 @@ typedef enum { OP_CLIP, OP_HAPTIC, OP_BUTTON, OP_WRITE, OP_UNLOCK, OP_SIGN } op_
 
 typedef struct {
     op_kind_t kind;
-    int value; // clip id, haptic, button, unlock result, sign ok
+    int value;   // clip id, haptic, button, unlock result, sign ok
+    bool secret; // OP_CLIP: played as secret audio
 } op_t;
 
 #define FAKE_MAX_OPS 4096
@@ -41,6 +42,7 @@ static void fake_log(op_kind_t kind, int value) {
     if (fake_op_count < FAKE_MAX_OPS) {
         fake_ops[fake_op_count].kind = kind;
         fake_ops[fake_op_count].value = value;
+        fake_ops[fake_op_count].secret = false;
         fake_op_count++;
     }
 }
@@ -132,9 +134,12 @@ static void fake_send_now(uint8_t type, uint8_t seq, const uint8_t *payload, siz
     fake_rx_push(buf, n);
 }
 
-static void fp_play_clip(void *ctx, uint16_t clip) {
+static void fp_play_clip(void *ctx, uint16_t clip, bool secret) {
     (void)ctx;
     fake_log(OP_CLIP, clip);
+    if (fake_op_count > 0) {
+        fake_ops[fake_op_count - 1].secret = secret;
+    }
     fake.now += 400;
     // Frames that arrive during the clip are received; presses that start during it are dropped.
     while (fake.cursor < fake.step_count) {

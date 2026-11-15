@@ -44,7 +44,8 @@ cmake -S core -B build/fuzz -DTK_FUZZ=ON -DCMAKE_C_COMPILER=clang && cmake --bui
 
 # core + simulator (host)
 cmake -S core -B build/core && cmake --build build/core && ctest --test-dir build/core
-cmake -S sim -B build/sim && cmake --build build/sim && ./build/sim/taktile-sim
+cmake -S sim -B build/sim && cmake --build build/sim && ctest --test-dir build/sim
+./build/sim/taktile-sim --contact Alice=<base58>   # see sim/README.md for keys and options
 
 # firmware (ESP-IDF v5.x; run `. $IDF_PATH/export.sh` first)
 cd firmware && idf.py set-target esp32s3 && idf.py build

@@ -11,6 +11,7 @@ typedef struct {
     size_t rng_n, rng_pos;
     bool rng_fail;
     uint16_t clips[512];
+    bool secret[512];
     size_t clip_n;
     int ticks;
     uint32_t waited_timeout;
@@ -18,9 +19,10 @@ typedef struct {
 
 static script_t sc;
 
-static void s_play(void *ctx, uint16_t clip) {
+static void s_play(void *ctx, uint16_t clip, bool secret) {
     (void)ctx;
     if (sc.clip_n < 512) {
+        sc.secret[sc.clip_n] = secret;
         sc.clips[sc.clip_n++] = clip;
     }
 }
@@ -92,6 +94,12 @@ static void test_basic(void) {
     TK_CHECK(sc.clips[0] == TK_CLIP_DIGIT && sc.clips[1] == TK_CLIP_ZERO + 1 && sc.clips[2] == TK_CLIP_ZERO + 7);
     // Then UP x4 speaks 8 9 0 1 (wrap).
     TK_CHECK(sc.clips[3] == TK_CLIP_ZERO + 8 && sc.clips[5] == TK_CLIP_ZERO + 0 && sc.clips[6] == TK_CLIP_ZERO + 1);
+    // I2: every digit value is secret; only "digit" and the position number are public.
+    for (size_t i = 0; i < sc.clip_n; i++) {
+        const bool is_position = i > 0 && sc.clips[i - 1] == TK_CLIP_DIGIT;
+        const bool want_secret = sc.clips[i] != TK_CLIP_DIGIT && !is_position;
+        TK_CHECK(sc.secret[i] == want_secret);
+    }
 }
 
 static void test_back(void) {

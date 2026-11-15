@@ -191,6 +191,17 @@ static void test_happy_sol_locked(void) {
     collect_clips(clips, &n, 512);
     const size_t wn = sizeof(want) / sizeof(want[0]);
     TK_CHECK(n > wn + 2);
+    // I2: in the announcement only the three checksum words are secret.
+    size_t secret_in_announcement = 0;
+    for (size_t i = 0, k = 0; i < fake_op_count && k < wn - 1; i++) {
+        if (fake_ops[i].kind == OP_CLIP) {
+            const bool word = k >= wn - 4; // the last three before ENTER_PIN
+            TK_CHECK(fake_ops[i].secret == word);
+            secret_in_announcement += fake_ops[i].secret;
+            k++;
+        }
+    }
+    TK_CHECK(secret_in_announcement == 3);
     if (n > wn + 2) {
         TK_CHECK(memcmp(clips, want, sizeof(want)) == 0);
         TK_CHECK(clips[n - 2] == TK_CLIP_PRESS_CONFIRM && clips[n - 1] == TK_CLIP_SIGNED);
