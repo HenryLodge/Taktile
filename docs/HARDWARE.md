@@ -15,17 +15,17 @@
 
 | Signal | Connects to | GPIO | Notes |
 | --- | --- | --- | --- |
-| I2S BCLK | UDA1334A BCLK + MAX98357A BCLK | TBD | Shared bus, one I2S peripheral |
-| I2S LRCLK / WS | UDA1334A WSEL + MAX98357A LRC | TBD | |
-| I2S DOUT | UDA1334A DIN + MAX98357A DIN | TBD | |
-| SPK_EN | MAX98357A SD | TBD | Drive LOW = speaker shut down (earpiece-only). Only `speaker mode` drives it high |
-| I2C SDA / SCL | DRV2605L via STEMMA QT | Board's STEMMA QT pins | No soldering |
-| BTN_UP | button → GND | TBD | Internal pull-up, active low |
-| BTN_DOWN | button → GND | TBD | |
-| BTN_OK | button → GND | TBD | |
-| BTN_BACK | button → GND | TBD | |
-| BTN_CONFIRM | button → GND | TBD | |
-| BTN_REJECT | button → GND | TBD | |
+| I2S BCLK | UDA1334A BCLK + MAX98357A BCLK | GPIO5 (D5) | Shared bus, one I2S peripheral |
+| I2S LRCLK / WS | UDA1334A WSEL + MAX98357A LRC | GPIO6 (D6) | |
+| I2S DOUT | UDA1334A DIN + MAX98357A DIN | GPIO7 (D7) | |
+| SPK_EN | MAX98357A SD | GPIO4 (D4) | Drive LOW = speaker shut down (earpiece-only). Only `speaker mode` drives it high |
+| I2C SDA / SCL | DRV2605L via STEMMA QT | SDA=GPIO47, SCL=GPIO48 (STEMMA QT) | No soldering |
+| BTN_UP | button → GND | GPIO8 (D8) | Internal pull-up, active low |
+| BTN_DOWN | button → GND | GPIO9 (D9) | |
+| BTN_OK | button → GND | GPIO10 (D10) | |
+| BTN_BACK | button → GND | GPIO11 (D11) | |
+| BTN_CONFIRM | button → GND | GPIO12 (D12) | |
+| BTN_REJECT | button → GND | GPIO13 (D13) | |
 
 Power: USB-C from the laptop powers everything. UDA1334A and MAX98357A VIN from the board's 3.3 V or 5 V pin per their Adafruit guides; common ground.
 
