@@ -20,7 +20,7 @@
 // link; its wait() returns TK_BTN_REJECT_LONG when the host has sent CANCEL.
 typedef struct {
     void *ctx;
-    void (*play)(void *ctx, uint16_t clip);
+    void (*play)(void *ctx, uint16_t clip, bool secret); // see tk_platform_t.play_clip
     void (*haptic)(void *ctx, tk_haptic_t pattern);
     tk_button_t (*wait)(void *ctx, uint32_t timeout_ms); // TK_BTN_NONE only once timeout_ms passed
     bool (*random_bytes)(void *ctx, uint8_t *out, size_t len);

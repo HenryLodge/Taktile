@@ -60,6 +60,9 @@ typedef struct {
 void tk_device_init(tk_device_t *d, const tk_platform_t *platform, const tk_wallet_ops_t *wallet,
                     tk_contacts_t *contacts);
 
+// Forget any partly received frame and unread bytes (e.g. the sim's WebSocket client changed).
+void tk_device_link_reset(tk_device_t *d);
+
 // Read what the serial link has and handle every complete frame. Returns after the input is
 // drained (a SIGN_REQUEST's flow runs to completion first).
 void tk_device_poll(tk_device_t *d);

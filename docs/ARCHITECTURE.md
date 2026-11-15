@@ -68,7 +68,7 @@ When signing, a SOL destination is looked up only among contacts' wallets and a 
 // core/include/tk_platform.h (every function also takes the platform's ctx pointer)
 typedef struct {
     void *ctx;
-    void (*play_clip)(void *ctx, uint16_t clip);               // blocks until the clip has finished
+    void (*play_clip)(void *ctx, uint16_t clip, bool secret);  // blocks until finished; secret = private audio (I2)
     void (*haptic)(void *ctx, tk_haptic_t pattern);
     tk_button_t (*wait_button)(void *ctx, uint32_t timeout_ms); // presses that start during a clip are discarded (I6)
     uint32_t (*now_ms)(void *ctx);
@@ -92,7 +92,9 @@ typedef struct {
 
 `core/` never calls ESP-IDF or POSIX directly; it only uses these structs. This is what lets the simulator and the firmware share every line of security logic.
 
-**Single-threaded request handling** (`core/include/tk_device.h`). The platform's main loop calls `tk_device_poll()` over and over. Core owns the serial protocol: it reads bytes with `serial_read`, decodes frames, and answers. A `SIGN_REQUEST` runs its whole flow (announce → PIN → confirm → sign) inside that call. While the flow runs, core keeps reading the link between clips and between button waits of at most 100 ms, so it can answer `BUSY` and act on `CANCEL` (SERIAL_PROTOCOL.md) without threads or locks. A mid-flow reply waits at most one clip.
+**Single-threaded request handling** (`core/include/tk_device.h`). The platform's main loop calls `tk_device_poll()` over and over. Core owns the serial protocol: it reads bytes with `serial_read`, decodes frames, and answers. A `SIGN_REQUEST` runs its whole flow (announce → PIN → confirm → sign) inside that call. While the flow runs, core keeps reading the link between clips and between button waits of at most 100 ms, so it can answer `BUSY` and act on `CANCEL` (SERIAL_PROTOCOL.md) without threads or locks. A mid-flow reply waits at most one clip. `tk_device_link_reset()` drops a half-received frame when the link changes (the sim calls it when a WebSocket client connects or disconnects).
+
+`secret` marks private audio: core sets it for the three checksum words and every PIN digit value. Platforms must never log or print secret clips (the sim prints `(private)` unless built with `TK_SIM_INSECURE_AUDIO`).
 
 ## Key third-party pieces
 

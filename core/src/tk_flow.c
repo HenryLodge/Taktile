@@ -105,14 +105,18 @@ static void pump(tk_device_t *d) {
 
 // ---- Flow I/O (tk_ui_t over the platform, with serial servicing) ----
 
-static void ui_play(void *ctx, uint16_t clip) {
+static void ui_play(void *ctx, uint16_t clip, bool secret) {
     tk_device_t *d = ctx;
     pump(d);
     if (d->cancel) {
         return; // stop talking once the host has cancelled
     }
-    d->platform->play_clip(d->platform->ctx, clip);
+    d->platform->play_clip(d->platform->ctx, clip, secret);
     pump(d);
+}
+
+static void say(tk_device_t *d, uint16_t clip) {
+    ui_play(d, clip, false);
 }
 
 static void ui_haptic(void *ctx, tk_haptic_t pattern) {
@@ -163,34 +167,34 @@ static bool ensure_keys(tk_device_t *d) {
 
 static void play_all(tk_device_t *d, const uint16_t *clips, size_t n) {
     for (size_t i = 0; i < n && !d->cancel; i++) {
-        ui_play(d, clips[i]);
+        say(d, clips[i]);
     }
 }
 
 // "send <amount> <token> to <name> checksum <w1 w2 w3>"
 static void announce(tk_device_t *d, const tk_tx_t *tx, const tk_contact_t *c, const uint8_t ck[TK_TX_PHRASE_WORDS]) {
     uint16_t clips[TK_SPEECH_AMOUNT_MAX];
-    ui_play(d, TK_CLIP_SEND);
+    say(d, TK_CLIP_SEND);
     play_all(d, clips, tk_speech_amount(tx->kind, tx->amount, clips, TK_SPEECH_AMOUNT_MAX));
-    ui_play(d, tx->kind == TK_TX_SOL ? TK_CLIP_SOL : TK_CLIP_USDC);
-    ui_play(d, TK_CLIP_TO);
+    say(d, tx->kind == TK_TX_SOL ? TK_CLIP_SOL : TK_CLIP_USDC);
+    say(d, TK_CLIP_TO);
     play_all(d, clips, tk_speech_spell(c->name, c->name_len, clips, TK_SPEECH_AMOUNT_MAX));
-    ui_play(d, TK_CLIP_CHECKSUM);
+    say(d, TK_CLIP_CHECKSUM);
     for (size_t i = 0; i < TK_TX_PHRASE_WORDS; i++) {
-        ui_play(d, (uint16_t)(TK_CLIP_WORD_0 + ck[i]));
+        ui_play(d, (uint16_t)(TK_CLIP_WORD_0 + ck[i]), true); // secret (I2)
     }
     memzero(clips, sizeof(clips));
 }
 
 static tk_status_t finish_cancelled(tk_device_t *d) {
     d->platform->haptic(d->platform->ctx, TK_HAPTIC_REJECT);
-    d->platform->play_clip(d->platform->ctx, TK_CLIP_CANCELLED);
+    d->platform->play_clip(d->platform->ctx, TK_CLIP_CANCELLED, false);
     return TK_STATUS_CANCELLED;
 }
 
 static tk_status_t finish_rejected(tk_device_t *d) {
     d->platform->haptic(d->platform->ctx, TK_HAPTIC_REJECT);
-    ui_play(d, TK_CLIP_CANCELLED);
+    say(d, TK_CLIP_CANCELLED);
     return TK_STATUS_REJECTED_BY_USER;
 }
 
@@ -216,7 +220,7 @@ static tk_status_t unlock(tk_device_t *d, flow_secrets_t *s) {
     const tk_wallet_ops_t *w = d->wallet;
     while (!w->is_unlocked(w->ctx)) {
         send_event(d, TK_EVENT_AWAITING_PIN);
-        ui_play(d, TK_CLIP_ENTER_PIN);
+        say(d, TK_CLIP_ENTER_PIN);
         const tk_pin_result_t pr = tk_pin_entry(&d->ui, s->pin);
         if (pr == TK_PIN_CANCELLED || d->cancel) {
             return finish_cancelled(d);
@@ -233,13 +237,13 @@ static tk_status_t unlock(tk_device_t *d, flow_secrets_t *s) {
         if (ur == TK_UNLOCK_LOCKED_OUT) {
             lockout_wipe(d);
             d->platform->haptic(d->platform->ctx, TK_HAPTIC_WARNING);
-            d->platform->play_clip(d->platform->ctx, TK_CLIP_WALLET_WIPED);
+            d->platform->play_clip(d->platform->ctx, TK_CLIP_WALLET_WIPED, false);
             return TK_STATUS_LOCKED_OUT;
         }
         d->platform->haptic(d->platform->ctx, TK_HAPTIC_WARNING);
-        ui_play(d, TK_CLIP_WRONG_PIN);
-        ui_play(d, (uint16_t)(TK_CLIP_ZERO + (left < 20 ? left : 19)));
-        ui_play(d, TK_CLIP_ATTEMPTS_REMAINING);
+        say(d, TK_CLIP_WRONG_PIN);
+        say(d, (uint16_t)(TK_CLIP_ZERO + (left < 20 ? left : 19)));
+        say(d, TK_CLIP_ATTEMPTS_REMAINING);
     }
     return TK_STATUS_OK;
 }
@@ -254,14 +258,14 @@ static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow
     tk_tx_t tx;
     if (tk_parse_message(msg, len, d->pubkey, d->usdc_ata, &tx) != TK_PARSE_OK) {
         p->haptic(p->ctx, TK_HAPTIC_WARNING);
-        ui_play(d, TK_CLIP_CANNOT_SIGN);
+        say(d, TK_CLIP_CANNOT_SIGN);
         return TK_STATUS_PARSE_UNSUPPORTED;
     }
     const int idx = tk_contacts_find(d->contacts, tx.kind, tx.destination);
     const tk_contact_t *contact = idx >= 0 ? tk_contacts_get(d->contacts, (uint8_t)idx) : NULL;
     if (contact == NULL) {
         p->haptic(p->ctx, TK_HAPTIC_WARNING);
-        ui_play(d, TK_CLIP_UNKNOWN_RECIPIENT);
+        say(d, TK_CLIP_UNKNOWN_RECIPIENT);
         return TK_STATUS_UNKNOWN_RECIPIENT;
     }
 
@@ -279,7 +283,7 @@ static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow
 
     // Confirm window (I6): presses during the announcement were discarded by the platform.
     send_event(d, TK_EVENT_AWAITING_CONFIRM);
-    ui_play(d, TK_CLIP_PRESS_CONFIRM);
+    say(d, TK_CLIP_PRESS_CONFIRM);
     uint32_t start = p->now_ms(p->ctx);
     for (;;) {
         if (d->cancel) {
@@ -301,7 +305,7 @@ static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow
         }
         if (b == TK_BTN_OK_LONG) { // repeat, then a fresh confirm window
             announce(d, &tx, contact, s->ck);
-            ui_play(d, TK_CLIP_PRESS_CONFIRM);
+            say(d, TK_CLIP_PRESS_CONFIRM);
             start = p->now_ms(p->ctx);
         }
     }
@@ -312,7 +316,7 @@ static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow
         return finish_cancelled(d);
     }
     p->haptic(p->ctx, TK_HAPTIC_SUCCESS);
-    ui_play(d, TK_CLIP_SIGNED);
+    say(d, TK_CLIP_SIGNED);
     return TK_STATUS_OK;
 }
 
@@ -400,6 +404,12 @@ void tk_device_init(tk_device_t *d, const tk_platform_t *platform, const tk_wall
     d->ui.haptic = ui_haptic;
     d->ui.wait = ui_wait;
     d->ui.random_bytes = ui_random;
+}
+
+void tk_device_link_reset(tk_device_t *d) {
+    tk_frame_decoder_reset(&d->decoder);
+    d->rx_len = 0;
+    d->rx_pos = 0;
 }
 
 void tk_device_poll(tk_device_t *d) {
