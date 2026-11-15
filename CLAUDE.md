@@ -62,7 +62,8 @@ node --test tools/*.test.mjs                # tests for the tools/ scripts
 (cd tools && npm ci --ignore-scripts)       # once, for gen-vectors (pinned web3.js + spl-token)
 node tools/gen-vectors.mjs                  # writes tests/vectors/*.json + core/tests/gen/*.h; add --check to verify
 node --experimental-strip-types --test app/src/*.test.ts   # app checksum tests (no install needed)
-node tools/gen-audio.mjs                    # needs ELEVENLABS_API_KEY in server/.env
+node tools/gen-clips.mjs                    # regenerates tools/clips.json + sim/src/clip_text.c from tk_clips.h; add --check to verify
+node tools/gen-audio.mjs --dry-run          # then without --dry-run: ElevenLabs clips -> tools/out/ (needs server/.env; cached)
 ```
 
 ## Hard rules (security invariants — summary; full list in docs/SECURITY_MODEL.md)

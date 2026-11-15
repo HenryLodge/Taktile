@@ -10,7 +10,9 @@
     "test": "node --test *.test.mjs",
     "gen-vectors": "node gen-vectors.mjs",
     "gen-consts": "node gen-consts.mjs",
-    "check": "node gen-consts.mjs --check && node gen-words.mjs --check && node gen-vectors.mjs --check",
+    "check": "node gen-consts.mjs --check && node gen-words.mjs --check && node gen-clips.mjs --check && node gen-vectors.mjs --check",
+    "gen-clips": "node gen-clips.mjs",
+    "gen-audio": "node gen-audio.mjs",
     "gen-words": "node gen-words.mjs"
   },
   "dependencies": {

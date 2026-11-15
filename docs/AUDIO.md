@@ -43,10 +43,13 @@ The address phrase is longer because at enrollment the attacker chooses the addr
 
 ## Generation (`tools/gen-audio.mjs`)
 
-- Reads `tools/clips.json` (`[{id, text}]`), calls ElevenLabs text-to-speech for each, requesting raw PCM at 16 kHz, trims and normalizes, writes `tools/out/<id>.pcm`.
-- Uses one fixed voice ID and fixed settings so clips sound consistent; voice ID lives in `server/.env`.
-- Caches by hash of `(text, voice, settings)` so reruns don't spend credits.
-- Verify the current ElevenLabs API parameters (endpoint, output format names) against their docs before writing this script.
+- **Clip list:** `tools/gen-clips.mjs` builds `tools/clips.json` (`[{id, name, text, say?}]`, one entry per ID in `core/include/tk_clips.h`, 342 clips) and `sim/src/clip_text.c`, so the simulator prints exactly what the device says. `text` is what the clip says; `say`, when present, is what is sent to text-to-speech instead (a pronunciation fix found by listening; e.g. a lone "S" comes back silent, so it is spoken as "ess"). `--check` verifies both files.
+- **Generation:** `tools/gen-audio.mjs` calls ElevenLabs `POST /v1/text-to-speech/{voice_id}?output_format=wav_16000` (API checked 2026-11-14). It asks for WAV rather than raw PCM so the sample format is read from the header (must be PCM 16-bit mono 16 kHz) instead of assumed; the header is then dropped. Voice ID and key come from `server/.env`; the key is never printed.
+- **Fixed settings** so every clip sounds like one speaker: `eleven_multilingual_v2`, `stability 0.75`, `similarity_boost 0.75`, `style 0`, `use_speaker_boost true`, `speed 0.95`, `seed 1`, `apply_text_normalization "off"`.
+- **Processing:** trim leading/trailing audio below −45 dBFS down to 40 ms, peak-normalize to −3 dBFS.
+- **Cache:** raw responses in `tools/out/cache/`, keyed by SHA-256 of (spoken text, voice, every setting), so reruns only pay for changed clips. `--dry-run` shows what would be generated; `--only <ids|names|text>` regenerates a few; `--force` ignores the cache.
+- **Outputs** (gitignored): `tools/out/clips/<id>.pcm` (what the device stores as `/c/<id>.pcm`), `tools/out/preview/<id>-<text>.wav` (listen to these), `tools/out/manifest.json`. First full run: 342 clips, 2,303 characters, 333 ms–2.4 s each, 227 s and 6.94 MB in total (budget 10 MB).
+- **Listen to every preview before packing**: what the device says is trusted output. Fix a bad clip with a `say` override in `gen-clips.mjs`, rerun `gen-clips`, then `gen-audio` (only that clip is regenerated).
 
 ## Output routing
 
