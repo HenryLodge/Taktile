@@ -1,0 +1,10 @@
+menu "Taktile"
+
+config TK_BRINGUP
+    bool "Bring-up build (hardware test menu instead of the protocol firmware)"
+    default n
+    help
+        Builds the hardware bring-up menu (console on USB) instead of the serial-protocol
+        firmware. Set by sdkconfig.bringup; never ship it.
+
+endmenu

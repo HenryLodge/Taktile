@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS main.c link.c platform.c bringup.c
+    INCLUDE_DIRS .
+    # Keep this list narrow: anything not reachable from here is not in the build (no radios, I8).
+    # vfs: the bring-up console routes stdout through the USB-Serial-JTAG driver.
+    REQUIRES tk_core esp_driver_usb_serial_jtag esp_driver_gpio esp_timer bootloader_support vfs
+)
+
+target_compile_options(${COMPONENT_LIB} PRIVATE
+    -Wall -Wextra -Werror -Wvla -Wshadow -Wstrict-prototypes)

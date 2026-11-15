@@ -1,0 +1,5 @@
+# Name,  Type, SubType, Offset,   Size
+# No phy_init (no radios) and no OTA. clips: raw clip pack (docs/AUDIO.md budget ~10 MB), custom subtype.
+nvs,     data, nvs,     0x9000,   0x10000
+factory, app,  factory, 0x20000,  0x300000
+clips,   data, 0x40,    0x320000, 0xA00000
