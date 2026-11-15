@@ -20,7 +20,7 @@ add_subdirectory(../core core)
 
 set(SIM_WARNINGS -Wall -Wextra -Werror -Wvla -Wshadow -Wstrict-prototypes)
 
-add_library(sim_lib STATIC src/ws.c src/util.c src/platform.c src/wallet.c)
+add_library(sim_lib STATIC src/ws.c src/util.c src/clip_text.c src/platform.c src/wallet.c)
 target_include_directories(sim_lib PUBLIC src)
 target_link_libraries(sim_lib PUBLIC tk_core)
 target_compile_options(sim_lib PRIVATE ${SIM_WARNINGS})
