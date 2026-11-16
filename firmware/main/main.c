@@ -1,6 +1,5 @@
 // Taktile firmware entry point. See README.md and docs/ARCHITECTURE.md.
 
-#include "bootloader_random.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "sdkconfig.h"
@@ -8,6 +7,7 @@
 #include "bringup.h"
 #include "link.h"
 #include "platform.h"
+#include "rng.h"
 #include "tk_contacts.h"
 #include "tk_device.h"
 
@@ -48,8 +48,9 @@ static void run_device(void) {
 
 void app_main(void) {
     // I11: the hardware RNG is only truly random with radios off once the internal entropy source
-    // is on. First thing, before anything can use randomness; never disabled.
-    bootloader_random_enable();
+    // is on. First thing, before anything can use randomness; never disabled. tk_rng_start's first
+    // statement is bootloader_random_enable(); randomness is refused until it has run (rng.c).
+    tk_rng_start();
 
 #if CONFIG_TK_BRINGUP
     tk_bringup_main();

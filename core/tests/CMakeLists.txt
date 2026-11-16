@@ -10,6 +10,7 @@ set(TK_TESTS
     test_flow
     test_parser
     test_proto
+    test_rng_health
     test_solana_consts
 )
 

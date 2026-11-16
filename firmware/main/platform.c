@@ -1,8 +1,8 @@
 // tk_platform_t on the Metro ESP32-S3.
 //
-// Real: serial link (USB-Serial-JTAG) and the clock. Everything else is a FAIL-CLOSED STUB that a
-// later docs/TASKS.md Day 3-4 task replaces:
-//   random_bytes  -> false (hardware RNG task: entropy flag + sanity check, I11)
+// Real: serial link (USB-Serial-JTAG), the clock and the hardware RNG (rng.c: entropy source on,
+// fail-closed health checks, I11). Everything else is a FAIL-CLOSED STUB that a later
+// docs/TASKS.md Day 3-4 task replaces:
 //   storage_*     -> false (NVS task)
 //   play_clip     -> silent (I2S task), haptic -> nothing (DRV2605L task)
 //   wait_button   -> no press (buttons task)
@@ -15,6 +15,7 @@
 #include "freertos/task.h"
 
 #include "link.h"
+#include "rng.h"
 
 static void p_play_clip(void *ctx, uint16_t clip, bool secret) {
     (void)ctx;
@@ -40,9 +41,7 @@ static uint32_t p_now_ms(void *ctx) {
 
 static bool p_random_bytes(void *ctx, uint8_t *out, size_t len) {
     (void)ctx;
-    (void)out;
-    (void)len;
-    return false; // STUB: fail closed until the hardware RNG task
+    return tk_rng_fill(out, len);
 }
 
 static bool p_storage_get(void *ctx, const char *key, void *buf, size_t *len) {
