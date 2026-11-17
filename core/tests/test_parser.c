@@ -213,7 +213,7 @@ static void test_random(void) {
         return;
     }
     static uint8_t buf[TK_MAX_MESSAGE_LEN + 16];
-    for (int iter = 0; iter < 20000; iter++) {
+    for (int iter = 0; iter < TK_TEST_ITERS(20000); iter++) {
         size_t len;
         if (iter % 2 == 0) {
             // Plausible: start from a valid message, then corrupt a few bytes and maybe resize.

@@ -323,7 +323,7 @@ static void test_save_load(void) {
 
     // Random blobs, half with a valid CRC.
     uint32_t x = 0xC0FFEE22u;
-    for (int iter = 0; iter < 5000; iter++) {
+    for (int iter = 0; iter < TK_TEST_ITERS(5000); iter++) {
         for (size_t b = 0; b < sizeof(m); b++) {
             x ^= x << 13;
             x ^= x >> 17;

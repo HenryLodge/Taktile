@@ -1,19 +1,4 @@
-set(TK_TESTS
-    test_util
-    test_crypto
-    test_crc32
-    test_ata
-    test_checksum
-    test_clippack
-    test_contacts
-    test_speech
-    test_pin_entry
-    test_flow
-    test_parser
-    test_proto
-    test_rng_health
-    test_solana_consts
-)
+include(${CMAKE_CURRENT_LIST_DIR}/tests.cmake)
 
 foreach(t ${TK_TESTS})
     add_executable(${t} ${t}.c)

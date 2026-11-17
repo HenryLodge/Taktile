@@ -10,7 +10,7 @@ Portable C11 library holding all of Taktile's security logic: transaction parser
 | --- | --- |
 | `include/` | Public headers (`tk_*.h`) |
 | `src/` | Implementation |
-| `tests/` | ctest cases, driven by `tests/vectors/` at the repo root |
+| `tests/` | ctest cases, driven by `tests/vectors/` at the repo root. The list is in `tests/tests.cmake`, shared with the device test app (`firmware/test_app`), so every test here also runs on the ESP32-S3 |
 | `fuzz/` | libFuzzer targets (`-DTK_FUZZ=ON`, clang) |
 | `third_party/` | Vendored trezor-crypto subset (see `trezor-crypto/VENDORED.md`) and the glue that supplies its platform hooks |
 

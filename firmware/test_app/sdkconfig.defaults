@@ -1,0 +1,19 @@
+# Device test app overlay (applied after ../sdkconfig.defaults).
+
+# Same partition layout as the product, so flashing this app leaves `clips` and `nvs` alone.
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="../partitions.csv"
+
+# The tests print through stdio: console on the USB port, no log noise.
+CONFIG_ESP_CONSOLE_NONE=n
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+
+# The tests' static buffers (~1.2 MB) live in the 8 MB octal PSRAM (main/linker.lf). Test app only.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
+
+# Big test locals and long loops that never yield.
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=65536
+CONFIG_ESP_TASK_WDT_EN=n
+CONFIG_ESP_INT_WDT=n

@@ -26,7 +26,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [x] P0 Buttons with debounce; I2S playback of clips from the clip pack (raw `clips` partition, not LittleFS); SPK_EN control
 - [x] P0 DRV2605L haptic patterns
 - [x] P0 NVS storage (plain NVS, fails closed, never auto-erased); hardware RNG (done with the entropy-source task); trezor-crypto component; Ed25519 sign verified on host (`tools/verify-ed25519.mjs`)
-- [ ] P0 Same `core/` tests pass on device (a `test` app target or on-boot self-test)
+- [x] P0 Same `core/` tests pass on device: `firmware/test_app` + `firmware/tools/device_tests.py`. Checked 2026-11-17: 14/14 PASS, short run (random loops at 1/20) 2.2 min, full run 40 min
 
 ## Day 5–6 (Nov 16–17): device flows
 
