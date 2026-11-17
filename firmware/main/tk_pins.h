@@ -16,7 +16,7 @@
 // never during a secret clip.
 #define TK_PIN_SPK_EN 4 // D4
 
-// DRV2605L via STEMMA QT (10k pull-ups on board).
+// I2C to the DRV2605L (SDA/SCL header pins; same lines as STEMMA QT; 10k pull-ups on board).
 #define TK_PIN_I2C_SDA 47
 #define TK_PIN_I2C_SCL 48
 

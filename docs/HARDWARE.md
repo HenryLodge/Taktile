@@ -5,9 +5,9 @@
 - 1 × Adafruit Metro ESP32-S3 (16 MB flash, 8 MB PSRAM). The plan called for a second board for flash-encryption testing; there is no second board, so nothing in this project burns eFuses (see below)
 - Adafruit UDA1334A I2S stereo DAC (3.5 mm jack) + wired earbuds — private earpiece
 - Adafruit MAX98357A I2S 3 W amp + small 4–8 Ω speaker — demo speaker mode
-- Adafruit DRV2605L haptic driver (STEMMA QT) + vibrating mini motor disc
+- Adafruit DRV2605L haptic driver (the older breakout with pin headers: VIN, GND, SCL, SDA, IN; no STEMMA QT port) + vibrating mini motor disc
 - 6 × 12 mm tactile buttons (2 large distinct caps for CONFIRM/REJECT)
-- Breadboard, jumpers, STEMMA QT cable, USB-C data cables
+- Breadboard, jumpers, USB-C data cables
 
 ## Signal plan
 
@@ -19,7 +19,7 @@ Filled in by a human and checked on 2026-11-15 against two pin maps that agree w
 | I2S LRCLK / WS | UDA1334A WSEL + MAX98357A LRC | GPIO6 (D6) | |
 | I2S DOUT | UDA1334A DIN + MAX98357A DIN | GPIO7 (D7) | |
 | SPK_EN | MAX98357A SD | GPIO4 (D4) | Drive LOW = speaker shut down (earpiece-only). Only `speaker mode` drives it high. **If this wire is missing, the speaker is always on** (the amp board pulls SD up), so secret audio reaches the speaker; check it with bring-up step 7 |
-| I2C SDA / SCL | DRV2605L via STEMMA QT | SDA=GPIO47, SCL=GPIO48 (STEMMA QT) | No soldering |
+| I2C SDA / SCL | DRV2605L SDA / SCL | SDA=GPIO47, SCL=GPIO48 (the Metro's SDA/SCL header pins by AREF, the same lines as its STEMMA QT port) | Jumpers. DRV2605L **VIN to 3V3, not 5V**: its I2C pull-ups go to VIN. GND to GND, IN unconnected (internal trigger). Motor disc to its + / − outputs |
 | BTN_UP | button → GND | GPIO8 (D8) | Internal pull-up, active low |
 | BTN_DOWN | button → GND | GPIO9 (D9) | |
 | BTN_OK | button → GND | GPIO10 (D10) | |
@@ -56,7 +56,7 @@ Power: USB-C from the laptop powers everything. UDA1334A and MAX98357A VIN from 
 3. Buttons: print each press with debounce.
 4. I2S tone to UDA1334A at 16 kHz; then to speaker with SPK_EN high. Confirm I2S playback works with the entropy source left enabled (ESP-IDF documents conflicts between it and ADC/I2S on some chips; verify on the S3). Checked 2026-11-16: RNG health check still passes with I2S running. Then bring-up step 7: a loud tone with SPK_EN LOW must be **silent** on the speaker (on 2026-11-16 the SD wire was missing and secret clips played on the speaker until it was connected).
 5. Play one PCM clip from the clip pack (a raw `clips` partition with a bounds-checked index; no filesystem, so no new dependency). Bring-up step 6 checks that CONFIRM pressed during a clip never counts (I6).
-6. DRV2605L: play each of the four haptic patterns.
+6. DRV2605L: play each of the four haptic patterns (bring-up step 8). Checked 2026-11-17: chip ID 7, all four patterns easy to tell apart, no motor noise in the earbuds.
 7. NVS read/write, **plain NVS**. On the ESP32-S3 NVS encryption cannot be enabled without burning eFuses (the flash-encryption scheme needs flash encryption; the HMAC scheme burns a key into an eFuse on first boot), and with one board we burn none. The seed is still encrypted under the PIN-derived key (I7); that does not defend against a flash dump.
 8. Ed25519 sign a fixed message with trezor-crypto; verify on the laptop with Node's built-in `node:crypto` (Ed25519), no extra dependency.
 

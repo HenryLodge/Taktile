@@ -84,11 +84,13 @@ For each of the 6 digits:
 
 An observer sees only up/down counts, which reveal nothing without the private start digit. Each press gives a short haptic tick so the user knows it registered.
 
-## Haptic patterns (DRV2605L, pick effects from its built-in library)
+## Haptic patterns (DRV2605L, ERM effect library A)
 
-| Pattern | Meaning |
-| --- | --- |
-| Single short tick | Button press registered |
-| Double pulse | Signed successfully |
-| Long buzz | Rejected or cancelled |
-| Three strong pulses | Warning: unknown recipient, wrong PIN |
+| Pattern | Meaning | Sequence (`firmware/main/haptics.c`, tuned by feel 2026-11-17) |
+| --- | --- | --- |
+| Single short tick | Button press registered | Effect 1 (Strong Click) |
+| Double pulse | Signed successfully | Effect 1, 100 ms pause, effect 1 twice back to back (a longer second pulse is easier to feel than library effect 10, Double Click) |
+| Long buzz | Rejected or cancelled | Effect 15 (750 ms Alert) |
+| Three strong pulses | Warning: unknown recipient, wrong PIN, cannot sign | Effect 14 (Strong Buzz) three times, 150 ms apart |
+
+Playback is fire-and-forget: firmware loads the chip's sequencer and returns, so the next clip starts at once; a new pattern replaces one still playing. If the DRV2605L is missing, haptics are off and everything else works: haptics are feedback, not a security control, and every warning is also spoken.

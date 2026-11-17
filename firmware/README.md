@@ -16,8 +16,9 @@ ESP-IDF (v5.5) project for the Adafruit Metro ESP32-S3. A thin layer: drivers pl
 | `main/rng.c` | Hardware RNG: entropy source on, startup + continuous health checks, fail closed |
 | `main/buttons.c` | Six buttons: 5 ms scan, 30 ms debounce, 2 s long press for OK and REJECT; presses that start during a clip never count (I6) |
 | `main/audio.c` | I2S0 at 16 kHz to the earpiece DAC and speaker amp; `SPK_EN` LOW for every secret clip (#9); clips from the clip pack, checked at boot, silent if it's missing or stale |
+| `main/haptics.c` | DRV2605L over I2C (GPIO47/48): ERM motor, four patterns from its effect library; fire-and-forget, off if the chip is missing |
 | `main/link.c` | USB-Serial-JTAG link (the board's USB-C port; CDC-ACM to the laptop) |
-| `main/platform.c` | `tk_platform_t`. Serial, clock, RNG, buttons and audio are real; storage and haptics are fail-closed stubs until their Day 3–4 tasks. No wallet yet (every flow answers `NO_WALLET`) |
+| `main/platform.c` | `tk_platform_t`. Serial, clock, RNG, buttons, audio and haptics are real; storage is a fail-closed stub until the NVS task. No wallet yet (every flow answers `NO_WALLET`) |
 | `main/bringup.c` | Hardware bring-up menu, one numbered step per `docs/HARDWARE.md` bring-up item. Prints with `out()` straight to the USB driver, not `printf`: stdout needs `vfs`, which pulls the UART and PSRAM drivers into the build |
 | `partitions.csv` | `nvs` 64 KB, `factory` app 3 MB, `clips` 10 MB (raw clip pack) |
 | `sdkconfig.defaults` | Protocol build: console and logs **off**, so USB carries only frames |
