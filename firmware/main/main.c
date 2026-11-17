@@ -7,6 +7,7 @@
 #include "audio.h"
 #include "bringup.h"
 #include "buttons.h"
+#include "haptics.h"
 #include "link.h"
 #include "platform.h"
 #include "rng.h"
@@ -55,9 +56,11 @@ void app_main(void) {
     tk_rng_start();
     tk_audio_spk_off(); // speaker amp off until a public clip in speaker mode turns it on (#9)
 
-    // Drivers. A failed init is fail-closed: no presses are reported, clips are silent.
+    // Drivers. A failed init is fail-closed: no presses are reported, clips are silent, haptics
+    // are off.
     (void)tk_buttons_init();
     (void)tk_audio_init();
+    (void)tk_haptics_init();
 
 #if CONFIG_TK_BRINGUP
     tk_bringup_main();

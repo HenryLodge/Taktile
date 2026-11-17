@@ -18,6 +18,7 @@
 #include "audio.h"
 #include "bringup.h"
 #include "buttons.h"
+#include "haptics.h"
 #include "platform.h"
 #include "tk_clips.h"
 #include "rng.h"
@@ -58,6 +59,7 @@ static void menu(void) {
         "  5  clips: pack status, then words on the earpiece and one on the speaker\n"
         "  6  discard test: CONFIRM during a clip must not count\n"
         "  7  SPK_EN check: loud tone with the speaker OFF, then ON; pin level read back\n"
+        "  8  haptics: DRV2605L status, the four patterns, then a tone during a buzz\n"
         "Reset the board to come back here.\n",
         TK_FW_VERSION);
 }
@@ -268,6 +270,31 @@ static void step_spk_check(void) {
     out("step 7: done; SPK_EN reads %d (want 0)\n", tk_audio_spk_pin());
 }
 
+// Step 8 (HARDWARE.md bring-up 6): DRV2605L status, each pattern twice, then an earpiece tone
+// while the motor buzzes to listen for motor noise in the audio.
+static void step_haptics(void) {
+    const tk_haptics_status_t st = tk_haptics_status();
+    out("step 8: I2C bus %s, DRV2605L at 0x%02x %s, chip id %u (want 7), init %s\n",
+        st.bus_ok ? "ok" : "FAILED", TK_HAPTICS_ADDR, st.chip_found ? "found" : "NOT FOUND",
+        (unsigned)st.chip_id, st.ready ? "ok" : "FAILED");
+    if (!st.ready) {
+        out("  bus check: MAX17048 at 0x36 %s\nstep 8: FAIL (check VIN 3V3, GND, SDA, SCL)\n",
+            tk_haptics_probe(0x36) ? "answers (bus ok, DRV2605L wiring?)" : "silent too");
+        return;
+    }
+    for (int round = 1; round <= 2; round++) {
+        for (int p = TK_HAPTIC_TICK; p <= TK_HAPTIC_WARNING; p++) {
+            out("  %s\n", tk_haptics_name((tk_haptic_t)p));
+            tk_haptics_play((tk_haptic_t)p);
+            wait_ms(2000);
+        }
+    }
+    out("  WARNING with a 440 Hz earpiece tone: listen for motor noise in the earbuds\n");
+    tk_haptics_play(TK_HAPTIC_WARNING);
+    tk_audio_tone(440, 2000, false);
+    out("step 8: done (tell me how each pattern felt)\n");
+}
+
 void tk_bringup_main(void) {
     // From here on, all output goes through the driver (out() and the raw reads and writes), so
     // nothing fights over the hardware FIFO. Only the boot log before this point uses the ROM path.
@@ -286,6 +313,7 @@ void tk_bringup_main(void) {
         case '5': step_clips(); break;
         case '6': step_discard(); break;
         case '7': step_spk_check(); break;
+        case '8': step_haptics(); break;
         default: menu(); break;
         }
     }
