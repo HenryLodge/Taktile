@@ -11,6 +11,7 @@
 #include "link.h"
 #include "platform.h"
 #include "rng.h"
+#include "storage.h"
 #include "tk_contacts.h"
 #include "tk_device.h"
 
@@ -57,10 +58,11 @@ void app_main(void) {
     tk_audio_spk_off(); // speaker amp off until a public clip in speaker mode turns it on (#9)
 
     // Drivers. A failed init is fail-closed: no presses are reported, clips are silent, haptics
-    // are off.
+    // are off, nothing is loaded or saved (and NVS is never erased).
     (void)tk_buttons_init();
     (void)tk_audio_init();
     (void)tk_haptics_init();
+    (void)tk_storage_init();
 
 #if CONFIG_TK_BRINGUP
     tk_bringup_main();
