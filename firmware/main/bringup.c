@@ -30,6 +30,7 @@
 #include "tk_contacts.h"
 #include "tk_device.h"
 #include "tk_pins.h"
+#include "tk_seed.h"
 
 // Formats and writes straight to the USB-Serial-JTAG driver. Deliberately not printf/stdout: that
 // needs the vfs component, which drags the UART and PSRAM drivers into the build.
@@ -68,6 +69,7 @@ static void menu(void) {
         "  8  haptics: DRV2605L status, the four patterns, then a tone during a buzz\n"
         "  9  storage: NVS round-trips and refusals; boot counter (reset, run again: +1)\n"
         "  0  Ed25519: RFC 8032 known answer, signatures for the laptop to verify, timings\n"
+        "  k  keys: BIP39 + SLIP-10 known answers on device, SETUP and unlock timings (no NVS)\n"
         "Reset the board to come back here.\n",
         TK_FW_VERSION);
 }
@@ -454,6 +456,48 @@ static void step_ed25519(void) {
     out("step 0: %s on device; now check the ED25519 lines on the laptop\n", ok ? "PASS" : "FAIL");
 }
 
+// Step K: SETUP's key derivation on the device (core/src/tk_seed.c) against published test data,
+// and the timings that size I7. Public test vectors only; never reads or writes NVS.
+static void step_keys(void) {
+    // trezor/python-mnemonic vector 0 (all-zero entropy, passphrase "TREZOR"); and the same
+    // mnemonic with no passphrase at m/44'/501'/0'/0' (tests/vectors/seed.json "solana_0").
+    static const char *SEED_TREZOR = "bda85446c68413707090a52022edd26a1c9462295029f2e60cd7c4f2bbd30971"
+                                     "70af7a4d73245cafa9c3cca8d561a7c3de6f5d4a10be8ed2a5e608d68f92fcc8";
+    static const char *SOLANA_PK = "20c821b6510834ae1c47084c6f61fd97864d5f12d731f95f4b06fe477b1efb45";
+    out("step K (key derivation):\n");
+    bool ok = true;
+    uint8_t entropy[TK_SEED_ENTROPY_LEN] = {0};
+    uint16_t idx[TK_SEED_WORDS];
+    uint8_t seed[TK_SEED_LEN], want[TK_SEED_LEN], key[TK_SEED_KEY_LEN];
+    ed25519_public_key pk, want_pk;
+    ok &= check("all-zero entropy -> abandon ... art", tk_seed_words(entropy, idx) && idx[0] == 0 && idx[23] == 102);
+
+    int64_t t0 = esp_timer_get_time();
+    ok &= tk_seed_bip39(idx, "TREZOR", seed);
+    const int64_t bip39_us = esp_timer_get_time() - t0;
+    ok &= check("BIP39 seed (passphrase TREZOR) = published", from_hex(SEED_TREZOR, want, 64) && memcmp(seed, want, 64) == 0);
+
+    ok &= tk_seed_bip39(idx, "", seed);
+    t0 = esp_timer_get_time();
+    ok &= tk_slip10_ed25519(seed, sizeof(seed), TK_SOLANA_PATH, TK_SOLANA_PATH_LEN, key);
+    const int64_t slip_us = esp_timer_get_time() - t0;
+    ed25519_publickey(key, pk);
+    ok &= check("m/44'/501'/0'/0' public key = web3.js", from_hex(SOLANA_PK, want_pk, 32) && memcmp(pk, want_pk, 32) == 0);
+    memzero(seed, sizeof(seed));
+    memzero(key, sizeof(key));
+
+    // The unlock KDF as the key store runs it: one 32-byte PBKDF2-HMAC-SHA256 block.
+    static const uint8_t salt[16] = {0};
+    t0 = esp_timer_get_time();
+    pbkdf2_hmac_sha256((const uint8_t *)"123456", 6, salt, sizeof(salt), 20000, key, sizeof(key));
+    const int64_t kdf_us = esp_timer_get_time() - t0;
+    memzero(key, sizeof(key));
+    out("  BIP39 seed (2048 x PBKDF2-HMAC-SHA512): %lld ms; SLIP-10 (4 levels): %lld ms\n"
+        "  PBKDF2-HMAC-SHA256, 20,000 iterations, 32 bytes (unlock / SETUP commit): %lld ms\n",
+        (long long)(bip39_us / 1000), (long long)(slip_us / 1000), (long long)(kdf_us / 1000));
+    out("step K: %s\n", ok ? "PASS" : "FAIL");
+}
+
 void tk_bringup_main(void) {
     // From here on, all output goes through the driver (out() and the raw reads and writes), so
     // nothing fights over the hardware FIFO. Only the boot log before this point uses the ROM path.
@@ -475,6 +519,8 @@ void tk_bringup_main(void) {
         case '8': step_haptics(); break;
         case '9': step_storage(); break;
         case '0': step_ed25519(); break;
+        case 'k':
+        case 'K': step_keys(); break;
         default: menu(); break;
         }
     }

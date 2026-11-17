@@ -99,7 +99,8 @@ The wallet's own USDC ATA is derived once when the wallet loads and passed to th
 ## Keys
 
 - BIP39 24-word mnemonic generated on device with hardware RNG.
-- Solana key via SLIP-10 Ed25519, path `m/44'/501'/0'/0'` (matches Phantom/Solflare). Test against a known vector before relying on it.
+- Solana key via SLIP-10 Ed25519, path `m/44'/501'/0'/0'` (matches Phantom/Solflare), no BIP39 passphrase. `core/src/tk_seed.c`.
+- Vectors (`tests/vectors/seed.json`, `core/tests/gen/tk_seed_vectors.h`, written by `tools/gen-vectors.mjs`): the published SLIP-0010 Ed25519 test vectors 1 and 2 and the 24-word trezor/python-mnemonic BIP39 vectors, both copied in and re-derived with `node:crypto`; plus the same mnemonics at the Solana path with web3.js public keys (`solana_*`; public test data, never fund them). Bring-up step K repeats a BIP39 and a Solana-path known answer on the device.
 
 ## Test vectors (`tests/vectors/*.json`)
 

@@ -17,7 +17,7 @@
 
 - `rand.c`: Taktile supplies `random_buffer()` in `core/third_party/tk_trezor_glue.c`, and it **aborts**. All randomness comes from `tk_platform_t.random_bytes` (SECURITY_MODEL I11). Only the unused ed25519 "cosi" functions call `random_buffer()`; `ed25519_sign` is deterministic.
 - `fault_handler_noop.c`: replaced by a `tc_fault_handler()` that aborts in the same glue file.
-- `bip32.c` and its dependencies (secp256k1, NIST P-256, Cardano, base58, ...): SLIP-10 Ed25519 derivation is implemented in `core/` on top of `hmac_sha512`.
+- `bip32.c` and its dependencies (secp256k1, NIST P-256, Cardano, base58, ...): SLIP-10 Ed25519 derivation is implemented in `core/src/tk_seed.c` on top of `hmac_sha512` (tested against the published SLIP-0010 vectors). BIP39 uses the vendored `bip39.c` for the word list and `mnemonic_to_seed` only; the mnemonic text is built in a caller buffer, never trezor's static one.
 
 ## Build configuration
 

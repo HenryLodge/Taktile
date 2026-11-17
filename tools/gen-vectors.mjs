@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // Build Solana legacy messages with web3.js / spl-token and write the parser and ATA test vectors.
 //
-//   node tools/gen-vectors.mjs           write tests/vectors/{parser,ata,curve,checksum,contacts}.json and core/tests/gen/*.h
+//   node tools/gen-vectors.mjs           write tests/vectors/{parser,ata,curve,checksum,contacts,seed}.json and core/tests/gen/*.h
 //   node tools/gen-vectors.mjs --check   write nothing; exit 1 if any committed file is stale
 //
 // Needs `cd tools && npm ci` once. Never touches the network: it only builds messages.
 // Wallets come from public labels ("taktile-vector:<label>"); only public keys are written.
 
-import { createHash } from 'node:crypto';
+import { createHash, createHmac, pbkdf2Sync } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -476,6 +476,122 @@ export function buildCurveVectors() {
     return vectors;
 }
 
+// ---- Seed: BIP39 + SLIP-10 Ed25519 (core/src/tk_seed.c) ----
+//
+// Published vectors are copied in as constants and every one is re-derived here with node:crypto
+// (an implementation independent of trezor-crypto), so a wrong constant or a wrong JS fails the run.
+
+// SLIP-0010 "Test vector 1/2 for ed25519" (github.com/satoshilabs/slips, slip-0010.md, 2026-11-17).
+// private = the Ed25519 key; public = 0x00 || Ed25519 public key.
+const H = 0x80000000;
+export const SLIP10_PUBLISHED = [
+    {
+        seed: '000102030405060708090a0b0c0d0e0f',
+        chains: [
+            { path: [], private: '2b4be7f19ee27bbf30c667b642d5f4aa69fd169872f8fc3059c08ebae2eb19e7', public: '00a4b2856bfec510abab89753fac1ac0e1112364e7d250545963f135f2a33188ed' },
+            { path: [0], private: '68e0fe46dfb67e368c75379acec591dad19df3cde26e63b93a8e704f1dade7a3', public: '008c8a13df77a28f3445213a0f432fde644acaa215fc72dcdf300d5efaa85d350c' },
+            { path: [0, 1], private: 'b1d0bad404bf35da785a64ca1ac54b2617211d2777696fbffaf208f746ae84f2', public: '001932a5270f335bed617d5b935c80aedb1a35bd9fc1e31acafd5372c30f5c1187' },
+            { path: [0, 1, 2], private: '92a5b23c0b8a99e37d07df3fb9966917f5d06e02ddbd909c7e184371463e9fc9', public: '00ae98736566d30ed0e9d2f4486a64bc95740d89c7db33f52121f8ea8f76ff0fc1' },
+            { path: [0, 1, 2, 2], private: '30d1dc7e5fc04c31219ab25a27ae00b50f6fd66622f6e9c913253d6511d1e662', public: '008abae2d66361c879b900d204ad2cc4984fa2aa344dd7ddc46007329ac76c429c' },
+            { path: [0, 1, 2, 2, 1000000000], private: '8f94d394a8e8fd6b1bc2f3f49f5c47e385281d5c17e65324b0f62483e37e8793', public: '003c24da049451555d51a7014a37337aa4e12d41e485abccfa46b47dfb2af54b7a' },
+        ],
+    },
+    {
+        seed: 'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542',
+        chains: [
+            { path: [], private: '171cb88b1b3c1db25add599712e36245d75bc65a1a5c9e18d76f9f2b1eab4012', public: '008fe9693f8fa62a4305a140b9764c5ee01e455963744fe18204b4fb948249308a' },
+            { path: [0], private: '1559eb2bbec5790b0c65d8693e4d0875b1747f4970ae8b650486ed7470845635', public: '0086fab68dcb57aa196c77c5f264f215a112c22a912c10d123b0d03c3c28ef1037' },
+            { path: [0, 2147483647], private: 'ea4f5bfe8694d8bb74b7b59404632fd5968b774ed545e810de9c32a4fb4192f4', public: '005ba3b9ac6e90e83effcd25ac4e58a1365a9e35a3d3ae5eb07b9e4d90bcf7506d' },
+            { path: [0, 2147483647, 1], private: '3757c7577170179c7868353ada796c839135b3d30554bbb74a4b1e4a5a58505c', public: '002e66aa57069c86cc18249aecf5cb5a9cebbfd6fadeab056254763874a9352b45' },
+            { path: [0, 2147483647, 1, 2147483646], private: '5837736c89570de861ebc173b1086da4f505d4adb387c6a1b1342d5e4ac9ec72', public: '00e33c0f7d81d843c572275f287498e8d408654fdf0d1e065b84e2e6f157aab09b' },
+            { path: [0, 2147483647, 1, 2147483646, 2], private: '551d333177df541ad876a60ea71f00447931c0a9da16f227c11ea080d7391b8d', public: '0047150c75db263559a70d5778bf36abbab30fb061ad69f69ece61a72b0cfa4fc0' },
+        ],
+    },
+];
+
+// BIP39: the 24-word (256-bit) English vectors of trezor/python-mnemonic vectors.json, passphrase
+// "TREZOR" (2026-11-17).
+export const BIP39_PASSPHRASE = 'TREZOR';
+export const BIP39_PUBLISHED = [
+    ['0000000000000000000000000000000000000000000000000000000000000000', 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art', 'bda85446c68413707090a52022edd26a1c9462295029f2e60cd7c4f2bbd3097170af7a4d73245cafa9c3cca8d561a7c3de6f5d4a10be8ed2a5e608d68f92fcc8'],
+    ['7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f', 'legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth title', 'bc09fca1804f7e69da93c2f2028eb238c227f2e9dda30cd63699232578480a4021b146ad717fbb7e451ce9eb835f43620bf5c514db0f8add49f5d121449d3e87'],
+    ['8080808080808080808080808080808080808080808080808080808080808080', 'letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic bless', 'c0c519bd0e91a2ed54357d9d1ebef6f5af218a153624cf4f2da911a0ed8f7a09e2ef61af0aca007096df430022f7a2b6fb91661a9589097069720d015e4e982f'],
+    ['ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote', 'dd48c104698c30cfe2b6142103248622fb7bb0ff692eebb00089b32d22484e1613912f0a5b694407be899ffd31ed3992c456cdf60f5d4564b8ba3f05a69890ad'],
+    ['68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c', 'hamster diagram private dutch cause delay private meat slide toddler razor book happy fancy gospel tennis maple dilemma loan word shrug inflict delay length', '64c87cde7e12ecf6704ab95bb1408bef047c22db4cc7491c4271d170a1b213d20b385bc1588d9c7b38f1b39d415665b8a9030c9ec653d75e65f847d8fc1fc440'],
+    ['9f6a2878b2520799a44ef18bc7df394e7061a224d2c33cd015b157d746869863', 'panda eyebrow bullet gorilla call smoke muffin taste mesh discover soft ostrich alcohol speed nation flash devote level hobby quick inner drive ghost inside', '72be8e052fc4919d2adf28d5306b5474b0069df35b02303de8c1729c9538dbb6fc2d731d5f832193cd9fb6aeecbc469594a70e3dd50811b5067f3b88b28c3e8d'],
+    ['066dca1a2bb7e8a1db2832148ce9933eea0f3ac9548d793112d9a95c9407efad', 'all hour make first leader extend hole alien behind guard gospel lava path output census museum junior mass reopen famous sing advance salt reform', '26e975ec644423f4a4c4f4215ef09b4bd7ef924e85d1d17c4cf3f136c2863cf6df0a475045652c57eb5fb41513ca2a2d67722b77e954b4b3fc11f7590449191d'],
+    ['f585c11aec520db57dd353c69554b21a89b20fb0650966fa0a9d6f74fd989d8f', 'void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold', '01f5bced59dec48e362f2c45b5de68b9fd6c92c6634f44d6d40aab69056506f0e35524a518034ddc1192e1dacd32c1ed3eaa3c3b131c88ed8e7e54c49a5d0998'],
+];
+
+export const SOLANA_PATH = [44 + H, 501 + H, 0 + H, 0 + H];
+
+// The English list, read from the vendored C table (the list itself is the BIP39 standard; the
+// published vectors above check that it was read correctly).
+export function loadBip39Words() {
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+    const src = readFileSync(join(root, 'core/third_party/trezor-crypto/bip39_english.c'), 'utf8');
+    const body = src.slice(src.indexOf('{'), src.lastIndexOf('}'));
+    const words = [...body.matchAll(/"([a-z]+)"/g)].map((m) => m[1]);
+    if (words.length !== 2048) throw new Error(`bip39_english.c: ${words.length} words, want 2048`);
+    return words;
+}
+
+export function bip39Indices(entropy) {
+    if (entropy.length !== 32) throw new Error('entropy must be 32 bytes');
+    const check = createHash('sha256').update(entropy).digest()[0];
+    let bits = 0n;
+    for (const b of [...entropy, check]) bits = (bits << 8n) | BigInt(b);
+    const idx = [];
+    for (let w = 23; w >= 0; w--) idx.push(Number((bits >> BigInt(w * 11)) & 0x7ffn)); // first word = top bits
+    return idx;
+}
+
+export const bip39Seed = (mnemonic, passphrase) =>
+    pbkdf2Sync(Buffer.from(mnemonic.normalize('NFKD'), 'utf8'), Buffer.from('mnemonic' + passphrase, 'utf8'), 2048, 64, 'sha512');
+
+export function slip10Ed25519(seed, path) {
+    let I = createHmac('sha512', 'ed25519 seed').update(seed).digest();
+    for (const index of path) {
+        if (index < H) throw new Error('SLIP-10 Ed25519: hardened indices only');
+        const data = Buffer.alloc(37);
+        I.copy(data, 1, 0, 32);
+        data.writeUInt32BE(index >>> 0, 33);
+        I = createHmac('sha512', I.subarray(32)).update(data).digest();
+    }
+    return I.subarray(0, 32);
+}
+
+export function buildSeedVectors() {
+    const words = loadBip39Words();
+    const slip10 = [];
+    SLIP10_PUBLISHED.forEach((s, si) => {
+        for (const c of s.chains) {
+            const path = c.path.map((i) => (i + H) >>> 0);
+            const key = slip10Ed25519(Buffer.from(s.seed, 'hex'), path);
+            if (hex(key) !== c.private) throw new Error(`SLIP-10 vector ${si + 1} m/${c.path.join("'/")}: private mismatch`);
+            const pub = Keypair.fromSeed(key).publicKey.toBuffer();
+            if ('00' + hex(pub) !== c.public) throw new Error(`SLIP-10 vector ${si + 1}: public mismatch`);
+            slip10.push({ name: `slip10_v${si + 1}_depth${c.path.length}`, seed: s.seed, path, key: c.private, pubkey: hex(pub) });
+        }
+    });
+
+    const bip39 = BIP39_PUBLISHED.map(([entHex, mnemonic, seedHex], i) => {
+        const idx = bip39Indices(Buffer.from(entHex, 'hex'));
+        if (idx.map((n) => words[n]).join(' ') !== mnemonic) throw new Error(`BIP39 vector ${i}: mnemonic mismatch`);
+        if (hex(bip39Seed(mnemonic, BIP39_PASSPHRASE)) !== seedHex) throw new Error(`BIP39 vector ${i}: seed mismatch`);
+        return { name: `bip39_${i}`, entropy: entHex, indices: idx, mnemonic, passphrase: BIP39_PASSPHRASE, seed: seedHex };
+    });
+
+    // What SETUP does: no passphrase, Solana path, then the Ed25519 public key (web3.js).
+    const solana = BIP39_PUBLISHED.map(([entHex, mnemonic], i) => {
+        const seed = bip39Seed(mnemonic, '');
+        const key = slip10Ed25519(seed, SOLANA_PATH);
+        const kp = Keypair.fromSeed(key);
+        return { name: `solana_${i}`, mnemonic, seed: hex(seed), key: hex(key), pubkey: hex(kp.publicKey.toBuffer()), address: kp.publicKey.toBase58() };
+    });
+    return { slip10, bip39, solana };
+}
+
 // ---- Rendering ----
 
 const BANNER = '// GENERATED by tools/gen-vectors.mjs. Do not edit; rerun the script.\n';
@@ -708,6 +824,76 @@ function renderContactsHeader({ book, lookups }) {
     return out.join('\n');
 }
 
+function renderSeedHeader({ slip10, bip39, solana }) {
+    const b = (h, ind) => cBytes(Buffer.from(h, 'hex'), ind);
+    const out = [
+        BANNER,
+        '// Published SLIP-0010 and BIP39 vectors (re-derived with node:crypto) and Solana-path vectors.',
+        '// Public test data only: never fund these keys.',
+        '',
+        '#ifndef TK_SEED_VECTORS_H',
+        '#define TK_SEED_VECTORS_H',
+        '',
+        '#include <stddef.h>',
+        '#include <stdint.h>',
+        '',
+        'typedef struct {',
+        '    const char *name;',
+        '    const char *seed_hex; // variable length',
+        '    uint32_t path[5];',
+        '    size_t path_len;',
+        '    uint8_t key[32];',
+        '    uint8_t pubkey[32];',
+        '} tk_slip10_vector_t;',
+        '',
+        'typedef struct {',
+        '    const char *name;',
+        '    uint8_t entropy[32];',
+        '    uint16_t indices[24];',
+        '    const char *mnemonic;',
+        '    const char *passphrase;',
+        '    uint8_t seed[64];',
+        '} tk_bip39_vector_t;',
+        '',
+        'typedef struct {',
+        '    const char *name;',
+        '    const char *mnemonic; // no passphrase, path m/44\'/501\'/0\'/0\'',
+        '    uint8_t key[32];',
+        '    uint8_t pubkey[32];',
+        '    const char *address;',
+        '} tk_solana_seed_vector_t;',
+        '',
+        'static const tk_slip10_vector_t tk_slip10_vectors[] = {',
+    ];
+    for (const v of slip10) {
+        const path = v.path.map((i) => '0x' + i.toString(16) + 'u').concat(Array(5 - v.path.length).fill('0')).join(', ');
+        out.push('    {', `        "${v.name}",`, `        "${v.seed}",`, `        {${path}},`, `        ${v.path.length},`);
+        out.push('        {', b(v.key, '            '), '        },', '        {', b(v.pubkey, '            '), '        },', '    },');
+    }
+    out.push('};', '', 'static const tk_bip39_vector_t tk_bip39_vectors[] = {');
+    for (const v of bip39) {
+        out.push('    {', `        "${v.name}",`, '        {', b(v.entropy, '            '), '        },');
+        out.push(`        {${v.indices.join(', ')}},`, `        "${v.mnemonic}",`, `        "${v.passphrase}",`);
+        out.push('        {', b(v.seed, '            '), '        },', '    },');
+    }
+    out.push('};', '', 'static const tk_solana_seed_vector_t tk_solana_seed_vectors[] = {');
+    for (const v of solana) {
+        out.push('    {', `        "${v.name}",`, `        "${v.mnemonic}",`, '        {', b(v.key, '            '), '        },');
+        out.push('        {', b(v.pubkey, '            '), '        },', `        "${v.address}",`, '    },');
+    }
+    out.push(
+        '};',
+        '',
+        '#define TK_SLIP10_VECTOR_COUNT (sizeof(tk_slip10_vectors) / sizeof(tk_slip10_vectors[0]))',
+        '#define TK_BIP39_VECTOR_COUNT (sizeof(tk_bip39_vectors) / sizeof(tk_bip39_vectors[0]))',
+        '#define TK_SOLANA_SEED_VECTOR_COUNT (sizeof(tk_solana_seed_vectors) / sizeof(tk_solana_seed_vectors[0]))',
+        '',
+        '#endif',
+        '',
+    );
+    return out.join('\n');
+}
+
 // Returns [[relativePath, contents], ...]. Deterministic, LF only.
 export function generate() {
     const parser = buildParserVectors();
@@ -715,6 +901,7 @@ export function generate() {
     const curve = buildCurveVectors();
     const checksum = buildChecksumVectors(parser, ata);
     const contacts = buildContactsVectors();
+    const seed = buildSeedVectors();
     return [
         ['tests/vectors/contacts.json', JSON.stringify(contacts, null, 2) + '\n'],
         ['core/tests/gen/tk_contacts_vectors.h', renderContactsHeader(contacts)],
@@ -726,6 +913,8 @@ export function generate() {
         ['core/tests/gen/tk_ata_vectors.h', renderAtaHeader(ata)],
         ['core/tests/gen/tk_curve_vectors.h', renderCurveHeader(curve)],
         ['core/tests/gen/tk_checksum_vectors.h', renderChecksumHeader(checksum)],
+        ['tests/vectors/seed.json', JSON.stringify(seed, null, 2) + '\n'],
+        ['core/tests/gen/tk_seed_vectors.h', renderSeedHeader(seed)],
     ];
 }
 

@@ -66,6 +66,8 @@ python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-tabl
 
 **Ed25519 check** (bring-up step 0): copy the `ED25519 …` lines it prints into a file, then `node ../tools/verify-ed25519.mjs that-file.txt` (expects `all 2 signatures OK`).
 
+**Key derivation check** (bring-up step K, menu key `k`): BIP39 and SLIP-10 known answers from `tests/vectors/seed.json` on the device, and the timings of SETUP's BIP39 seed and of the 20,000-iteration unlock KDF. Public test data only; it never reads or writes NVS.
+
 `COMx` on Windows, `/dev/ttyACM0` on Linux, `/dev/cu.usbmodem*` on macOS. In the monitor, `Ctrl-]` exits.
 
 **First flash of a new board:** Adafruit's factory firmware enumerates as a different USB device (VID 239A) and can't be reset into the bootloader automatically. Hold **BOOT**, tap **RESET**, release **BOOT**; flash to the port that appears (VID 303A). When download mode was entered with the BOOT button, the reset after flashing does **not** start the app (the chip stays in the bootloader, silent): tap **RESET** once, or run `python -m esptool --chip esp32s3 -p COMx --before no_reset --after watchdog_reset read_mac`. From then on, with our firmware running, `idf.py flash` enters the bootloader and restarts the app by itself. If a flash ever fails, BOOT/RESET always works.
@@ -86,7 +88,7 @@ The same `core/` tests that run under ASan on the host, built for the ESP32-S3 (
 cd firmware/test_app
 idf.py set-target esp32s3                # once
 idf.py -p COMx flash                     # replaces the protocol app; same partition table, so clips and NVS are untouched
-python ../tools/device_tests.py COMx     # expects "DEVICE TESTS: 14/14 PASS", about 2 min; add --full for ~40 min
+python ../tools/device_tests.py COMx     # expects "DEVICE TESTS: 15/15 PASS", about 2 min; add --full for ~40 min
 cd .. && idf.py -p COMx flash            # put the protocol firmware back
 ```
 

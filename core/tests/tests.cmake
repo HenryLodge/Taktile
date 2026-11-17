@@ -15,5 +15,6 @@ set(TK_TESTS
     test_parser
     test_proto
     test_rng_health
+    test_seed
     test_solana_consts
 )
