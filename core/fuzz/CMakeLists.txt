@@ -3,7 +3,7 @@
 set(TK_GEN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../tests/gen)
 set(TK_SEEDS_DIR ${CMAKE_BINARY_DIR}/seeds)
 
-foreach(f fuzz_parser fuzz_frame)
+foreach(f fuzz_parser fuzz_frame fuzz_clippack)
     add_executable(${f} ${f}.c)
     target_link_libraries(${f} PRIVATE tk_core)
     target_include_directories(${f} PRIVATE ${TK_GEN_DIR})
@@ -22,7 +22,7 @@ target_compile_options(make_seeds PRIVATE ${TK_WARNINGS})
 
 add_custom_target(fuzz_seeds ALL
     COMMAND ${CMAKE_COMMAND} -E rm -rf ${TK_SEEDS_DIR}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${TK_SEEDS_DIR}/parser ${TK_SEEDS_DIR}/frame
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${TK_SEEDS_DIR}/parser ${TK_SEEDS_DIR}/frame ${TK_SEEDS_DIR}/clippack
     COMMAND make_seeds ${TK_SEEDS_DIR}
     DEPENDS make_seeds
     COMMENT "Writing fuzz seed corpus to ${TK_SEEDS_DIR}"
@@ -32,9 +32,11 @@ add_custom_target(fuzz_seeds ALL
 # Smoke runs so a plain ctest exercises both fuzzers. New inputs go to smoke/, not seeds/.
 if(BUILD_TESTING)
     set(TK_SMOKE_DIR ${CMAKE_BINARY_DIR}/smoke)
-    file(MAKE_DIRECTORY ${TK_SMOKE_DIR}/parser ${TK_SMOKE_DIR}/frame)
+    file(MAKE_DIRECTORY ${TK_SMOKE_DIR}/parser ${TK_SMOKE_DIR}/frame ${TK_SMOKE_DIR}/clippack)
     add_test(NAME fuzz_parser_smoke
              COMMAND fuzz_parser -runs=20000 -seed=1 -max_len=1300 ${TK_SMOKE_DIR}/parser ${TK_SEEDS_DIR}/parser)
     add_test(NAME fuzz_frame_smoke
              COMMAND fuzz_frame -runs=5000 -seed=1 -max_len=4200 ${TK_SMOKE_DIR}/frame ${TK_SEEDS_DIR}/frame)
+    add_test(NAME fuzz_clippack_smoke
+             COMMAND fuzz_clippack -runs=20000 -seed=1 -max_len=512 ${TK_SMOKE_DIR}/clippack ${TK_SEEDS_DIR}/clippack)
 endif()

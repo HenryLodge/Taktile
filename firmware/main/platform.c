@@ -1,11 +1,10 @@
 // tk_platform_t on the Metro ESP32-S3.
 //
-// Real: serial link (USB-Serial-JTAG), the clock and the hardware RNG (rng.c: entropy source on,
-// fail-closed health checks, I11). Everything else is a FAIL-CLOSED STUB that a later
-// docs/TASKS.md Day 3-4 task replaces:
+// Real: serial link (USB-Serial-JTAG), the clock, buttons (buttons.c), audio (audio.c) and the
+// hardware RNG (rng.c: entropy source on, fail-closed health checks, I11). Everything else is a
+// FAIL-CLOSED STUB that a later docs/TASKS.md Day 3-4 task replaces:
 //   storage_*     -> false (NVS task)
-//   play_clip     -> silent (I2S task), haptic -> nothing (DRV2605L task)
-//   wait_button   -> no press (buttons task)
+//   haptic        -> nothing (DRV2605L task)
 // With the no-wallet stub below, every flow stops at NO_WALLET before any of these matter.
 
 #include "platform.h"
@@ -14,13 +13,14 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "audio.h"
+#include "buttons.h"
 #include "link.h"
 #include "rng.h"
 
 static void p_play_clip(void *ctx, uint16_t clip, bool secret) {
     (void)ctx;
-    (void)clip;
-    (void)secret; // STUB: no audio yet. Never log clip ids here: secret ones are private (I2).
+    tk_audio_play(clip, secret); // never log clip ids here: secret ones are private (I2)
 }
 
 static void p_haptic(void *ctx, tk_haptic_t pattern) {
@@ -30,8 +30,7 @@ static void p_haptic(void *ctx, tk_haptic_t pattern) {
 
 static tk_button_t p_wait_button(void *ctx, uint32_t timeout_ms) {
     (void)ctx;
-    vTaskDelay(pdMS_TO_TICKS(timeout_ms)); // STUB: no buttons yet
-    return TK_BTN_NONE;
+    return tk_buttons_wait(timeout_ms); // presses from before or during a clip are never returned
 }
 
 static uint32_t p_now_ms(void *ctx) {

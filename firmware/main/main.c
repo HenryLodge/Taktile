@@ -4,7 +4,9 @@
 #include "freertos/task.h"
 #include "sdkconfig.h"
 
+#include "audio.h"
 #include "bringup.h"
+#include "buttons.h"
 #include "link.h"
 #include "platform.h"
 #include "rng.h"
@@ -51,6 +53,11 @@ void app_main(void) {
     // is on. First thing, before anything can use randomness; never disabled. tk_rng_start's first
     // statement is bootloader_random_enable(); randomness is refused until it has run (rng.c).
     tk_rng_start();
+    tk_audio_spk_off(); // speaker amp off until a public clip in speaker mode turns it on (#9)
+
+    // Drivers. A failed init is fail-closed: no presses are reported, clips are silent.
+    (void)tk_buttons_init();
+    (void)tk_audio_init();
 
 #if CONFIG_TK_BRINGUP
     tk_bringup_main();

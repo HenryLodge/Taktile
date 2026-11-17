@@ -23,7 +23,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [x] P0 Fill in the GPIO column in `HARDWARE.md` (human) and `tk_pins.h`
 - [x] P0 `firmware/`: ESP-IDF project, USB CDC, `tk_platform_t` implementation (serial + clock real; RNG, storage, audio, haptics, buttons are fail-closed stubs replaced by the tasks below; no-wallet stub until Day 5–6)
 - [x] P0 `bootloader_random_enable()` early in `app_main`, before any RNG use; never disabled (I11)
-- [ ] P0 Buttons with debounce; I2S playback of clips from LittleFS; SPK_EN control
+- [x] P0 Buttons with debounce; I2S playback of clips from the clip pack (raw `clips` partition, not LittleFS); SPK_EN control
 - [ ] P0 DRV2605L haptic patterns
 - [ ] P0 NVS storage; hardware RNG; trezor-crypto component; Ed25519 sign verified on host
 - [ ] P0 Same `core/` tests pass on device (a `test` app target or on-boot self-test)
