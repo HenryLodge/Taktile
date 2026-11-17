@@ -345,6 +345,45 @@ static void test_wrong_pin_and_lockout(void) {
     TK_CHECK(tk_contacts_load(&reloaded, fake.stored, fake.stored_len) == TK_CONTACTS_OK && reloaded.count == 0);
 }
 
+// The key store can't check a PIN (e.g. storage failed): DEVICE_ERROR, nothing signed (fail closed).
+static void test_unlock_error(void) {
+    const tk_parser_vector_t *v = vec("sol_ok");
+    setup(true, false, true);
+    fw.unlock_error = true;
+    sign_request(v);
+    script_correct_pin();
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    TK_CHECK(reply_status() == TK_STATUS_DEVICE_ERROR);
+    TK_CHECK(fw.unlock_calls == 1 && fw.sign_calls == 0);
+    TK_CHECK(clip_count(TK_CLIP_CANNOT_SIGN) == 1 && clip_count(TK_CLIP_PRESS_CONFIRM) == 0);
+    TK_CHECK(book.count == 1); // not a lockout: nothing wiped
+    check_sign_invariant();
+}
+
+// No working audio (no clip pack, I2S down): refuse before speaking anything (Q7).
+static void test_no_audio(void) {
+    const tk_parser_vector_t *v = vec("sol_ok");
+    setup(true, true, true);
+    fake.audio_bad = true;
+    sign_request(v);
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    TK_CHECK(reply_status() == TK_STATUS_DEVICE_ERROR);
+    TK_CHECK(fw.sign_calls == 0);
+    uint16_t clips[8];
+    size_t n = 0;
+    collect_clips(clips, &n, 8);
+    TK_CHECK(n == 0);
+
+    // No wallet still answers NO_WALLET first (nothing to protect yet).
+    setup(false, false, true);
+    fake.audio_bad = true;
+    sign_request(v);
+    run();
+    TK_CHECK(reply_status() == TK_STATUS_NO_WALLET);
+}
+
 static void test_requests_during_flow(void) {
     const tk_parser_vector_t *v = vec("sol_ok");
     setup(true, true, true);
@@ -523,6 +562,8 @@ int main(void) {
     test_press_ahead_ignored();
     test_confirm_window();
     test_wrong_pin_and_lockout();
+    test_unlock_error();
+    test_no_audio();
     test_requests_during_flow();
     test_cancel();
     test_idle_requests();

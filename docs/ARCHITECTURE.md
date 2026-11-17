@@ -77,9 +77,11 @@ typedef struct {
     bool (*storage_set)(void *ctx, const char *key, const void *buf, size_t len);
     size_t (*serial_read)(void *ctx, uint8_t *buf, size_t cap); // non-blocking
     void (*serial_write)(void *ctx, const uint8_t *buf, size_t len);
+    bool (*audio_ok)(void *ctx);           // clips really play; else flows refuse with DEVICE_ERROR
+    bool (*private_audio_only)(void *ctx); // false in speaker mode; SETUP's recovery words need true
 } tk_platform_t;
 
-// core/include/tk_wallet.h: the key store as flows see it (implemented by the SETUP / PIN-unlock tasks)
+// core/include/tk_wallet.h: the key store as flows see it (core/src/tk_keystore.c implements it)
 typedef struct {
     void *ctx;
     bool (*has_wallet)(void *ctx);
@@ -87,6 +89,7 @@ typedef struct {
     bool (*is_unlocked)(void *ctx);
     tk_unlock_result_t (*unlock)(void *ctx, const uint8_t pin[6], uint8_t *attempts_left);
     bool (*sign)(void *ctx, const uint8_t *msg, size_t len, uint8_t sig[64]); // refuses unless unlocked
+    bool (*create)(void *ctx, const uint8_t pin[6], const uint8_t sk[32], const uint8_t pubkey[32]); // SETUP; refuses if a wallet exists (I10)
 } tk_wallet_ops_t;
 ```
 

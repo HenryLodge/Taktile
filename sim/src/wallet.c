@@ -1,6 +1,6 @@
-// INSECURE development wallet for the simulator, until the real key store exists (SETUP and
-// PIN-unlock tasks). The seed is kept in plaintext in <data>/dev-seed. Devnet only, never real
-// funds. It still follows the flow rules: sign() refuses unless unlocked, failures are counted
+// INSECURE development wallet for the simulator, used only with --seed-hex or --dev-wallet (the
+// default is core's key store). With --dev-wallet the seed is kept in plaintext in <data>/dev-seed.
+// Devnet only, never real funds. It still follows the flow rules: sign() refuses unless unlocked, failures are counted
 // before the PIN is compared, and 10 failures wipe the seed.
 
 #include <stdio.h>
@@ -115,4 +115,13 @@ static bool w_sign(void *ctx, const uint8_t *msg, size_t len, uint8_t sig[TK_SIG
     return true;
 }
 
-const tk_wallet_ops_t SIM_WALLET_OPS_TEMPLATE = {NULL, w_has, w_pubkey, w_unlocked, w_unlock, w_sign};
+// SETUP never creates a dev wallet: it always holds one already (or was wiped).
+static bool w_create(void *ctx, const uint8_t pin[TK_PIN_LEN], const uint8_t sk[32], const uint8_t pubkey[32]) {
+    (void)ctx;
+    (void)pin;
+    (void)sk;
+    (void)pubkey;
+    return false;
+}
+
+const tk_wallet_ops_t SIM_WALLET_OPS_TEMPLATE = {NULL, w_has, w_pubkey, w_unlocked, w_unlock, w_sign, w_create};

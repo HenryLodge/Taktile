@@ -88,7 +88,7 @@ The same `core/` tests that run under ASan on the host, built for the ESP32-S3 (
 cd firmware/test_app
 idf.py set-target esp32s3                # once
 idf.py -p COMx flash                     # replaces the protocol app; same partition table, so clips and NVS are untouched
-python ../tools/device_tests.py COMx     # expects "DEVICE TESTS: 15/15 PASS", about 2 min; add --full for ~40 min
+python ../tools/device_tests.py COMx     # expects "DEVICE TESTS: 16/16 PASS", about 2 min; add --full for ~40 min
 cd .. && idf.py -p COMx flash            # put the protocol firmware back
 ```
 

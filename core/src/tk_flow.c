@@ -152,6 +152,11 @@ static bool ui_random(void *ctx, uint8_t *out, size_t len) {
 
 // ---- SIGN_REQUEST flow ----
 
+static bool audio_ok(const tk_device_t *d) {
+    const tk_platform_t *p = d->platform;
+    return p->audio_ok != NULL && p->audio_ok(p->ctx); // missing hook: assume no audio
+}
+
 static bool ensure_keys(tk_device_t *d) {
     if (d->keys_ready) {
         return true;
@@ -234,6 +239,11 @@ static tk_status_t unlock(tk_device_t *d, flow_secrets_t *s) {
         if (ur == TK_UNLOCK_OK) {
             break;
         }
+        if (ur == TK_UNLOCK_ERROR) { // the key store can't check a PIN: fail closed
+            d->platform->haptic(d->platform->ctx, TK_HAPTIC_WARNING);
+            say(d, TK_CLIP_CANNOT_SIGN);
+            return TK_STATUS_DEVICE_ERROR;
+        }
         if (ur == TK_UNLOCK_LOCKED_OUT) {
             lockout_wipe(d);
             d->platform->haptic(d->platform->ctx, TK_HAPTIC_WARNING);
@@ -253,6 +263,11 @@ static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow
     const tk_platform_t *p = d->platform;
     if (!w->has_wallet(w->ctx) || !ensure_keys(d)) {
         return TK_STATUS_NO_WALLET;
+    }
+    if (!audio_ok(d)) {
+        // Without audio the user can't hear the amount, recipient or PIN digits: refuse (Q7).
+        p->haptic(p->ctx, TK_HAPTIC_WARNING);
+        return TK_STATUS_DEVICE_ERROR;
     }
 
     tk_tx_t tx;

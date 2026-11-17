@@ -72,6 +72,7 @@ Contact name rules (`core/src/tk_contacts.c`): 1–12 characters from ASCII lett
 | 0x09 | `CONTACTS_FULL` | CONTACT_ADD refused; the book holds 16 contacts |
 | 0x0A | `CONTACT_EXISTS` | CONTACT_ADD refused; same name (ignoring case) or same wallet already stored |
 | 0x0B | `NOT_FOUND` | CONTACT_REMOVE index is not in the book |
+| 0x0C | `DEVICE_ERROR` | The device can't do this safely, so it refused: no working audio (clip pack missing or stale, I2S down), the RNG refused, storage failed, or the key store can't check a PIN. Nothing was signed or stored. The app says to check the device (for audio: reflash the clip pack) |
 
 ## Events (`EVENT` payload)
 

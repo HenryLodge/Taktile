@@ -3,8 +3,7 @@
 // All real: serial link (USB-Serial-JTAG), the clock, buttons (buttons.c), audio (audio.c),
 // haptics (haptics.c), the hardware RNG (rng.c: entropy source on, fail-closed health checks, I11)
 // and storage (storage.c: plain NVS, fails closed, never auto-erased).
-// The wallet below is still a no-wallet stub until the SETUP / PIN-unlock tasks (Day 5-6): every
-// flow stops at NO_WALLET.
+// The wallet is core's key store (core/src/tk_keystore.c), set up in main.c.
 
 #include "platform.h"
 
@@ -64,6 +63,17 @@ static void p_serial_write(void *ctx, const uint8_t *buf, size_t len) {
     tk_link_write(buf, len);
 }
 
+static bool p_audio_ok(void *ctx) {
+    (void)ctx;
+    const tk_audio_status_t st = tk_audio_status();
+    return st.i2s_ok && st.pack == TK_CLIPPACK_OK; // else every clip would be silent
+}
+
+static bool p_private_audio_only(void *ctx) {
+    (void)ctx;
+    return !tk_audio_speaker_mode();
+}
+
 const tk_platform_t TK_FW_PLATFORM = {
     .ctx = NULL,
     .play_clip = p_play_clip,
@@ -75,46 +85,6 @@ const tk_platform_t TK_FW_PLATFORM = {
     .storage_set = p_storage_set,
     .serial_read = p_serial_read,
     .serial_write = p_serial_write,
-};
-
-// ---- No wallet yet (replaced by the SETUP / PIN-unlock tasks, Day 5-6) ----
-
-static bool w_has_wallet(void *ctx) {
-    (void)ctx;
-    return false;
-}
-
-static bool w_get_pubkey(void *ctx, uint8_t out[32]) {
-    (void)ctx;
-    (void)out;
-    return false;
-}
-
-static bool w_is_unlocked(void *ctx) {
-    (void)ctx;
-    return false;
-}
-
-static tk_unlock_result_t w_unlock(void *ctx, const uint8_t pin[TK_PIN_LEN], uint8_t *attempts_left) {
-    (void)ctx;
-    (void)pin;
-    (void)attempts_left;
-    return TK_UNLOCK_LOCKED_OUT;
-}
-
-static bool w_sign(void *ctx, const uint8_t *msg, size_t len, uint8_t sig[TK_SIGNATURE_LEN]) {
-    (void)ctx;
-    (void)msg;
-    (void)len;
-    (void)sig;
-    return false;
-}
-
-const tk_wallet_ops_t TK_FW_NO_WALLET = {
-    .ctx = NULL,
-    .has_wallet = w_has_wallet,
-    .get_pubkey = w_get_pubkey,
-    .is_unlocked = w_is_unlocked,
-    .unlock = w_unlock,
-    .sign = w_sign,
+    .audio_ok = p_audio_ok,
+    .private_audio_only = p_private_audio_only,
 };

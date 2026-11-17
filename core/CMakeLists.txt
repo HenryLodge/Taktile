@@ -51,6 +51,7 @@ add_library(tk_core STATIC
     src/tk_contacts.c
     src/tk_crc32.c
     src/tk_flow.c
+    src/tk_keystore.c
     src/tk_parser.c
     src/tk_pin_entry.c
     src/tk_proto.c
