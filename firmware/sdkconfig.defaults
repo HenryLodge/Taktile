@@ -27,4 +27,5 @@ CONFIG_ESP_SYSTEM_PANIC_PRINT_REBOOT=y
 CONFIG_SECURE_FLASH_ENC_ENABLED=n
 CONFIG_SECURE_BOOT=n
 CONFIG_EFUSE_VIRTUAL=n
-# When nvs_flash joins the build (NVS task), add: CONFIG_NVS_ENCRYPTION=n
+# Plain NVS: its encryption needs flash encryption or an HMAC key burned into an eFuse.
+CONFIG_NVS_ENCRYPTION=n

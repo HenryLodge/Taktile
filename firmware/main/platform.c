@@ -1,10 +1,10 @@
 // tk_platform_t on the Metro ESP32-S3.
 //
-// Real: serial link (USB-Serial-JTAG), the clock, buttons (buttons.c), audio (audio.c), haptics
-// (haptics.c) and the hardware RNG (rng.c: entropy source on, fail-closed health checks, I11).
-// Storage is still a FAIL-CLOSED STUB that a later docs/TASKS.md Day 3-4 task replaces:
-//   storage_*     -> false (NVS task)
-// With the no-wallet stub below, every flow stops at NO_WALLET before any of these matter.
+// All real: serial link (USB-Serial-JTAG), the clock, buttons (buttons.c), audio (audio.c),
+// haptics (haptics.c), the hardware RNG (rng.c: entropy source on, fail-closed health checks, I11)
+// and storage (storage.c: plain NVS, fails closed, never auto-erased).
+// The wallet below is still a no-wallet stub until the SETUP / PIN-unlock tasks (Day 5-6): every
+// flow stops at NO_WALLET.
 
 #include "platform.h"
 
@@ -17,6 +17,7 @@
 #include "haptics.h"
 #include "link.h"
 #include "rng.h"
+#include "storage.h"
 
 static void p_play_clip(void *ctx, uint16_t clip, bool secret) {
     (void)ctx;
@@ -45,18 +46,12 @@ static bool p_random_bytes(void *ctx, uint8_t *out, size_t len) {
 
 static bool p_storage_get(void *ctx, const char *key, void *buf, size_t *len) {
     (void)ctx;
-    (void)key;
-    (void)buf;
-    (void)len;
-    return false; // STUB: nothing stored
+    return tk_storage_get(key, buf, len);
 }
 
 static bool p_storage_set(void *ctx, const char *key, const void *buf, size_t len) {
     (void)ctx;
-    (void)key;
-    (void)buf;
-    (void)len;
-    return false; // STUB: cannot persist
+    return tk_storage_set(key, buf, len); // committed before it returns true
 }
 
 static size_t p_serial_read(void *ctx, uint8_t *buf, size_t cap) {

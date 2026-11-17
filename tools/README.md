@@ -17,6 +17,7 @@ npm --prefix tools run check             # both generators' --check
 | `gen-vectors.mjs` | Build SOL/USDC messages with web3.js (each parser vector names the exact `tk_parse_result_t` it must produce) → `tests/vectors/{parser,ata,curve,checksum,contacts}.json` + `core/tests/gen/tk_{parser,ata,curve,checksum,contacts}_vectors.h` (committed; `--check` to verify). Offline: builds messages, never calls an RPC |
 | `gen-clips.mjs` | Clip text for every ID in `core/include/tk_clips.h` → `tools/clips.json` + `sim/src/clip_text.c` + `core/include/tk_clips_fp.h` (the clip-list fingerprint) (committed; `--check` to verify) |
 | `gen-audio.mjs` | Generate clips from `clips.json` with ElevenLabs → `tools/out/clips/<id>.pcm` + `tools/out/preview/*.wav` (gitignored; needs `server/.env`; cached, `--dry-run`, `--only`). See `docs/AUDIO.md` |
+| `verify-ed25519.mjs` | Verifies the `ED25519 pub=… msg=… sig=…` lines printed by firmware bring-up step 0 with `node:crypto`; exits 1 on any bad signature or none found |
 | `pack-clips.mjs` | `tools/out/clips/<id>.pcm` → `tools/out/clips.bin`, the clip pack for the device's `clips` partition (gitignored; `--check` to verify; flashing in `firmware/README.md`). Refuses clips generated from older text. Format in `docs/AUDIO.md` |
 | `setup-devnet.mjs` | Airdrop SOL, fund devnet USDC, create contacts' ATAs |
 

@@ -66,6 +66,7 @@ node --experimental-strip-types --test app/src/*.test.ts   # app checksum tests 
 node tools/gen-clips.mjs                    # regenerates tools/clips.json, sim/src/clip_text.c, core/include/tk_clips_fp.h from tk_clips.h; add --check to verify
 node tools/gen-audio.mjs --dry-run          # then without --dry-run: ElevenLabs clips -> tools/out/ (needs server/.env; cached)
 node tools/pack-clips.mjs                   # tools/out/clips/*.pcm -> tools/out/clips.bin (the clip pack; flash: firmware/README.md); add --check to verify
+node tools/verify-ed25519.mjs out.txt       # checks the ED25519 lines printed by firmware bring-up step 0 (node:crypto)
 ```
 
 ## Hard rules (security invariants — summary; full list in docs/SECURITY_MODEL.md)
@@ -79,7 +80,7 @@ node tools/pack-clips.mjs                   # tools/out/clips/*.pcm -> tools/out
 7. **Bounds-check every read** in `core/`. No reads past buffer ends, no recursion, no allocation in parse paths.
 8. **Devnet only.** Never add mainnet RPC endpoints or mainnet mint addresses.
 9. **SETUP never overwrites an existing wallet.** It returns `WALLET_EXISTS` if a wallet is present.
-10. **Entropy source on at boot.** Firmware calls `bootloader_random_enable()` early in `app_main`, before any randomness is used, and never disables it.
+10. **Entropy source on at boot.** Firmware calls `bootloader_random_enable()` early in `app_main`, before any randomness is used, and never disables it. Firmware never initializes the ADC (it interferes with the entropy source).
 
 ## Things you must ask the human before doing
 

@@ -25,7 +25,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [x] P0 `bootloader_random_enable()` early in `app_main`, before any RNG use; never disabled (I11)
 - [x] P0 Buttons with debounce; I2S playback of clips from the clip pack (raw `clips` partition, not LittleFS); SPK_EN control
 - [x] P0 DRV2605L haptic patterns
-- [ ] P0 NVS storage; hardware RNG; trezor-crypto component; Ed25519 sign verified on host
+- [x] P0 NVS storage (plain NVS, fails closed, never auto-erased); hardware RNG (done with the entropy-source task); trezor-crypto component; Ed25519 sign verified on host (`tools/verify-ed25519.mjs`)
 - [ ] P0 Same `core/` tests pass on device (a `test` app target or on-boot self-test)
 
 ## Day 5–6 (Nov 16–17): device flows
@@ -49,7 +49,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 
 ## Day 8 (Nov 19): hardening, docs
 
-- [ ] P1 Flash encryption + secure boot on board #2 (Development mode) — **human approval required**
+- [ ] P2 Not planned: flash encryption + secure boot. There is one board and both burn eFuses (`docs/HARDWARE.md`); listed as future work in the README
 - [ ] P0 README (use `README.md` template): architecture, security model + limits, program IDs, Solana usage, ElevenLabs products used, setup instructions
 - [ ] P0 Rehearse the demo script from the PRD three times
 

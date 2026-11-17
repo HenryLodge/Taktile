@@ -17,8 +17,9 @@ ESP-IDF (v5.5) project for the Adafruit Metro ESP32-S3. A thin layer: drivers pl
 | `main/buttons.c` | Six buttons: 5 ms scan, 30 ms debounce, 2 s long press for OK and REJECT; presses that start during a clip never count (I6) |
 | `main/audio.c` | I2S0 at 16 kHz to the earpiece DAC and speaker amp; `SPK_EN` LOW for every secret clip (#9); clips from the clip pack, checked at boot, silent if it's missing or stale |
 | `main/haptics.c` | DRV2605L over I2C (GPIO47/48): ERM motor, four patterns from its effect library; fire-and-forget, off if the chip is missing |
+| `main/storage.c` | Plain NVS (namespace `taktile`), same contract as the simulator's storage. Fails closed and never erases the partition by itself |
 | `main/link.c` | USB-Serial-JTAG link (the board's USB-C port; CDC-ACM to the laptop) |
-| `main/platform.c` | `tk_platform_t`. Serial, clock, RNG, buttons, audio and haptics are real; storage is a fail-closed stub until the NVS task. No wallet yet (every flow answers `NO_WALLET`) |
+| `main/platform.c` | `tk_platform_t`. Serial, clock, RNG, buttons, audio, haptics and storage are real. No wallet yet (every flow answers `NO_WALLET`) |
 | `main/bringup.c` | Hardware bring-up menu, one numbered step per `docs/HARDWARE.md` bring-up item. Prints with `out()` straight to the USB driver, not `printf`: stdout needs `vfs`, which pulls the UART and PSRAM drivers into the build |
 | `partitions.csv` | `nvs` 64 KB, `factory` app 3 MB, `clips` 10 MB (raw clip pack) |
 | `sdkconfig.defaults` | Protocol build: console and logs **off**, so USB carries only frames |
@@ -54,6 +55,14 @@ python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-tabl
 ```
 
 Without a valid pack every clip is silent; bring-up step 5 prints the pack status.
+
+**NVS** (bring-up step 9 prints its status). If it won't open (for example data left by the board's factory firmware), the firmware never erases it by itself: storage stays off. To erase it yourself, which deletes the wallet and contacts:
+
+```bash
+python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-table-file partitions.csv erase_partition --partition-name nvs
+```
+
+**Ed25519 check** (bring-up step 0): copy the `ED25519 …` lines it prints into a file, then `node ../tools/verify-ed25519.mjs that-file.txt` (expects `all 2 signatures OK`).
 
 `COMx` on Windows, `/dev/ttyACM0` on Linux, `/dev/cu.usbmodem*` on macOS. In the monitor, `Ctrl-]` exits.
 

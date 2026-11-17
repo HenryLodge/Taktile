@@ -22,7 +22,7 @@
 8. **I8 — No radios.** Wi-Fi and Bluetooth are never initialized.
 9. **I9 — Devnet only** for the hackathon build. The USDC mint is pinned in firmware.
 10. **I10 — No silent wallet replacement.** `SETUP` is refused with `WALLET_EXISTS` while a wallet exists. The only way to a new wallet is the 10-failure wipe (or a future on-device wipe that requires PIN + CONFIRM).
-11. **I11 — True entropy.** With radios off, the ESP32-S3 RNG is only truly random when its internal entropy source is enabled. Firmware calls `bootloader_random_enable()` early in `app_main`, before anything uses `random_bytes` (seed generation, PIN start digits), and never disables it.
+11. **I11 — True entropy.** With radios off, the ESP32-S3 RNG is only truly random when its internal entropy source is enabled. Firmware calls `bootloader_random_enable()` early in `app_main`, before anything uses `random_bytes` (seed generation, PIN start digits), and never disables it. Firmware never initializes the ADC: ESP-IDF documents that using the ADC interferes with the entropy source (the build checks also keep the `esp_adc` component out).
 
 ## Transaction limits
 
@@ -50,4 +50,4 @@ Be precise about this in the README and pitch.
 | Weak RNG with radios off | I11 | P0 |
 | Malicious contact enrollment | Out-of-band 8-word (64-bit) address phrase | P0 |
 | Coercion, scam calls | Out of scope by design: the user controls all transactions; the device announces the real recipient and amount | — |
-| Physical flash dump | NVS encryption + flash encryption (board #2) | P1; secure element is future work |
+| Physical flash dump | **Not defended in this build.** One board, so no NVS or flash encryption (both burn eFuses). The seed is encrypted under the PIN-derived key (I7), but a 6-digit PIN can be brute-forced offline from a dump | — ; flash encryption or a secure element is future work |

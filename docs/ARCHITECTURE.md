@@ -22,7 +22,7 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 ┌────────────────────────────┴─────────────────────────────────────────────────┐
 │ DEVICE (trusted) — firmware/ + core/                                         │
 │   proto → parser → contacts → announce (audio) → PIN/confirm → signer        │
-│   Storage: encrypted NVS (seed, PIN verifier, counters), clip pack (clips)   │
+│   Storage: plain NVS (PIN-encrypted seed, counters), clip pack (clips)       │
 └────────────────────────────┬─────────────────────────────────────────────────┘
                              │
                Earpiece (UDA1334A) · speaker (MAX98357A) · 6 buttons · haptics
