@@ -1,10 +1,12 @@
 // Writes the fuzz seed corpus from the generated parser vectors (tests/vectors/parser.json, as
-// tk_parser_vectors.h). Usage: make_seeds <dir>; <dir>/parser and <dir>/frame must exist.
+// tk_parser_vectors.h), plus small clip packs. Usage: make_seeds <dir>; <dir>/parser, <dir>/frame
+// and <dir>/clippack must exist.
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "tk_crc32.h"
 #include "tk_parser_vectors.h"
 #include "tk_proto.h"
 
@@ -91,6 +93,32 @@ int main(int argc, char **argv) {
     n = 0;
     frame(TK_MSG_CONTACT_ADD, 8, payload, sizeof(payload), buf, sizeof(buf), &n);
     write_file("frame", "max_payload", buf, n);
+
+    // A valid 3-clip pack (as tools/pack-clips.mjs lays it out), and the same truncated.
+    static uint8_t pack[64];
+    memset(pack, 0, sizeof(pack));
+    memcpy(pack, "TKCP", 4);
+    pack[4] = 1;                 // version
+    pack[6] = 3;                 // count
+    pack[8] = 60;                // total_len
+    pack[12] = 0x78;             // fingerprint 0x12345678
+    pack[13] = 0x56;
+    pack[14] = 0x34;
+    pack[15] = 0x12;
+    const uint8_t index[3][2] = {{44, 4}, {48, 6}, {56, 2}}; // {offset, len}
+    for (int i = 0; i < 3; i++) {
+        pack[20 + 8 * i] = index[i][0];
+        pack[24 + 8 * i] = index[i][1];
+    }
+    for (int i = 44; i < 60; i++) {
+        pack[i] = (uint8_t)i;
+    }
+    const uint32_t crc = tk_crc32(pack + 44, 16);
+    for (int i = 0; i < 4; i++) {
+        pack[16 + i] = (uint8_t)(crc >> (8 * i));
+    }
+    write_file("clippack", "valid", pack, 60);
+    write_file("clippack", "truncated", pack, 40);
 
     return 0;
 }

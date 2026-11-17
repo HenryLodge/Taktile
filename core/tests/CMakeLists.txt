@@ -4,6 +4,7 @@ set(TK_TESTS
     test_crc32
     test_ata
     test_checksum
+    test_clippack
     test_contacts
     test_speech
     test_pin_entry

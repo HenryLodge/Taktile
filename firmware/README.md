@@ -12,10 +12,12 @@ ESP-IDF (v5.5) project for the Adafruit Metro ESP32-S3. A thin layer: drivers pl
 | Path | What |
 | --- | --- |
 | `components/tk_core`, `components/trezor_crypto` | Wrap `core/src` and `core/third_party` in place (no copied sources) |
-| `main/main.c` | `app_main`: entropy on, then the protocol loop (`tk_device_poll`) or the bring-up menu |
+| `main/main.c` | `app_main`: entropy on, speaker off, drivers, then the protocol loop (`tk_device_poll`) or the bring-up menu |
 | `main/rng.c` | Hardware RNG: entropy source on, startup + continuous health checks, fail closed |
+| `main/buttons.c` | Six buttons: 5 ms scan, 30 ms debounce, 2 s long press for OK and REJECT; presses that start during a clip never count (I6) |
+| `main/audio.c` | I2S0 at 16 kHz to the earpiece DAC and speaker amp; `SPK_EN` LOW for every secret clip (#9); clips from the clip pack, checked at boot, silent if it's missing or stale |
 | `main/link.c` | USB-Serial-JTAG link (the board's USB-C port; CDC-ACM to the laptop) |
-| `main/platform.c` | `tk_platform_t`. Serial, clock and RNG are real; storage, audio, haptics and buttons are fail-closed stubs until their Day 3–4 tasks. No wallet yet (every flow answers `NO_WALLET`) |
+| `main/platform.c` | `tk_platform_t`. Serial, clock, RNG, buttons and audio are real; storage and haptics are fail-closed stubs until their Day 3–4 tasks. No wallet yet (every flow answers `NO_WALLET`) |
 | `main/bringup.c` | Hardware bring-up menu, one numbered step per `docs/HARDWARE.md` bring-up item. Prints with `out()` straight to the USB driver, not `printf`: stdout needs `vfs`, which pulls the UART and PSRAM drivers into the build |
 | `partitions.csv` | `nvs` 64 KB, `factory` app 3 MB, `clips` 10 MB (raw clip pack) |
 | `sdkconfig.defaults` | Protocol build: console and logs **off**, so USB carries only frames |
@@ -44,7 +46,13 @@ python tools/smoke.py COMx              # IDF's Python (has pyserial); expects A
 
 # Bring-up build (separate build dir and sdkconfig, so the two never mix)
 idf.py -B build-bringup -D SDKCONFIG=build-bringup/sdkconfig -D "SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.bringup" -p COMx flash monitor
+
+# Clip pack: once, and again whenever the clips change (idf.py flash doesn't touch it)
+node ../tools/pack-clips.mjs
+python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-table-file partitions.csv write_partition --partition-name clips --input ../tools/out/clips.bin
 ```
+
+Without a valid pack every clip is silent; bring-up step 5 prints the pack status.
 
 `COMx` on Windows, `/dev/ttyACM0` on Linux, `/dev/cu.usbmodem*` on macOS. In the monitor, `Ctrl-]` exits.
 

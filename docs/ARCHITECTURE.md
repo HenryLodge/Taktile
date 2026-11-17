@@ -22,7 +22,7 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 ┌────────────────────────────┴─────────────────────────────────────────────────┐
 │ DEVICE (trusted) — firmware/ + core/                                         │
 │   proto → parser → contacts → announce (audio) → PIN/confirm → signer        │
-│   Storage: encrypted NVS (seed, PIN verifier, counters), LittleFS (clips)    │
+│   Storage: encrypted NVS (seed, PIN verifier, counters), clip pack (clips)   │
 └────────────────────────────┬─────────────────────────────────────────────────┘
                              │
                Earpiece (UDA1334A) · speaker (MAX98357A) · 6 buttons · haptics
@@ -58,7 +58,7 @@ When signing, a SOL destination is looked up only among contacts' wallets and a 
 | `core` (static lib + tests) | parser, contacts, checksum, ata, flow, proto | All security logic; host-tested with ctest (`-DTK_SANITIZE=ON` for ASan + UBSan) |
 | `core` fuzz targets | `fuzz_parser`, `fuzz_frame` (`-DTK_FUZZ=ON`, clang) | libFuzzer on the two untrusted-input decoders, seeded from `tests/vectors/` |
 | `sim` | core + WebSocket server on `ws://localhost:8765` + keyboard buttons + audio as printed text (optionally plays clips via `afplay`/`aplay`) | Develop the whole flow before hardware arrives |
-| `firmware` | core + ESP-IDF drivers (USB CDC, I2S, GPIO, I2C haptics, NVS, LittleFS) | The real device |
+| `firmware` | core + ESP-IDF drivers (USB CDC, I2S, GPIO, I2C haptics, NVS, clip pack partition) | The real device |
 | `app` | Vite + TS | User-facing frontend (required by the Consumer track) |
 | `server` | Node + Express | Holds the ElevenLabs key (STT/TTS proxy) |
 

@@ -23,7 +23,7 @@ firmware/   ESP-IDF project for the Adafruit Metro ESP32-S3. Thin layer: drivers
 sim/        Host simulator: core/ + a WebSocket server + keyboard "buttons" + printed/played audio.
 app/        Companion web app (Vite + TypeScript). Web Serial or WebSocket transport.
 server/     Tiny Node server: ElevenLabs proxy (keeps the API key off the client).
-tools/      Audio clip generation, test-vector generation, LittleFS packing.
+tools/      Audio clip generation and clip-pack packing, test-vector generation.
 tests/      Shared test vectors (hex transactions + expected parse results).
 ```
 
@@ -41,6 +41,7 @@ cmake -S core -B build/asan -DTK_SANITIZE=ON && cmake --build build/asan && ctes
 cmake -S core -B build/fuzz -DTK_FUZZ=ON -DCMAKE_C_COMPILER=clang && cmake --build build/fuzz
 ./build/fuzz/fuzz_parser -max_total_time=300 -max_len=1300 tests/corpus/parser build/fuzz/seeds/parser
 ./build/fuzz/fuzz_frame -max_total_time=300 -max_len=4200 tests/corpus/frame build/fuzz/seeds/frame
+./build/fuzz/fuzz_clippack -max_total_time=300 -max_len=2048 tests/corpus/clippack build/fuzz/seeds/clippack
 
 # core + simulator (host)
 cmake -S core -B build/core && cmake --build build/core && ctest --test-dir build/core
@@ -62,8 +63,9 @@ node --test tools/*.test.mjs                # tests for the tools/ scripts
 (cd tools && npm ci --ignore-scripts)       # once, for gen-vectors (pinned web3.js + spl-token)
 node tools/gen-vectors.mjs                  # writes tests/vectors/*.json + core/tests/gen/*.h; add --check to verify
 node --experimental-strip-types --test app/src/*.test.ts   # app checksum tests (no install needed)
-node tools/gen-clips.mjs                    # regenerates tools/clips.json + sim/src/clip_text.c from tk_clips.h; add --check to verify
+node tools/gen-clips.mjs                    # regenerates tools/clips.json, sim/src/clip_text.c, core/include/tk_clips_fp.h from tk_clips.h; add --check to verify
 node tools/gen-audio.mjs --dry-run          # then without --dry-run: ElevenLabs clips -> tools/out/ (needs server/.env; cached)
+node tools/pack-clips.mjs                   # tools/out/clips/*.pcm -> tools/out/clips.bin (the clip pack; flash: firmware/README.md); add --check to verify
 ```
 
 ## Hard rules (security invariants — summary; full list in docs/SECURITY_MODEL.md)

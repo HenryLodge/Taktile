@@ -21,7 +21,7 @@ import { normalizePeak, parseWav, pcmBytes, peakOf, SAMPLE_RATE, trimSilence, wr
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const API = 'https://api.elevenlabs.io/v1/text-to-speech';
-export const LITTLEFS_BUDGET_BYTES = 10 * 1024 * 1024; // docs/AUDIO.md
+export const CLIP_PACK_BUDGET_BYTES = 10 * 1024 * 1024; // docs/AUDIO.md
 
 // Fixed so every clip sounds like the same speaker in the same session.
 export const DEFAULT_SETTINGS = Object.freeze({
@@ -211,7 +211,7 @@ export async function run({
     say(
         `done: ${toFetch.length} generated, ${jobs.length - toFetch.length} from cache, ${chars} characters sent; ` +
             `${manifest.size} clip(s) in tools/out, ${(totalMs / 1000).toFixed(1)} s of audio, ` +
-            `${(bytes / 1048576).toFixed(2)} MB of ${(LITTLEFS_BUDGET_BYTES / 1048576).toFixed(0)} MB budget`,
+            `${(bytes / 1048576).toFixed(2)} MB of ${(CLIP_PACK_BUDGET_BYTES / 1048576).toFixed(0)} MB budget`,
     );
     return { generated: toFetch.length, cached: jobs.length - toFetch.length, chars, bytes, warnings };
 }

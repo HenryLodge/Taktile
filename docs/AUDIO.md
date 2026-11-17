@@ -37,9 +37,11 @@ The address phrase is longer because at enrollment the attacker chooses the addr
 ## Format and storage
 
 - Raw PCM, 16-bit signed LE, mono, 16 kHz, leading/trailing silence trimmed to 40 ms, peak-normalized to −3 dBFS.
-- Stored in a LittleFS partition as `/c/<id>.pcm`. Clip IDs are defined by core in `core/include/tk_clips.h`; `tools/clips.json` must match it, and `tools/` generates the LittleFS image from `clips.json`.
-- Budget: ~0.6 s average × 32 KB/s ≈ 20 KB per clip; ~350 clips ≈ 7 MB. The Metro ESP32-S3 has 16 MB flash; give LittleFS ~10 MB in `partitions.csv`. If space gets tight, switch to IMA ADPCM (4:1) before cutting clips.
-- I2S output at 16 kHz; duplicate mono to both channels for the UDA1334A.
+- Stored as a **clip pack**: one flat image in the raw `clips` partition (10 MB, `firmware/partitions.csv`), no filesystem. `node tools/pack-clips.mjs` builds `tools/out/clips.bin` from `tools/out/clips/<id>.pcm`. Layout (little-endian): `"TKCP"`, u16 version 1, u16 count, u32 total length, u32 fingerprint, u32 CRC-32 of the clip data, then `count × {u32 offset, u32 len}`, then the PCM (each clip 4-byte aligned). Clip IDs are defined by core in `core/include/tk_clips.h`; `tools/clips.json` must match it.
+- **Stale packs are refused.** The fingerprint is a CRC-32 over `"<id>:<text>\n"` for every clip; `tools/gen-clips.mjs` writes it to `core/include/tk_clips_fp.h` (`TK_CLIPS_FINGERPRINT`). At boot the device checks the header, every index entry, the clip count, the fingerprint and the data CRC (`core/src/tk_clippack.c`, bounds-checked and fuzzed). If any check fails, every clip is silent: a pack built for another clip list would speak the wrong word for an ID. `pack-clips.mjs` also refuses clips that were generated from older text (`tools/out/manifest.json`).
+- Flash it once, and again whenever clips change: `parttool.py -p COMx --partition-table-file partitions.csv write_partition --partition-name clips --input ../tools/out/clips.bin` (from `firmware/`). `idf.py flash` doesn't touch it.
+- Budget: ~0.6 s average × 32 KB/s ≈ 20 KB per clip; 342 clips = 6.94 MB of the 10 MB partition. If space gets tight, switch to IMA ADPCM (4:1) before cutting clips.
+- I2S output at 16 kHz; mono is duplicated to both channels (the UDA1334A plays both; the MAX98357A, with SD driven HIGH, plays the left). Gain (set by ear, `firmware/main/audio.c`): −9 dB with the earpiece alone, 50% (−6 dB) while the speaker is on (the bus is shared, so the earbuds get that level too; secret clips never turn the speaker on).
 
 ## Generation (`tools/gen-audio.mjs`)
 
@@ -48,28 +50,29 @@ The address phrase is longer because at enrollment the attacker chooses the addr
 - **Fixed settings** so every clip sounds like one speaker: `eleven_multilingual_v2`, `stability 0.75`, `similarity_boost 0.75`, `style 0`, `use_speaker_boost true`, `speed 0.95`, `seed 1`, `apply_text_normalization "off"`.
 - **Processing:** trim leading/trailing audio below −45 dBFS down to 40 ms, peak-normalize to −3 dBFS.
 - **Cache:** raw responses in `tools/out/cache/`, keyed by SHA-256 of (spoken text, voice, every setting), so reruns only pay for changed clips. `--dry-run` shows what would be generated; `--only <ids|names|text>` regenerates a few; `--force` ignores the cache.
-- **Outputs** (gitignored): `tools/out/clips/<id>.pcm` (what the device stores as `/c/<id>.pcm`), `tools/out/preview/<id>-<text>.wav` (listen to these), `tools/out/manifest.json`. First full run: 342 clips, 2,303 characters, 333 ms–2.4 s each, 227 s and 6.94 MB in total (budget 10 MB).
-- **Listen to every preview before packing**: what the device says is trusted output. Fix a bad clip with a `say` override in `gen-clips.mjs`, rerun `gen-clips`, then `gen-audio` (only that clip is regenerated).
+- **Outputs** (gitignored): `tools/out/clips/<id>.pcm` (packed into `tools/out/clips.bin` by `pack-clips.mjs`), `tools/out/preview/<id>-<text>.wav` (listen to these), `tools/out/manifest.json`. First full run: 342 clips, 2,303 characters, 333 ms–2.4 s each, 227 s and 6.94 MB in total (budget 10 MB).
+- **Listen to every preview before packing**: what the device says is trusted output. Fix a bad clip with a `say` override in `gen-clips.mjs`, rerun `gen-clips`, then `gen-audio` (only that clip is regenerated), then `pack-clips` and reflash the pack.
 
 ## Output routing
 
 Core marks each clip it plays as public or secret (`play_clip(..., secret)`): the three checksum words and every PIN digit value are secret; prompts, amounts, tokens, spelled names and PIN positions ("digit three") are public.
-
-
-- **Earpiece (UDA1334A) is the default** and the only path for checksum words, PIN entry, and recovery words.
-- **Speaker (MAX98357A) "demo mode"** is enabled only on the device (hold OK + BACK for 3 s), announced with "speaker mode on", and resets at reboot. The host cannot enable it. In speaker mode the device refuses PIN entry and recovery playback.
+- **Earpiece (UDA1334A) is the default** and the only path for secret clips: checksum words, PIN digit values, and recovery words.
+- **The speaker plays public clips only.** The MAX98357A's SD pin (`SPK_EN`) is driven LOW at boot, before I2S starts, and stays LOW except while a public clip plays in speaker mode. Firmware's `play_clip` drives it LOW before the first sample of every secret clip, whatever the mode, and drains the I2S buffers after every clip, so no secret audio reaches the speaker.
+- **Speaker (MAX98357A) "demo mode"** is enabled only on the device (hold OK + BACK for 3 s), announced with "speaker mode on", and resets at reboot. The host cannot enable it. PIN entry is allowed in speaker mode: the digit values are secret clips, so they stay in the earpiece, and an observer hears only the public parts ("digit three"). Recovery playback is still refused in speaker mode.
 
 ## Buttons
 
 | Button | Physical | Use |
 | --- | --- | --- |
 | UP / DOWN | Small, in a row | Change digit during PIN entry; scroll |
-| OK | Small | Commit digit; long-press = repeat last announcement |
+| OK | Small | Commit digit; long-press 2 s = repeat last announcement |
 | BACK | Small | Delete previous digit |
 | CONFIRM | Large round cap, right side | Approve signing |
 | REJECT | Large square cap, left side | Reject; long-press 2 s = cancel current flow |
 
-Debounce 30 ms. Presses during an announcement are ignored except long-press OK (repeat) and REJECT.
+Debounce 30 ms (scanned every 5 ms). UP, DOWN, BACK and CONFIRM count on press; OK and REJECT count on release if held under 2 s, or as a long press the moment the hold reaches 2 s.
+
+**Every press that starts during a clip is discarded**, including long presses of OK and REJECT, and a button still held when a clip ends is ignored until it is released. This is what makes I6 hold (CONFIRM pressed during the announcement never counts); `core/include/tk_platform.h` (`wait_button`) is the contract, and the simulator does the same. To repeat or cancel, press after the clip ends.
 
 ## PIN entry ("rotary" scheme)
 

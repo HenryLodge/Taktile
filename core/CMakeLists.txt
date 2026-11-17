@@ -47,6 +47,7 @@ set(TK_WARNINGS -Wall -Wextra -Werror -Wvla -Wshadow -Wstrict-prototypes)
 add_library(tk_core STATIC
     src/tk_ata.c
     src/tk_checksum.c
+    src/tk_clippack.c
     src/tk_contacts.c
     src/tk_crc32.c
     src/tk_flow.c
