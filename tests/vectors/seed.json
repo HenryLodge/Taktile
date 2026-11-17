@@ -1,0 +1,460 @@
+{
+  "slip10": [
+    {
+      "name": "slip10_v1_depth0",
+      "seed": "000102030405060708090a0b0c0d0e0f",
+      "path": [],
+      "key": "2b4be7f19ee27bbf30c667b642d5f4aa69fd169872f8fc3059c08ebae2eb19e7",
+      "pubkey": "a4b2856bfec510abab89753fac1ac0e1112364e7d250545963f135f2a33188ed"
+    },
+    {
+      "name": "slip10_v1_depth1",
+      "seed": "000102030405060708090a0b0c0d0e0f",
+      "path": [
+        2147483648
+      ],
+      "key": "68e0fe46dfb67e368c75379acec591dad19df3cde26e63b93a8e704f1dade7a3",
+      "pubkey": "8c8a13df77a28f3445213a0f432fde644acaa215fc72dcdf300d5efaa85d350c"
+    },
+    {
+      "name": "slip10_v1_depth2",
+      "seed": "000102030405060708090a0b0c0d0e0f",
+      "path": [
+        2147483648,
+        2147483649
+      ],
+      "key": "b1d0bad404bf35da785a64ca1ac54b2617211d2777696fbffaf208f746ae84f2",
+      "pubkey": "1932a5270f335bed617d5b935c80aedb1a35bd9fc1e31acafd5372c30f5c1187"
+    },
+    {
+      "name": "slip10_v1_depth3",
+      "seed": "000102030405060708090a0b0c0d0e0f",
+      "path": [
+        2147483648,
+        2147483649,
+        2147483650
+      ],
+      "key": "92a5b23c0b8a99e37d07df3fb9966917f5d06e02ddbd909c7e184371463e9fc9",
+      "pubkey": "ae98736566d30ed0e9d2f4486a64bc95740d89c7db33f52121f8ea8f76ff0fc1"
+    },
+    {
+      "name": "slip10_v1_depth4",
+      "seed": "000102030405060708090a0b0c0d0e0f",
+      "path": [
+        2147483648,
+        2147483649,
+        2147483650,
+        2147483650
+      ],
+      "key": "30d1dc7e5fc04c31219ab25a27ae00b50f6fd66622f6e9c913253d6511d1e662",
+      "pubkey": "8abae2d66361c879b900d204ad2cc4984fa2aa344dd7ddc46007329ac76c429c"
+    },
+    {
+      "name": "slip10_v1_depth5",
+      "seed": "000102030405060708090a0b0c0d0e0f",
+      "path": [
+        2147483648,
+        2147483649,
+        2147483650,
+        2147483650,
+        3147483648
+      ],
+      "key": "8f94d394a8e8fd6b1bc2f3f49f5c47e385281d5c17e65324b0f62483e37e8793",
+      "pubkey": "3c24da049451555d51a7014a37337aa4e12d41e485abccfa46b47dfb2af54b7a"
+    },
+    {
+      "name": "slip10_v2_depth0",
+      "seed": "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542",
+      "path": [],
+      "key": "171cb88b1b3c1db25add599712e36245d75bc65a1a5c9e18d76f9f2b1eab4012",
+      "pubkey": "8fe9693f8fa62a4305a140b9764c5ee01e455963744fe18204b4fb948249308a"
+    },
+    {
+      "name": "slip10_v2_depth1",
+      "seed": "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542",
+      "path": [
+        2147483648
+      ],
+      "key": "1559eb2bbec5790b0c65d8693e4d0875b1747f4970ae8b650486ed7470845635",
+      "pubkey": "86fab68dcb57aa196c77c5f264f215a112c22a912c10d123b0d03c3c28ef1037"
+    },
+    {
+      "name": "slip10_v2_depth2",
+      "seed": "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542",
+      "path": [
+        2147483648,
+        4294967295
+      ],
+      "key": "ea4f5bfe8694d8bb74b7b59404632fd5968b774ed545e810de9c32a4fb4192f4",
+      "pubkey": "5ba3b9ac6e90e83effcd25ac4e58a1365a9e35a3d3ae5eb07b9e4d90bcf7506d"
+    },
+    {
+      "name": "slip10_v2_depth3",
+      "seed": "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542",
+      "path": [
+        2147483648,
+        4294967295,
+        2147483649
+      ],
+      "key": "3757c7577170179c7868353ada796c839135b3d30554bbb74a4b1e4a5a58505c",
+      "pubkey": "2e66aa57069c86cc18249aecf5cb5a9cebbfd6fadeab056254763874a9352b45"
+    },
+    {
+      "name": "slip10_v2_depth4",
+      "seed": "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542",
+      "path": [
+        2147483648,
+        4294967295,
+        2147483649,
+        4294967294
+      ],
+      "key": "5837736c89570de861ebc173b1086da4f505d4adb387c6a1b1342d5e4ac9ec72",
+      "pubkey": "e33c0f7d81d843c572275f287498e8d408654fdf0d1e065b84e2e6f157aab09b"
+    },
+    {
+      "name": "slip10_v2_depth5",
+      "seed": "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542",
+      "path": [
+        2147483648,
+        4294967295,
+        2147483649,
+        4294967294,
+        2147483650
+      ],
+      "key": "551d333177df541ad876a60ea71f00447931c0a9da16f227c11ea080d7391b8d",
+      "pubkey": "47150c75db263559a70d5778bf36abbab30fb061ad69f69ece61a72b0cfa4fc0"
+    }
+  ],
+  "bip39": [
+    {
+      "name": "bip39_0",
+      "entropy": "0000000000000000000000000000000000000000000000000000000000000000",
+      "indices": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        102
+      ],
+      "mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+      "passphrase": "TREZOR",
+      "seed": "bda85446c68413707090a52022edd26a1c9462295029f2e60cd7c4f2bbd3097170af7a4d73245cafa9c3cca8d561a7c3de6f5d4a10be8ed2a5e608d68f92fcc8"
+    },
+    {
+      "name": "bip39_1",
+      "entropy": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+      "indices": [
+        1019,
+        2015,
+        1790,
+        2039,
+        1983,
+        1533,
+        2031,
+        1919,
+        1019,
+        2015,
+        1790,
+        2039,
+        1983,
+        1533,
+        2031,
+        1919,
+        1019,
+        2015,
+        1790,
+        2039,
+        1983,
+        1533,
+        2031,
+        1815
+      ],
+      "mnemonic": "legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth title",
+      "passphrase": "TREZOR",
+      "seed": "bc09fca1804f7e69da93c2f2028eb238c227f2e9dda30cd63699232578480a4021b146ad717fbb7e451ce9eb835f43620bf5c514db0f8add49f5d121449d3e87"
+    },
+    {
+      "name": "bip39_2",
+      "entropy": "8080808080808080808080808080808080808080808080808080808080808080",
+      "indices": [
+        1028,
+        32,
+        257,
+        8,
+        64,
+        514,
+        16,
+        128,
+        1028,
+        32,
+        257,
+        8,
+        64,
+        514,
+        16,
+        128,
+        1028,
+        32,
+        257,
+        8,
+        64,
+        514,
+        16,
+        189
+      ],
+      "mnemonic": "letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic bless",
+      "passphrase": "TREZOR",
+      "seed": "c0c519bd0e91a2ed54357d9d1ebef6f5af218a153624cf4f2da911a0ed8f7a09e2ef61af0aca007096df430022f7a2b6fb91661a9589097069720d015e4e982f"
+    },
+    {
+      "name": "bip39_3",
+      "entropy": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "indices": [
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        2047,
+        1967
+      ],
+      "mnemonic": "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+      "passphrase": "TREZOR",
+      "seed": "dd48c104698c30cfe2b6142103248622fb7bb0ff692eebb00089b32d22484e1613912f0a5b694407be899ffd31ed3992c456cdf60f5d4564b8ba3f05a69890ad"
+    },
+    {
+      "name": "bip39_4",
+      "entropy": "68a79eaca2324873eacc50cb9c6eca8cc68ea5d936f98787c60c7ebc74e6ce7c",
+      "indices": [
+        837,
+        487,
+        1369,
+        547,
+        292,
+        463,
+        1369,
+        1104,
+        1628,
+        1819,
+        1429,
+        204,
+        839,
+        663,
+        806,
+        1785,
+        1084,
+        497,
+        1048,
+        2027,
+        1594,
+        923,
+        463,
+        1024
+      ],
+      "mnemonic": "hamster diagram private dutch cause delay private meat slide toddler razor book happy fancy gospel tennis maple dilemma loan word shrug inflict delay length",
+      "passphrase": "TREZOR",
+      "seed": "64c87cde7e12ecf6704ab95bb1408bef047c22db4cc7491c4271d170a1b213d20b385bc1588d9c7b38f1b39d415665b8a9030c9ec653d75e65f847d8fc1fc440"
+    },
+    {
+      "name": "bip39_5",
+      "entropy": "9f6a2878b2520799a44ef18bc7df394e7061a224d2c33cd015b157d746869863",
+      "indices": [
+        1275,
+        650,
+        241,
+        805,
+        259,
+        1638,
+        1161,
+        1777,
+        1118,
+        503,
+        1650,
+        1255,
+        48,
+        1672,
+        1178,
+        707,
+        486,
+        1029,
+        866,
+        1405,
+        931,
+        538,
+        780,
+        937
+      ],
+      "mnemonic": "panda eyebrow bullet gorilla call smoke muffin taste mesh discover soft ostrich alcohol speed nation flash devote level hobby quick inner drive ghost inside",
+      "passphrase": "TREZOR",
+      "seed": "72be8e052fc4919d2adf28d5306b5474b0069df35b02303de8c1729c9538dbb6fc2d731d5f832193cd9fb6aeecbc469594a70e3dd50811b5067f3b88b28c3e8d"
+    },
+    {
+      "name": "bip39_6",
+      "entropy": "066dca1a2bb7e8a1db2832148ce9933eea0f3ac9548d793112d9a95c9407efad",
+      "indices": [
+        51,
+        882,
+        1076,
+        699,
+        1012,
+        647,
+        869,
+        50,
+        164,
+        826,
+        806,
+        1006,
+        1287,
+        1259,
+        298,
+        1165,
+        969,
+        1092,
+        1459,
+        661,
+        1610,
+        31,
+        1525,
+        1442
+      ],
+      "mnemonic": "all hour make first leader extend hole alien behind guard gospel lava path output census museum junior mass reopen famous sing advance salt reform",
+      "passphrase": "TREZOR",
+      "seed": "26e975ec644423f4a4c4f4215ef09b4bd7ef924e85d1d17c4cf3f136c2863cf6df0a475045652c57eb5fb41513ca2a2d67722b77e954b4b3fc11f7590449191d"
+    },
+    {
+      "name": "bip39_7",
+      "entropy": "f585c11aec520db57dd353c69554b21a89b20fb0650966fa0a9d6f74fd989d8f",
+      "indices": [
+        1964,
+        368,
+        565,
+        1733,
+        262,
+        1749,
+        1978,
+        851,
+        1588,
+        1365,
+        356,
+        424,
+        1241,
+        62,
+        1548,
+        1289,
+        823,
+        1666,
+        1338,
+        1783,
+        638,
+        1634,
+        945,
+        1897
+      ],
+      "mnemonic": "void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold",
+      "passphrase": "TREZOR",
+      "seed": "01f5bced59dec48e362f2c45b5de68b9fd6c92c6634f44d6d40aab69056506f0e35524a518034ddc1192e1dacd32c1ed3eaa3c3b131c88ed8e7e54c49a5d0998"
+    }
+  ],
+  "solana": [
+    {
+      "name": "solana_0",
+      "mnemonic": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+      "seed": "408b285c123836004f4b8842c89324c1f01382450c0d439af345ba7fc49acf705489c6fc77dbd4e3dc1dd8cc6bc9f043db8ada1e243c4a0eafb290d399480840",
+      "key": "7c139e1a603ca04f5f7cff194e1bb6f6d1b9098470ea90695ab628488a9f921b",
+      "pubkey": "20c821b6510834ae1c47084c6f61fd97864d5f12d731f95f4b06fe477b1efb45",
+      "address": "3Cy3YNTFywCmxoxt8n7UH6hg6dLo5uACowX3CFceaSnx"
+    },
+    {
+      "name": "solana_1",
+      "mnemonic": "legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth title",
+      "seed": "761914478ebf6fe16185749372e91549361af22b386de46322cf8b1ba7e92e80c4af05196f742be1e63aab603899842ddadf4e7248d8e43870a4b6ff9bf16324",
+      "key": "8ff58829a593c188a50a71a15c14b2b05f5d3d651ad4114c19bca09b41470398",
+      "pubkey": "b934d9cdce88395149121edbc5c59a5f158c4c0b451b73b8887ee5035af63d07",
+      "address": "DTyAc5DDoqLQCPFjJe8jMv6S1CKbJ1sBRh5D22D12vAa"
+    },
+    {
+      "name": "solana_2",
+      "mnemonic": "letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic avoid letter advice cage absurd amount doctor acoustic bless",
+      "seed": "848bbe19cad445e46f35fd3d1a89463583ac2b60b5eb4cfcf955731775a5d9e17a81a71613fed83f1ae27b408478fdec2bbc75b5161d1937aa7cdf4ad686ef5f",
+      "key": "cf1cefe713112580a9166613c3145c8b5e23de6ca3ce75424a92d42b5f7a6a7a",
+      "pubkey": "7330ac2f611d0b91bde07dd5553e1d3bfe174264a8ebe2f952e980be036b4536",
+      "address": "8kew2ge6x5ZxGnEf9cGTZo8232HjNakSbRF5v6fm5reH"
+    },
+    {
+      "name": "solana_3",
+      "mnemonic": "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+      "seed": "e28a37058c7f5112ec9e16a3437cf363a2572d70b6ceb3b6965447623d620f14d06bb321a26b33ec15fcd84a3b5ddfd5520e230c924c87aaa0d559749e044fef",
+      "key": "feafaa95d64a1a37f4e4dce7fd2ee764bbc1e8eef627d5aedaceee19f89f76ff",
+      "pubkey": "3a8a804c6fd5c37956d48135386c0f336c90b2547ed6230864513d8bb9295323",
+      "address": "4wX8yu9YmSe4mv9ZPtTeoF9pe6Ji4ScjuJEffS3sCKZ4"
+    },
+    {
+      "name": "solana_4",
+      "mnemonic": "hamster diagram private dutch cause delay private meat slide toddler razor book happy fancy gospel tennis maple dilemma loan word shrug inflict delay length",
+      "seed": "17e4b5661796eeff8904550f8572289317ece7c1cc1316469f8f4c986c1ffd7b9f4c3aeac3e1713ffc21fa33707d09d57a2ece358d72111ef7c7658e7b33f2d5",
+      "key": "c80b6c22038211b7d0aee1cfcec7baa647ebc37ca87bc25ed6941b5f677158f7",
+      "pubkey": "267b7e5659ef97a1af0004d7e85e3b5a78ad59c80aef7e5a0979aa423b608e3b",
+      "address": "3bDiE8194MYWrhhFQyZcwnx9DB5ZV8LYhQfFuz4e58hY"
+    },
+    {
+      "name": "solana_5",
+      "mnemonic": "panda eyebrow bullet gorilla call smoke muffin taste mesh discover soft ostrich alcohol speed nation flash devote level hobby quick inner drive ghost inside",
+      "seed": "3e066d7dee2dbf8fcd3fe240a3975658ca118a8f6f4ca81cf99104944604b05a5090a79d99e545704b914ca0397fedb82fd00fd6a72098703709c891a065ee49",
+      "key": "4c3ba79a77281d43007a7aeded3c536268963dc1ae30d91db3b2e4bf8eb1a0d8",
+      "pubkey": "8282da6a86c8f8c9dc7ee6d8e9c172abef85b5278eb10cb77a6b45983b0b6b4b",
+      "address": "9nTjDmDfSvEVNWwMgbavNruYVXh3zcr9qPCfYkimdae6"
+    },
+    {
+      "name": "solana_6",
+      "mnemonic": "all hour make first leader extend hole alien behind guard gospel lava path output census museum junior mass reopen famous sing advance salt reform",
+      "seed": "fc795be0c3f18c50dddb34e72179dc597d64055497ecc1e69e2e56a5409651bc139aae8070d4df0ea14d8d2a518a9a00bb1cc6e92e053fe34051f6821df9164c",
+      "key": "679631757cf034913ff6c66f414387fda06ef50cba67c704eb67d0fc721ae613",
+      "pubkey": "d4a1078727db7af57856cf838432c7f70fa96a3f0b17c7dab62f72cf8479aca2",
+      "address": "FK1r8opmRnfzBKnxoG1kLgNNP5SLRSHnP7gfYhXcKuPP"
+    },
+    {
+      "name": "solana_7",
+      "mnemonic": "void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold",
+      "seed": "b873212f885ccffbf4692afcb84bc2e55886de2dfa07d90f5c3c239abc31c0a6ce047e30fd8bf6a281e71389aa82d73df74c7bbfb3b06b4639a5cee775cccd3c",
+      "key": "2c10aa9d362d1b2c6086aaa377426b40ae8806036098923dc05493989facae4f",
+      "pubkey": "d8fceea52014bdbb5f8c36d67b4ad1f742d2e3246301f7a5b2b55d9f8536b309",
+      "address": "Fc2kvN7xbSyrhiGoXsuasXN3UjJLhrBnUg38f3F2raic"
+    }
+  ]
+}
