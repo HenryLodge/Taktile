@@ -325,7 +325,7 @@ static void test_random_streams(void) {
 
     rng_state = 0x5EED1234u;
     evs.ok_only = true;
-    for (int iter = 0; iter < 20000; iter++) {
+    for (int iter = 0; iter < TK_TEST_ITERS(20000); iter++) {
         size_t n = 0;
         size_t inserted = 0;
         const size_t target = rng() % 3072;

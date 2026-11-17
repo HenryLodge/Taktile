@@ -1,0 +1,13 @@
+# The host tests' static buffers (about 1.2 MB in total, mostly test_proto's event logs) don't fit in
+# the ESP32-S3's internal RAM, so this test app puts this component's zero-initialized data in
+# PSRAM. Test app only: the product firmware has no PSRAM in its build.
+
+[scheme:tk_test_extram_bss]
+entries:
+    bss -> extern_ram
+    common -> extern_ram
+
+[mapping:tk_tests]
+archive: libmain.a
+entries:
+    * (tk_test_extram_bss)

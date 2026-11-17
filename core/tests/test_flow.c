@@ -460,7 +460,7 @@ static void test_random_scripts(void) {
     static const tk_button_t buttons[] = {TK_BTN_UP, TK_BTN_DOWN, TK_BTN_OK, TK_BTN_BACK, TK_BTN_CONFIRM,
                                           TK_BTN_REJECT, TK_BTN_OK_LONG, TK_BTN_REJECT_LONG};
     int signed_ok = 0;
-    for (int iter = 0; iter < 10000; iter++) {
+    for (int iter = 0; iter < TK_TEST_ITERS(10000); iter++) {
         const tk_parser_vector_t *v = vec(names[rnd() % 5]);
         setup(true, rnd() % 2, rnd() % 8 != 0);
         fw.attempts_left = 1 + (int)(rnd() % 3);

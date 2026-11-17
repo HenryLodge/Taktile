@@ -25,6 +25,8 @@ ESP-IDF (v5.5) project for the Adafruit Metro ESP32-S3. A thin layer: drivers pl
 | `sdkconfig.defaults` | Protocol build: console and logs **off**, so USB carries only frames |
 | `sdkconfig.bringup` | Bring-up overlay: console and logs on USB for `idf.py monitor` |
 | `tools/smoke.py` | Protocol smoke test against the device |
+| `test_app/` | Device test app: every `core/` host test (list in `core/tests/tests.cmake`) built for the ESP32-S3 and run at boot. Never shipped, holds no key |
+| `tools/device_tests.py` | Runs the device tests over USB and exits 0 only on PASS |
 
 The generated `sdkconfig` is not committed; edit `sdkconfig.defaults` / `sdkconfig.bringup` instead.
 
@@ -75,3 +77,19 @@ python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-tabl
 ```
 
 must not list `esp_wifi`, `bt`, `esp_phy`, `esp_coex`, `esp_adc` or `esp_psram`.
+
+## Device tests
+
+The same `core/` tests that run under ASan on the host, built for the ESP32-S3 (32-bit `size_t`, Xtensa compiler, trezor-crypto's 32-bit code):
+
+```bash
+cd firmware/test_app
+idf.py set-target esp32s3                # once
+idf.py -p COMx flash                     # replaces the protocol app; same partition table, so clips and NVS are untouched
+python ../tools/device_tests.py COMx     # expects "DEVICE TESTS: 14/14 PASS", about 2 min; add --full for ~40 min
+cd .. && idf.py -p COMx flash            # put the protocol firmware back
+```
+
+The default run is short: the four seeded random loops (`TK_TEST_ITERS` in `core/tests/tk_test.h`) run 1/20 of their host iterations, which is exactly the start of the full run. The long random runs are the host's job (ASan, fuzzers); the device run is for 32-bit and compiler differences. `--full` runs the host's counts (`test_proto` alone takes ~33 min on the device).
+
+Differences from the product build, all limited to the test app: the console is on (the tests print through stdio, so `vfs` is in), the task watchdog is off (long loops that never yield), and the tests' static buffers (about 1.2 MB, mostly `test_proto`'s event logs) are placed in the board's PSRAM by `test_app/main/linker.lf`, because they don't fit in internal RAM. Still no radio or ADC, and the same no-eFuse settings (it layers on `sdkconfig.defaults`).

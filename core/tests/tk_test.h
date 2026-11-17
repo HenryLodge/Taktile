@@ -10,6 +10,16 @@
 
 static int tk_test_failures = 0;
 
+// Iteration count for the long seeded random loops. On the host, always n. In the device test app
+// (firmware/test_app, built with TK_TEST_DEVICE) the runner sets the divisor: 20 for the default
+// short run, 1 for a full run. The seeds are fixed, so a short run is exactly the start of a full one.
+#ifdef TK_TEST_DEVICE
+extern unsigned tk_test_iter_div;
+#define TK_TEST_ITERS(n) ((int)((n) / tk_test_iter_div))
+#else
+#define TK_TEST_ITERS(n) (n)
+#endif
+
 #define TK_CHECK(cond)                                                    \
     do {                                                                  \
         if (!(cond)) {                                                    \
