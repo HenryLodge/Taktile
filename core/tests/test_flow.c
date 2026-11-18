@@ -555,6 +555,7 @@ static void test_cancel(void) {
 }
 
 static void test_idle_requests(void) {
+    static const uint8_t zero_index = 0;
     setup(true, false, true);
     fake_send_now(TK_MSG_HELLO, 1, NULL, 0);
     fake_send_now(TK_MSG_GET_PUBKEY, 2, NULL, 0);
@@ -563,21 +564,23 @@ static void test_idle_requests(void) {
     fake_send_now(TK_MSG_CONTACT_ADD, 5, NULL, 0);
     fake_send_now(TK_MSG_HELLO, 6, (const uint8_t *)"x", 1);
     fake_send_now(0x7D, 7, NULL, 0);
+    fake_send_now(TK_MSG_CONTACT_REMOVE, 8, &zero_index, 1); // not implemented yet
     run();
     const uint8_t hello[4] = {1, 0, 1, TK_STATE_LOCKED};
     uint8_t pub[33];
     pub[0] = TK_STATUS_OK;
     memcpy(pub + 1, fw.pk, 32);
     const uint8_t one = 1, unknown = TK_PROTO_ERR_UNKNOWN_TYPE, bad_payload = TK_PROTO_ERR_BAD_PAYLOAD;
-    TK_CHECK(nframes == 7);
+    TK_CHECK(nframes == 8);
     TK_CHECK(has_frame(TK_MSG_HELLO | TK_MSG_RESPONSE_BIT, 1, hello, 4));
     TK_CHECK(has_frame(TK_MSG_GET_PUBKEY | TK_MSG_RESPONSE_BIT, 2, pub, 33));
     TK_CHECK(has_frame(TK_MSG_CONTACT_LIST_COUNT | TK_MSG_RESPONSE_BIT, 3, &one, 1));
     const uint8_t exists = TK_STATUS_WALLET_EXISTS;
     TK_CHECK(has_frame(TK_MSG_SETUP | TK_MSG_RESPONSE_BIT, 4, &exists, 1)); // I10
-    TK_CHECK(has_frame(TK_MSG_ERROR, 5, &unknown, 1));
+    TK_CHECK(has_frame(TK_MSG_ERROR, 5, &bad_payload, 1)); // CONTACT_ADD with no payload
     TK_CHECK(has_frame(TK_MSG_ERROR, 6, &bad_payload, 1));
     TK_CHECK(has_frame(TK_MSG_ERROR, 7, &unknown, 1));
+    TK_CHECK(has_frame(TK_MSG_ERROR, 8, &unknown, 1));
 
     setup(false, false, true);
     fake_send_now(TK_MSG_HELLO, 1, NULL, 0);

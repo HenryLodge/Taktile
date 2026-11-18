@@ -1,4 +1,5 @@
-// Request dispatch and the SIGN_REQUEST flow (SETUP is in tk_setup.c). See tk_device.h.
+// Request dispatch and the SIGN_REQUEST flow (SETUP is in tk_setup.c, CONTACT_ADD in tk_enroll.c).
+// See tk_device.h.
 
 #include <string.h>
 
@@ -8,6 +9,7 @@
 #include "tk_clips.h"
 #include "tk_device.h"
 #include "tk_device_io.h"
+#include "tk_enroll.h"
 #include "tk_setup.h"
 #include "tk_speech.h"
 
@@ -198,6 +200,10 @@ static void play_all(tk_device_t *d, const uint16_t *clips, size_t n) {
     }
 }
 
+bool tk_dev_audio_ok(const tk_device_t *d) {
+    return audio_ok(d);
+}
+
 // "send <amount> <token> to <name> checksum <w1 w2 w3>"
 static void announce(tk_device_t *d, const tk_tx_t *tx, const tk_contact_t *c, const uint8_t ck[TK_TX_PHRASE_WORDS]) {
     uint16_t clips[TK_SPEECH_AMOUNT_MAX];
@@ -225,6 +231,10 @@ static tk_status_t finish_rejected(tk_device_t *d) {
     return TK_STATUS_REJECTED_BY_USER;
 }
 
+tk_status_t tk_dev_finish_cancelled(tk_device_t *d) {
+    return finish_cancelled(d);
+}
+
 static void lockout_wipe(tk_device_t *d) {
     uint8_t blob[TK_CONTACTS_BLOB_LEN];
     tk_contacts_wipe(d->contacts);
@@ -243,22 +253,24 @@ typedef struct {
     uint8_t sig[TK_SIGNATURE_LEN];
 } flow_secrets_t;
 
-static tk_status_t unlock(tk_device_t *d, flow_secrets_t *s) {
+tk_status_t tk_dev_unlock(tk_device_t *d, uint8_t pin[TK_PIN_LEN]) {
     const tk_wallet_ops_t *w = d->wallet;
     while (!w->is_unlocked(w->ctx)) {
         send_event(d, TK_EVENT_AWAITING_PIN);
         say(d, TK_CLIP_ENTER_PIN);
-        const tk_pin_result_t pr = tk_pin_entry(&d->ui, s->pin);
+        const tk_pin_result_t pr = tk_pin_entry(&d->ui, pin);
         if (pr == TK_PIN_CANCELLED || d->cancel) {
+            memzero(pin, TK_PIN_LEN);
             return finish_cancelled(d);
         }
         if (pr != TK_PIN_OK) {
+            memzero(pin, TK_PIN_LEN);
             return finish_rejected(d);
         }
         uint8_t left = 0;
         say(d, TK_CLIP_PLEASE_WAIT); // the PIN key derivation takes ~2.6 s (I7)
-        const tk_unlock_result_t ur = w->unlock(w->ctx, s->pin, &left);
-        memzero(s->pin, sizeof(s->pin));
+        const tk_unlock_result_t ur = w->unlock(w->ctx, pin, &left);
+        memzero(pin, TK_PIN_LEN);
         if (ur == TK_UNLOCK_OK) {
             break;
         }
@@ -279,6 +291,49 @@ static tk_status_t unlock(tk_device_t *d, flow_secrets_t *s) {
         say(d, TK_CLIP_ATTEMPTS_REMAINING);
     }
     return TK_STATUS_OK;
+}
+
+// Confirm window (I6): presses during the announcement were discarded by the platform.
+tk_status_t tk_dev_confirm_window(tk_device_t *d, uint16_t prompt, tk_dev_announce_fn repeat, void *ctx) {
+    const tk_platform_t *p = d->platform;
+    send_event(d, TK_EVENT_AWAITING_CONFIRM);
+    say(d, prompt);
+    uint32_t start = p->now_ms(p->ctx);
+    for (;;) {
+        if (d->cancel) {
+            return finish_cancelled(d);
+        }
+        const uint32_t elapsed = p->now_ms(p->ctx) - start;
+        if (elapsed >= TK_CONFIRM_TIMEOUT_MS) {
+            return finish_rejected(d);
+        }
+        const tk_button_t b = ui_wait(d, TK_CONFIRM_TIMEOUT_MS - elapsed);
+        if (b == TK_BTN_CONFIRM) {
+            return TK_STATUS_OK;
+        }
+        if (b == TK_BTN_REJECT || b == TK_BTN_NONE) {
+            return finish_rejected(d);
+        }
+        if (b == TK_BTN_REJECT_LONG) {
+            return finish_cancelled(d);
+        }
+        if (b == TK_BTN_OK_LONG) { // repeat, then a fresh confirm window
+            repeat(d, ctx);
+            say(d, prompt);
+            start = p->now_ms(p->ctx);
+        }
+    }
+}
+
+typedef struct {
+    const tk_tx_t *tx;
+    const tk_contact_t *contact;
+    const uint8_t *ck;
+} sign_announce_t;
+
+static void sign_repeat(tk_device_t *d, void *ctx) {
+    const sign_announce_t *a = ctx;
+    announce(d, a->tx, a->contact, a->ck);
 }
 
 static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow_secrets_t *s) {
@@ -314,38 +369,15 @@ static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow
         return finish_cancelled(d);
     }
 
-    const tk_status_t us = unlock(d, s);
+    const tk_status_t us = tk_dev_unlock(d, s->pin);
     if (us != TK_STATUS_OK) {
         return us;
     }
 
-    // Confirm window (I6): presses during the announcement were discarded by the platform.
-    send_event(d, TK_EVENT_AWAITING_CONFIRM);
-    say(d, TK_CLIP_PRESS_CONFIRM);
-    uint32_t start = p->now_ms(p->ctx);
-    for (;;) {
-        if (d->cancel) {
-            return finish_cancelled(d);
-        }
-        const uint32_t elapsed = p->now_ms(p->ctx) - start;
-        if (elapsed >= TK_CONFIRM_TIMEOUT_MS) {
-            return finish_rejected(d);
-        }
-        const tk_button_t b = ui_wait(d, TK_CONFIRM_TIMEOUT_MS - elapsed);
-        if (b == TK_BTN_CONFIRM) {
-            break;
-        }
-        if (b == TK_BTN_REJECT || b == TK_BTN_NONE) {
-            return finish_rejected(d);
-        }
-        if (b == TK_BTN_REJECT_LONG) {
-            return finish_cancelled(d);
-        }
-        if (b == TK_BTN_OK_LONG) { // repeat, then a fresh confirm window
-            announce(d, &tx, contact, s->ck);
-            say(d, TK_CLIP_PRESS_CONFIRM);
-            start = p->now_ms(p->ctx);
-        }
+    sign_announce_t a = {&tx, contact, s->ck};
+    const tk_status_t cs = tk_dev_confirm_window(d, TK_CLIP_PRESS_CONFIRM, sign_repeat, &a);
+    if (cs != TK_STATUS_OK) {
+        return cs;
     }
 
     send_event(d, TK_EVENT_SIGNING);
@@ -405,6 +437,28 @@ static void handle_setup(tk_device_t *d, const tk_frame_t *f) {
     d->cancel = false;
 }
 
+// ---- CONTACT_ADD (the flow itself is tk_enroll_run, tk_enroll.c) ----
+
+static void handle_contact_add(tk_device_t *d, const tk_frame_t *f) {
+    // Payload: name_len u8 (1-12), name, wallet[32]; a bad payload gets ERROR, nothing played.
+    if (f->len < 1 || f->len != 1u + (size_t)f->payload[0] + TK_PUBKEY_LEN ||
+        tk_contacts_validate_name(f->payload + 1, f->payload[0]) != TK_CONTACTS_OK) {
+        send_error(d, f->seq, TK_PROTO_ERR_BAD_PAYLOAD);
+        return;
+    }
+    // Copy out: f->payload points into the decoder, which the flow keeps feeding.
+    const size_t len = f->len;
+    memcpy(d->msg, f->payload, len);
+    d->in_flow = true;
+    d->flow_seq = f->seq;
+    d->cancel = false;
+    const tk_status_t st = tk_enroll_run(d, d->msg[0], d->msg + 1, d->msg + 1 + d->msg[0]);
+    send_status(d, TK_MSG_CONTACT_ADD, d->flow_seq, st);
+    memzero(d->msg, len);
+    d->in_flow = false;
+    d->cancel = false;
+}
+
 // ---- Idle dispatch ----
 
 static void handle_idle(tk_device_t *d, const tk_frame_t *f) {
@@ -416,13 +470,16 @@ static void handle_idle(tk_device_t *d, const tk_frame_t *f) {
     case TK_MSG_SETUP:
         handle_setup(d, f);
         return;
+    case TK_MSG_CONTACT_ADD:
+        handle_contact_add(d, f);
+        return;
     case TK_MSG_HELLO:
     case TK_MSG_GET_PUBKEY:
     case TK_MSG_CONTACT_LIST_COUNT:
     case TK_MSG_CANCEL:
         break;
     default:
-        // CONTACT_ADD and CONTACT_REMOVE are not implemented yet (SERIAL_PROTOCOL.md).
+        // CONTACT_REMOVE is not implemented yet (SERIAL_PROTOCOL.md).
         send_error(d, f->seq, TK_PROTO_ERR_UNKNOWN_TYPE);
         return;
     }

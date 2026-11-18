@@ -44,10 +44,10 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 
 ## Contact enrollment flow
 
-1. `app` sends `CONTACT_ADD{name, wallet_address}`.
-2. Device derives the contact's USDC associated token account itself (see `SOLANA.md`), computes an 8-word address phrase, and plays "Adding <spelled name>. Address phrase: …".
-3. User calls the contact; the contact reads the same phrase from their own wallet tool (`app` has a "show my address phrase" page).
-4. User confirms with PIN + CONFIRM. Device stores `{name, wallet, usdc_ata}` (`core/contacts`: up to 16; names 1–12 ASCII characters, unique ignoring case; no duplicate wallets).
+1. `app` sends `CONTACT_ADD{name, wallet_address}`. A full book or a duplicate name or wallet is refused at once (`CONTACTS_FULL`, `CONTACT_EXISTS`).
+2. Device computes the 8-word address phrase and plays "adding contact <spelled name>, address phrase …" (`core/src/tk_enroll.c`).
+3. User calls the contact; the contact reads the same phrase from their own wallet tool (`app` will have a "show my address phrase" page, TASKS.md P1). Hold OK repeats the announcement.
+4. User confirms with PIN (if locked) + CONFIRM. Device derives the contact's USDC associated token account itself (see `SOLANA.md`) and stores `{name, wallet, usdc_ata}` (`core/contacts`: up to 16; names 1–12 ASCII characters, unique ignoring case; no duplicate wallets), then saves the book; if saving fails it is removed again and the reply is `DEVICE_ERROR`.
 
 When signing, a SOL destination is looked up only among contacts' wallets and a USDC destination only among their USDC token accounts; anything else is "unknown recipient".
 
@@ -97,6 +97,8 @@ typedef struct {
 `core/` never calls ESP-IDF or POSIX directly; it only uses these structs. This is what lets the simulator and the firmware share every line of security logic.
 
 **Single-threaded request handling** (`core/include/tk_device.h`). The platform's main loop calls `tk_device_poll()` over and over. Core owns the serial protocol: it reads bytes with `serial_read`, decodes frames, and answers. A `SIGN_REQUEST` runs its whole flow (announce → PIN → confirm → sign) inside that call. While the flow runs, core keeps reading the link between clips and between button waits of at most 100 ms, so it can answer `BUSY` and act on `CANCEL` (SERIAL_PROTOCOL.md) without threads or locks. A mid-flow reply waits at most one clip. `tk_device_link_reset()` drops a half-received frame when the link changes (the sim calls it when a WebSocket client connects or disconnects).
+
+**CONTACT_ADD** (`core/src/tk_enroll.c`) runs the same way and shares the sign flow's PIN unlock and confirm window (`core/src/tk_device_io.h`).
 
 **SETUP** (`core/src/tk_setup.c`) is the other on-device flow and runs the same way inside `tk_device_poll()`: PIN and confirmation (rotary entry), entropy from the hardware RNG mixed with the press timing, BIP39 words → seed → SLIP-10 key (`core/src/tk_seed.c`), the 24 words spelled into the earpiece, then `tk_wallet_ops_t.create` (the key store, `core/src/tk_keystore.c`). AUDIO.md "SETUP" has the user's side.
 

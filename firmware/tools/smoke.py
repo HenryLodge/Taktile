@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Protocol smoke test against the real device over USB (docs/SERIAL_PROTOCOL.md).
 
-usage: python firmware/tools/smoke.py COMx [--setup | --wallet]
+usage: python firmware/tools/smoke.py COMx [--setup | --wallet | --contact NAME[=ADDRESS]]
        (Linux: /dev/ttyACM0, macOS: /dev/cu.usbmodem*)
 
 Run it with ESP-IDF's Python (it ships pyserial) against the protocol build, not the bring-up build.
@@ -12,13 +12,19 @@ Exits 0 if all pass.
                during the flow, CANCEL -> OK, SETUP -> CANCELLED. Needs no button presses.
   --setup      Sends SETUP and waits up to 15 minutes while you do it on the device, then prints
                the result and the new address.
-  --wallet     A device WITH a wallet: HELLO state, GET_PUBKEY (prints the address), and SETUP
-               refused at once with WALLET_EXISTS (I10).
+  --wallet     A device WITH a wallet: HELLO state, GET_PUBKEY (prints the address), CONTACT_LIST_COUNT,
+               and SETUP refused at once with WALLET_EXISTS (I10).
+  --contact    Sends CONTACT_ADD and waits up to 5 minutes while you listen and confirm on the device.
+               NAME alone uses that name's public test-vector wallet (Alice, Bob or Carol in
+               tests/vectors/contacts.json); NAME=ADDRESS takes base58 or 64 hex. Prints the 8-word
+               address phrase you should hear (public: computed from the public address), then the
+               reply and the contact count.
 
 The port is opened with DTR and RTS low; the default run's last check confirms that reopening it
 never resets the chip (the ROM would print "ESP-ROM" text if it did).
 """
 
+import hashlib
 import json
 import os
 import struct
@@ -29,6 +35,7 @@ import zlib
 import serial
 
 HELLO, GET_PUBKEY, SETUP, SIGN_REQUEST, CONTACT_LIST_COUNT, CANCEL = 0x01, 0x02, 0x03, 0x10, 0x31, 0x7E
+CONTACT_ADD = 0x30
 EVENT, ERROR = 0xF0, 0xFF
 OK, NO_WALLET, BUSY, CANCELLED, WALLET_EXISTS = 0x00, 0x05, 0x06, 0x07, 0x08
 BAD_FRAME, UNKNOWN_TYPE, BAD_PAYLOAD = 0x01, 0x02, 0x03
@@ -39,6 +46,7 @@ STATUS = {0x00: "OK", 0x01: "REJECTED_BY_USER", 0x02: "UNKNOWN_RECIPIENT", 0x03:
 B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
 VECTORS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tests", "vectors")
+WORDS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "data", "pgp-even-words.txt")
 failures = 0
 
 
@@ -174,6 +182,75 @@ def run_setup(port):
     return 0
 
 
+def b58decode(text):
+    n = 0
+    for c in text:
+        if c not in B58:
+            raise ValueError(f"not base58: {c!r}")
+        n = n * 58 + B58.index(c)
+    raw = n.to_bytes((n.bit_length() + 7) // 8, "big") if n else b""
+    return b"\0" * (len(text) - len(text.lstrip("1"))) + raw
+
+
+def contact_wallet(spec):
+    """NAME or NAME=ADDRESS -> (name, 32-byte wallet)."""
+    name, _, addr = spec.partition("=")
+    if not addr:
+        with open(os.path.join(VECTORS, "contacts.json")) as f:
+            book = {e["name"].lower(): e for e in json.load(f)["book"]}
+        if name.lower() not in book:
+            raise ValueError(f"no test-vector wallet named {name!r}; give NAME=ADDRESS")
+        return name, bytes.fromhex(book[name.lower()]["wallet"])
+    wallet = bytes.fromhex(addr) if len(addr) == 64 and all(c in "0123456789abcdefABCDEF" for c in addr) \
+        else b58decode(addr)
+    if len(wallet) != 32:
+        raise ValueError("the address is not 32 bytes")
+    return name, wallet
+
+
+def address_phrase(wallet):
+    """AUDIO.md: SHA256("TK-ADDR-v1" || wallet), bytes 0..7 pick the PGP even words."""
+    with open(WORDS) as f:
+        words = [l.strip() for l in f if l.strip() and not l.startswith("#")]
+    h = hashlib.sha256(b"TK-ADDR-v1" + wallet).digest()
+    return [words[b] for b in h[:8]]
+
+
+def run_contact(port, spec):
+    try:
+        name, wallet = contact_wallet(spec)
+    except ValueError as e:
+        print(e)
+        return 2
+    r = Reader(port)
+    state = hello_state(r, port, 1)
+    print(f"HELLO state {state} ({'locked: you will be asked for the PIN' if state == 1 else 'unlocked' if state == 2 else 'no wallet'})")
+    print(f"Adding {name!r}, address {b58(wallet)}.\n"
+          f"You should hear: \"adding contact, {', '.join(name.upper())}, address phrase,\n"
+          f"  {' '.join(address_phrase(wallet))}\"\n"
+          "then \"enter pin\" if locked, then \"press confirm to add or reject to cancel\"\n"
+          "(hold OK repeats). Waiting up to 5 minutes...")
+    port.write(frame(CONTACT_ADD, 2, bytes([len(name)]) + name.encode("ascii", "replace") + wallet))
+    deadline = time.time() + 5 * 60
+    while time.time() < deadline:
+        f = r.next_frame(deadline - time.time())
+        if f is None:
+            break
+        if f[0] == EVENT:
+            continue
+        if f[0] == ERROR and f[1] == 2:
+            print(f"CONTACT_ADD -> ERROR {f[2].hex()} (BAD_PAYLOAD: the name breaks the rules)")
+            return 1
+        if f[0] == CONTACT_ADD | 0x80 and f[1] == 2 and len(f[2]) == 1:
+            print(f"CONTACT_ADD -> {STATUS.get(f[2][0], hex(f[2][0]))}")
+            port.write(frame(CONTACT_LIST_COUNT, 3))
+            g = r.response()
+            print(f"CONTACT_LIST_COUNT -> {g[2][0] if g is not None and len(g[2]) == 1 else g}")
+            return 0 if f[2][0] == OK else 1
+    print("no CONTACT_ADD reply")
+    return 1
+
+
 def run_wallet(port):
     r = Reader(port)
     state = hello_state(r, port, 1)
@@ -185,6 +262,11 @@ def run_wallet(port):
     check("GET_PUBKEY -> OK", ok, f"got {g}")
     if ok:
         print(f"      address: {b58(g[2][1:])}")
+    port.write(frame(CONTACT_LIST_COUNT, 5))
+    c = r.response()
+    check("CONTACT_LIST_COUNT -> answered", c is not None and c[0] == CONTACT_LIST_COUNT | 0x80 and len(c[2]) == 1)
+    if c is not None and len(c[2]) == 1:
+        print(f"      contacts: {c[2][0]}")
     port.write(frame(SETUP, 3))
     expect(r, "SETUP -> WALLET_EXISTS at once, no audio (I10)", 3, SETUP | 0x80, bytes([WALLET_EXISTS]), 1.0)
     port.write(frame(HELLO, 4))
@@ -197,7 +279,15 @@ def run_wallet(port):
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     opts = [a for a in sys.argv[1:] if a.startswith("--")]
-    if len(args) != 1 or len(opts) > 1 or any(o not in ("--setup", "--wallet") for o in opts):
+    contact = None
+    if "--contact" in opts:  # --contact takes the next argument
+        i = sys.argv.index("--contact")
+        if i + 1 >= len(sys.argv) or sys.argv[i + 1].startswith("--"):
+            print(__doc__)
+            return 2
+        contact = sys.argv[i + 1]
+        args.remove(contact)
+    if len(args) != 1 or len(opts) > 1 or any(o not in ("--setup", "--wallet", "--contact") for o in opts):
         print(__doc__)
         return 2
     if opts:
@@ -205,6 +295,8 @@ def main():
         time.sleep(0.3)
         port.read(4096)  # drain anything already waiting
         try:
+            if opts[0] == "--contact":
+                return run_contact(port, contact)
             return run_setup(port) if opts[0] == "--setup" else run_wallet(port)
         finally:
             port.close()
@@ -240,6 +332,11 @@ def main():
     expect(r, "CANCEL (no flow) -> OK", 5, CANCEL | 0x80, bytes([OK]))
     port.write(frame(SETUP, 6, b"\x00"))
     expect(r, "SETUP with a payload -> ERROR BAD_PAYLOAD", 6, ERROR, bytes([BAD_PAYLOAD]))
+    alice = contact_wallet("Alice")[1]
+    port.write(frame(CONTACT_ADD, 11, b"\x05Alice" + alice))
+    expect(r, "CONTACT_ADD -> NO_WALLET (silent)", 11, CONTACT_ADD | 0x80, bytes([NO_WALLET]))
+    port.write(frame(CONTACT_ADD, 12, b"\x05Al!ce" + alice))
+    expect(r, "CONTACT_ADD with a bad name -> ERROR BAD_PAYLOAD", 12, ERROR, bytes([BAD_PAYLOAD]))
     setup_cancelled(r, port)
 
     port.write(b"hello garbage\r\n" + frame(HELLO, 7))

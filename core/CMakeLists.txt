@@ -50,6 +50,7 @@ add_library(tk_core STATIC
     src/tk_clippack.c
     src/tk_contacts.c
     src/tk_crc32.c
+    src/tk_enroll.c
     src/tk_flow.c
     src/tk_keystore.c
     src/tk_parser.c
