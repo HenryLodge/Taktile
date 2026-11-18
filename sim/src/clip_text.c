@@ -334,7 +334,7 @@ static const char *const TEXT[] = {
     "checksum", // 326 TK_CLIP_CHECKSUM
     "address phrase", // 327 TK_CLIP_ADDRESS_PHRASE
     "enter pin", // 328 TK_CLIP_ENTER_PIN
-    "digit", // 329 TK_CLIP_DIGIT
+    "pin digit number", // 329 TK_CLIP_DIGIT
     "wrong pin", // 330 TK_CLIP_WRONG_PIN
     "attempts remaining", // 331 TK_CLIP_ATTEMPTS_REMAINING
     "signed", // 332 TK_CLIP_SIGNED
@@ -347,6 +347,20 @@ static const char *const TEXT[] = {
     "repeat", // 339 TK_CLIP_REPEAT
     "speaker mode on", // 340 TK_CLIP_SPEAKER_MODE_ON
     "wallet wiped", // 341 TK_CLIP_WALLET_WIPED
+    "write down your recovery words", // 342 TK_CLIP_WRITE_DOWN
+    "press OK for the next word, hold OK to repeat", // 343 TK_CLIP_NEXT_WORD_HELP
+    "hold OK to hear all words again, or press OK to finish", // 344 TK_CLIP_REPLAY_ALL
+    "choose a new PIN", // 345 TK_CLIP_CHOOSE_PIN
+    "enter your PIN again", // 346 TK_CLIP_ENTER_PIN_AGAIN
+    "the PINs do not match", // 347 TK_CLIP_PINS_DONT_MATCH
+    "please wait", // 348 TK_CLIP_PLEASE_WAIT
+    "wallet created", // 349 TK_CLIP_WALLET_CREATED
+    "speaker mode off", // 350 TK_CLIP_SPEAKER_MODE_OFF
+    "starting at", // 351 TK_CLIP_STARTING_AT
+    "twenty one", // 352 TK_CLIP_TWENTY_ONE
+    "twenty two", // 353 TK_CLIP_TWENTY_ONE+1
+    "twenty three", // 354 TK_CLIP_TWENTY_ONE+2
+    "twenty four", // 355 TK_CLIP_TWENTY_ONE+3
 };
 
 _Static_assert(sizeof(TEXT) / sizeof(TEXT[0]) == TK_CLIP_COUNT, "rerun tools/gen-clips.mjs");

@@ -54,6 +54,13 @@ typedef struct {
     // number of bytes copied, 0 if none are waiting.
     size_t (*serial_read)(void *ctx, uint8_t *buf, size_t cap);
     void (*serial_write)(void *ctx, const uint8_t *buf, size_t len);
+
+    // True only if clips really play (audio output works and the clip pack is valid). Flows that
+    // need the user to hear something refuse with DEVICE_ERROR otherwise (fail closed).
+    bool (*audio_ok)(void *ctx);
+    // True while every clip goes only to the earpiece; false in speaker ("demo") mode. SETUP
+    // refuses to play recovery words unless this is true (AUDIO.md).
+    bool (*private_audio_only)(void *ctx);
 } tk_platform_t;
 
 #endif

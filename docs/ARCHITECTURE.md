@@ -77,9 +77,11 @@ typedef struct {
     bool (*storage_set)(void *ctx, const char *key, const void *buf, size_t len);
     size_t (*serial_read)(void *ctx, uint8_t *buf, size_t cap); // non-blocking
     void (*serial_write)(void *ctx, const uint8_t *buf, size_t len);
+    bool (*audio_ok)(void *ctx);           // clips really play; else flows refuse with DEVICE_ERROR
+    bool (*private_audio_only)(void *ctx); // false in speaker mode; SETUP's recovery words need true
 } tk_platform_t;
 
-// core/include/tk_wallet.h: the key store as flows see it (implemented by the SETUP / PIN-unlock tasks)
+// core/include/tk_wallet.h: the key store as flows see it (core/src/tk_keystore.c implements it)
 typedef struct {
     void *ctx;
     bool (*has_wallet)(void *ctx);
@@ -87,12 +89,15 @@ typedef struct {
     bool (*is_unlocked)(void *ctx);
     tk_unlock_result_t (*unlock)(void *ctx, const uint8_t pin[6], uint8_t *attempts_left);
     bool (*sign)(void *ctx, const uint8_t *msg, size_t len, uint8_t sig[64]); // refuses unless unlocked
+    bool (*create)(void *ctx, const uint8_t pin[6], const uint8_t sk[32], const uint8_t pubkey[32]); // SETUP; refuses if a wallet exists (I10)
 } tk_wallet_ops_t;
 ```
 
 `core/` never calls ESP-IDF or POSIX directly; it only uses these structs. This is what lets the simulator and the firmware share every line of security logic.
 
 **Single-threaded request handling** (`core/include/tk_device.h`). The platform's main loop calls `tk_device_poll()` over and over. Core owns the serial protocol: it reads bytes with `serial_read`, decodes frames, and answers. A `SIGN_REQUEST` runs its whole flow (announce → PIN → confirm → sign) inside that call. While the flow runs, core keeps reading the link between clips and between button waits of at most 100 ms, so it can answer `BUSY` and act on `CANCEL` (SERIAL_PROTOCOL.md) without threads or locks. A mid-flow reply waits at most one clip. `tk_device_link_reset()` drops a half-received frame when the link changes (the sim calls it when a WebSocket client connects or disconnects).
+
+**SETUP** (`core/src/tk_setup.c`) is the other on-device flow and runs the same way inside `tk_device_poll()`: PIN and confirmation (rotary entry), entropy from the hardware RNG mixed with the press timing, BIP39 words → seed → SLIP-10 key (`core/src/tk_seed.c`), the 24 words spelled into the earpiece, then `tk_wallet_ops_t.create` (the key store, `core/src/tk_keystore.c`). AUDIO.md "SETUP" has the user's side.
 
 `secret` marks private audio: core sets it for the three checksum words and every PIN digit value. Platforms must never log or print secret clips (the sim prints `(private)` unless built with `TK_SIM_INSECURE_AUDIO`).
 

@@ -26,6 +26,7 @@ void tk_audio_play(uint16_t clip, bool secret);
 // Speaker ("demo") mode: public clips also play on the speaker. Off at boot; the device-only toggle
 // is the P1 speaker-mode task. Secret clips ignore it.
 void tk_audio_set_speaker_mode(bool on);
+bool tk_audio_speaker_mode(void);
 
 typedef struct {
     bool i2s_ok;

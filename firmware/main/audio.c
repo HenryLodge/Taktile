@@ -189,6 +189,10 @@ void tk_audio_set_speaker_mode(bool on) {
     speaker_mode = on;
 }
 
+bool tk_audio_speaker_mode(void) {
+    return speaker_mode;
+}
+
 tk_audio_status_t tk_audio_status(void) {
     return status;
 }

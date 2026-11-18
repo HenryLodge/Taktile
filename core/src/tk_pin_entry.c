@@ -18,9 +18,11 @@ static bool random_digit(const tk_ui_t *ui, uint8_t *digit) {
     return false; // 64 draws all >= 250: the RNG is broken
 }
 
+// "pin digit number three, starting at <value>"
 static void announce_digit(const tk_ui_t *ui, size_t index, uint8_t value) {
     ui->play(ui->ctx, TK_CLIP_DIGIT, false);
-    ui->play(ui->ctx, (uint16_t)(TK_CLIP_ZERO + index + 1), false); // "digit three"
+    ui->play(ui->ctx, (uint16_t)(TK_CLIP_ZERO + index + 1), false);
+    ui->play(ui->ctx, TK_CLIP_STARTING_AT, false);
     ui->play(ui->ctx, (uint16_t)(TK_CLIP_ZERO + value), true); // digit values are secret (I2)
 }
 

@@ -246,9 +246,21 @@ static void p_serial_write(void *ctx, const uint8_t *buf, size_t len) {
     }
 }
 
+// The sim "plays" every clip as text, and has no speaker mode.
+static bool p_audio_ok(void *ctx) {
+    (void)ctx;
+    return true;
+}
+
+static bool p_private_audio_only(void *ctx) {
+    (void)ctx;
+    return true;
+}
+
 const tk_platform_t SIM_PLATFORM_TEMPLATE = {
     NULL, p_play_clip, p_haptic, p_wait_button, p_now, p_random,
     p_storage_get, p_storage_set, p_serial_read, p_serial_write,
+    p_audio_ok, p_private_audio_only,
 };
 
 // ---- WebSocket link ----

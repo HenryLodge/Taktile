@@ -139,10 +139,35 @@ static void test_spell(void) {
     TK_CHECK(tk_speech_spell(NULL, 1, clips, 4) == 0);
 }
 
+static void test_number(void) {
+    uint16_t c[TK_SPEECH_AMOUNT_MAX];
+    TK_CHECK(tk_speech_number(0, c, 8) == 1 && c[0] == TK_CLIP_ZERO);
+    TK_CHECK(tk_speech_number(1, c, 8) == 1 && c[0] == TK_CLIP_ZERO + 1);
+    TK_CHECK(tk_speech_number(19, c, 8) == 1 && c[0] == TK_CLIP_ZERO + 19);
+    TK_CHECK(tk_speech_number(20, c, 8) == 1 && c[0] == TK_CLIP_TWENTY);
+    TK_CHECK(tk_speech_number(24, c, 8) == 2 && c[0] == TK_CLIP_TWENTY && c[1] == TK_CLIP_ZERO + 4);
+    TK_CHECK(tk_speech_number(999, c, 8) == 4 && c[0] == TK_CLIP_ZERO + 9 && c[1] == TK_CLIP_HUNDRED &&
+             c[2] == TK_CLIP_TWENTY + 7 && c[3] == TK_CLIP_ZERO + 9);
+    TK_CHECK(tk_speech_number(UINT64_C(999999999999999), c, TK_SPEECH_AMOUNT_MAX) > 0);
+    for (size_t i = 0; i < TK_SPEECH_AMOUNT_MAX; i++) {
+        c[i] = 0;
+    }
+    TK_CHECK(tk_speech_number(UINT64_C(999999999999999), c, TK_SPEECH_AMOUNT_MAX) > 0);
+    for (size_t i = 0; i < TK_SPEECH_AMOUNT_MAX && c[i] != 0; i++) {
+        TK_CHECK(c[i] < TK_CLIP_COUNT);
+    }
+    // Refusals: 10^15 and above (a group would pass 999), NULL, too small a buffer.
+    TK_CHECK(tk_speech_number(UINT64_C(1000000000000000), c, TK_SPEECH_AMOUNT_MAX) == 0);
+    TK_CHECK(tk_speech_number(UINT64_MAX, c, TK_SPEECH_AMOUNT_MAX) == 0);
+    TK_CHECK(tk_speech_number(24, NULL, 8) == 0);
+    TK_CHECK(tk_speech_number(24, c, 1) == 0);
+}
+
 int main(void) {
     test_usdc();
     test_sol();
     test_amount_errors();
     test_spell();
+    test_number();
     return tk_test_result();
 }

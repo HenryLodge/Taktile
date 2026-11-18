@@ -11,6 +11,7 @@
 
 #include "sim.h"
 #include "tk_contacts.h"
+#include "tk_keystore.h"
 #include "util.h"
 
 static volatile sig_atomic_t stop;
@@ -29,10 +30,12 @@ static void usage(void) {
             "usage: taktile-sim [options]\n"
             "  --listen ADDR       address to listen on (default 127.0.0.1)\n"
             "  --port N            WebSocket port (default 8765)\n"
-            "  --data DIR          where contacts and the dev seed live (default ./sim-data)\n"
+            "  --data DIR          where the wallet and contacts live (default ./sim-data)\n"
             "  --clip-ms N         how long each clip 'plays' (default 300)\n"
             "  --contact NAME=ADDR add a contact (base58 or 64 hex); repeatable\n"
-            "  --seed-hex HEX      use this 32-byte dev seed instead of <data>/dev-seed (not saved)\n"
+            "wallet: core's key store in <data>/wallet (created by SETUP), unless one of:\n"
+            "  --dev-wallet        INSECURE dev wallet, plaintext seed in <data>/dev-seed\n"
+            "  --seed-hex HEX      INSECURE dev wallet with this 32-byte seed (not saved)\n"
             "  --pin DDDDDD        dev wallet PIN (default 123456)\n"
             "  --unlocked          start with the dev wallet unlocked\n"
             "keys: Up/Down, Enter=OK, Backspace=BACK, c=CONFIRM, r=REJECT, O=long OK (repeat),\n"
@@ -85,21 +88,23 @@ int main(int argc, char **argv) {
     static tk_contacts_t book;
     static tk_device_t dev;
     static sim_wallet_t wallet;
+    static tk_keystore_t keystore;
 
     const char *listen_addr = "127.0.0.1", *seed_hex = NULL, *pin = NULL;
     unsigned port = 8765;
-    bool unlocked = false;
+    bool unlocked = false, dev_wallet = false;
     const char *contacts_args[TK_CONTACTS_MAX];
     size_t ncontacts = 0;
     sim.data_dir = "sim-data";
     sim.clip_ms = 300;
 
-    enum { O_LISTEN = 1, O_PORT, O_DATA, O_CLIP, O_CONTACT, O_SEED, O_PIN, O_UNLOCKED, O_HELP };
+    enum { O_LISTEN = 1, O_PORT, O_DATA, O_CLIP, O_CONTACT, O_SEED, O_PIN, O_UNLOCKED, O_DEV, O_HELP };
     static const struct option opts[] = {
         {"listen", required_argument, NULL, O_LISTEN}, {"port", required_argument, NULL, O_PORT},
         {"data", required_argument, NULL, O_DATA},     {"clip-ms", required_argument, NULL, O_CLIP},
         {"contact", required_argument, NULL, O_CONTACT}, {"seed-hex", required_argument, NULL, O_SEED},
         {"pin", required_argument, NULL, O_PIN},       {"unlocked", no_argument, NULL, O_UNLOCKED},
+        {"dev-wallet", no_argument, NULL, O_DEV},
         {"help", no_argument, NULL, O_HELP},           {NULL, 0, NULL, 0},
     };
     int c;
@@ -119,6 +124,7 @@ int main(int argc, char **argv) {
         case O_SEED: seed_hex = optarg; break;
         case O_PIN: pin = optarg; break;
         case O_UNLOCKED: unlocked = true; break;
+        case O_DEV: dev_wallet = true; break;
         default: usage(); return c == O_HELP ? 0 : 2;
         }
     }
@@ -127,11 +133,22 @@ int main(int argc, char **argv) {
 
     tk_platform_t platform = SIM_PLATFORM_TEMPLATE;
     platform.ctx = &sim;
-    if (!sim_wallet_init(&wallet, &platform, seed_hex, pin, unlocked)) {
+    dev_wallet = dev_wallet || seed_hex != NULL;
+    if ((pin != NULL || unlocked) && !dev_wallet) {
+        fprintf(stderr, "--pin and --unlocked need --dev-wallet or --seed-hex\n");
         return 2;
     }
-    tk_wallet_ops_t wallet_ops = SIM_WALLET_OPS_TEMPLATE;
-    wallet_ops.ctx = &wallet;
+    tk_wallet_ops_t wallet_ops;
+    if (dev_wallet) {
+        if (!sim_wallet_init(&wallet, &platform, seed_hex, pin, unlocked)) {
+            return 2;
+        }
+        wallet_ops = SIM_WALLET_OPS_TEMPLATE;
+        wallet_ops.ctx = &wallet;
+    } else {
+        tk_keystore_init(&keystore, &platform);
+        tk_keystore_ops(&keystore, &wallet_ops);
+    }
 
     if (!load_contacts(&platform, &book)) {
         return 2;
@@ -154,17 +171,25 @@ int main(int argc, char **argv) {
     sim.dev = &dev;
 
     printf("taktile-sim: ws://%s:%u  data: %s\n", listen_addr, port, sim.data_dir);
-    printf("WARNING: INSECURE development wallet (plaintext seed%s). Devnet only.\n",
-           seed_hex ? " from --seed-hex" : " in <data>/dev-seed");
+    if (dev_wallet) {
+        printf("WARNING: INSECURE development wallet (plaintext seed%s). Devnet only.\n",
+               seed_hex ? " from --seed-hex" : " in <data>/dev-seed");
+    }
 #if defined(TK_SIM_INSECURE_AUDIO) && TK_SIM_INSECURE_AUDIO
     printf("WARNING: built with TK_SIM_INSECURE_AUDIO: private audio (checksum words, PIN digits) is printed.\n");
 #endif
-    if (wallet.has_wallet) {
+    uint8_t pub[32];
+    if (wallet_ops.get_pubkey(wallet_ops.ctx, pub)) {
         char b58[45];
-        sim_base58_encode32(wallet.pubkey, b58);
-        printf("wallet: %s (%s)\n", b58, wallet.unlocked ? "unlocked" : "locked");
+        sim_base58_encode32(pub, b58);
+        printf("wallet: %s (%s, %s)\n", b58, dev_wallet ? "dev wallet" : "key store",
+               wallet_ops.is_unlocked(wallet_ops.ctx) ? "unlocked" : "locked");
+    } else if (wallet_ops.has_wallet(wallet_ops.ctx)) {
+        printf("wallet: unreadable (%s/%s is corrupt; it is never replaced)\n", sim.data_dir, TK_STORAGE_WALLET);
+    } else if (dev_wallet) {
+        printf("wallet: none (dev wallet wiped)\n");
     } else {
-        printf("wallet: none (wiped)\n");
+        printf("wallet: none (key store; run SETUP)\n");
     }
     printf("contacts: %u\n", book.count);
     for (uint8_t i = 0; i < book.count; i++) {

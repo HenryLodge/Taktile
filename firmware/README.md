@@ -46,7 +46,10 @@ cd firmware
 # Protocol firmware (what the app talks to). No console: use smoke.py, not monitor.
 idf.py build
 idf.py -p COMx flash
-python tools/smoke.py COMx              # IDF's Python (has pyserial); expects ALL PASS
+python tools/smoke.py COMx              # IDF's Python (has pyserial); expects ALL PASS (device with no wallet;
+                                        #   starts a SETUP and cancels it: you hear "choose a new PIN", then "cancelled")
+python tools/smoke.py COMx --setup      # runs SETUP: do it on the device (about 5 min); prints the new address
+python tools/smoke.py COMx --wallet     # device with a wallet: state, address, SETUP refused with WALLET_EXISTS
 
 # Bring-up build (separate build dir and sdkconfig, so the two never mix)
 idf.py -B build-bringup -D SDKCONFIG=build-bringup/sdkconfig -D "SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.bringup" -p COMx flash monitor
@@ -88,7 +91,7 @@ The same `core/` tests that run under ASan on the host, built for the ESP32-S3 (
 cd firmware/test_app
 idf.py set-target esp32s3                # once
 idf.py -p COMx flash                     # replaces the protocol app; same partition table, so clips and NVS are untouched
-python ../tools/device_tests.py COMx     # expects "DEVICE TESTS: 15/15 PASS", about 2 min; add --full for ~40 min
+python ../tools/device_tests.py COMx     # expects "DEVICE TESTS: 17/17 PASS", about 2 min; add --full for ~40 min
 cd .. && idf.py -p COMx flash            # put the protocol firmware back
 ```
 

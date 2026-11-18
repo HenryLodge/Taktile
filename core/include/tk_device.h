@@ -27,6 +27,8 @@
 
 #define TK_CONFIRM_TIMEOUT_MS 30000u // I6
 #define TK_WAIT_SLICE_MS 100u        // longest gap between serial checks while waiting for a button
+#define TK_SETUP_WORD_TIMEOUT_MS 300000u // SETUP: time to write down one recovery word
+#define TK_SETUP_MAX_MISMATCH 3u         // SETUP: PIN confirmations that may differ before it gives up
 
 // HELLO state byte
 #define TK_STATE_NO_WALLET 0u

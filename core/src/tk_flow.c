@@ -1,4 +1,4 @@
-// Request dispatch and the SIGN_REQUEST flow. See tk_device.h.
+// Request dispatch and the SIGN_REQUEST flow (SETUP is in tk_setup.c). See tk_device.h.
 
 #include <string.h>
 
@@ -7,6 +7,8 @@
 #include "tk_checksum.h"
 #include "tk_clips.h"
 #include "tk_device.h"
+#include "tk_device_io.h"
+#include "tk_setup.h"
 #include "tk_speech.h"
 
 // ---- Serial output ----
@@ -150,7 +152,32 @@ static bool ui_random(void *ctx, uint8_t *out, size_t len) {
     return d->platform->random_bytes(d->platform->ctx, out, len);
 }
 
+// ---- Shared with other flows (tk_device_io.h) ----
+
+void tk_dev_play(tk_device_t *d, uint16_t clip, bool secret) {
+    ui_play(d, clip, secret);
+}
+
+void tk_dev_say(tk_device_t *d, uint16_t clip) {
+    say(d, clip);
+}
+
+void tk_dev_send_event(tk_device_t *d, tk_event_t event) {
+    send_event(d, event);
+}
+
+static bool ensure_keys(tk_device_t *d);
+
+bool tk_dev_ensure_keys(tk_device_t *d) {
+    return ensure_keys(d);
+}
+
 // ---- SIGN_REQUEST flow ----
+
+static bool audio_ok(const tk_device_t *d) {
+    const tk_platform_t *p = d->platform;
+    return p->audio_ok != NULL && p->audio_ok(p->ctx); // missing hook: assume no audio
+}
 
 static bool ensure_keys(tk_device_t *d) {
     if (d->keys_ready) {
@@ -234,6 +261,11 @@ static tk_status_t unlock(tk_device_t *d, flow_secrets_t *s) {
         if (ur == TK_UNLOCK_OK) {
             break;
         }
+        if (ur == TK_UNLOCK_ERROR) { // the key store can't check a PIN: fail closed
+            d->platform->haptic(d->platform->ctx, TK_HAPTIC_WARNING);
+            say(d, TK_CLIP_CANNOT_SIGN);
+            return TK_STATUS_DEVICE_ERROR;
+        }
         if (ur == TK_UNLOCK_LOCKED_OUT) {
             lockout_wipe(d);
             d->platform->haptic(d->platform->ctx, TK_HAPTIC_WARNING);
@@ -253,6 +285,11 @@ static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow
     const tk_platform_t *p = d->platform;
     if (!w->has_wallet(w->ctx) || !ensure_keys(d)) {
         return TK_STATUS_NO_WALLET;
+    }
+    if (!audio_ok(d)) {
+        // Without audio the user can't hear the amount, recipient or PIN digits: refuse (Q7).
+        p->haptic(p->ctx, TK_HAPTIC_WARNING);
+        return TK_STATUS_DEVICE_ERROR;
     }
 
     tk_tx_t tx;
@@ -351,6 +388,22 @@ static void handle_sign_request(tk_device_t *d, const tk_frame_t *f) {
     d->cancel = false;
 }
 
+// ---- SETUP (the flow itself is tk_setup_run, tk_setup.c) ----
+
+static void handle_setup(tk_device_t *d, const tk_frame_t *f) {
+    if (f->len != 0) {
+        send_error(d, f->seq, TK_PROTO_ERR_BAD_PAYLOAD);
+        return;
+    }
+    d->in_flow = true;
+    d->flow_seq = f->seq;
+    d->cancel = false;
+    const tk_status_t st = tk_setup_run(d);
+    send_status(d, TK_MSG_SETUP, d->flow_seq, st);
+    d->in_flow = false;
+    d->cancel = false;
+}
+
 // ---- Idle dispatch ----
 
 static void handle_idle(tk_device_t *d, const tk_frame_t *f) {
@@ -359,13 +412,16 @@ static void handle_idle(tk_device_t *d, const tk_frame_t *f) {
     case TK_MSG_SIGN_REQUEST:
         handle_sign_request(d, f);
         return;
+    case TK_MSG_SETUP:
+        handle_setup(d, f);
+        return;
     case TK_MSG_HELLO:
     case TK_MSG_GET_PUBKEY:
     case TK_MSG_CONTACT_LIST_COUNT:
     case TK_MSG_CANCEL:
         break;
     default:
-        // SETUP, CONTACT_ADD and CONTACT_REMOVE are not implemented yet (SERIAL_PROTOCOL.md).
+        // CONTACT_ADD and CONTACT_REMOVE are not implemented yet (SERIAL_PROTOCOL.md).
         send_error(d, f->seq, TK_PROTO_ERR_UNKNOWN_TYPE);
         return;
     }

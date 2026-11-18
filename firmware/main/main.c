@@ -14,11 +14,14 @@
 #include "storage.h"
 #include "tk_contacts.h"
 #include "tk_device.h"
+#include "tk_keystore.h"
 
 #if !CONFIG_TK_BRINGUP
 
 static tk_device_t dev;
 static tk_contacts_t book;
+static tk_keystore_t keystore;
+static tk_wallet_ops_t wallet;
 
 static void load_contacts(const tk_platform_t *p) {
     static uint8_t blob[TK_CONTACTS_BLOB_LEN + 1];
@@ -38,7 +41,9 @@ static void run_device(void) {
         }
     }
     load_contacts(p);
-    tk_device_init(&dev, p, &TK_FW_NO_WALLET, &book);
+    tk_keystore_init(&keystore, p); // storage is up (or failed closed) by now: see app_main
+    tk_keystore_ops(&keystore, &wallet);
+    tk_device_init(&dev, p, &wallet, &book);
     for (;;) {
         tk_device_poll(&dev);
         if (tk_link_should_reset(p->now_ms(p->ctx))) {

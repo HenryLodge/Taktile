@@ -23,14 +23,14 @@ The address phrase is longer because at enrollment the attacker chooses the addr
 | --- | --- | --- |
 | Checksum words | 256 | PGP even list |
 | Digits and number words | `zero`–`nineteen`, `twenty`…`ninety`, `hundred`, `thousand`, `million`, `billion`, `trillion`, `point` | Amounts are read as numbers, e.g. "twelve point five" (see below) |
-| Letters | `A`–`Z` | Spelling names and recovery words |
+| Letters | `A`–`Z` | Spelling names and recovery words. Sent to text-to-speech as their spoken names ("ay", "bee", … "double you", "zee"): a bare "A" or "B" comes back as a sound ("ah", "buh"). The model guesses the language of such short input, so some names came out Spanish; those letters are regenerated individually and the one that sounds right is kept (`tts` overrides in `gen-clips.mjs`). An English-forced model (`eleven_turbo_v2_5`) was tried and sounded worse (2026-11-17) |
 | Name punctuation | `space`, `hyphen`, `apostrophe` | Spelling contact names |
 | Tokens | `USDC`, `SOL` | |
-| Prompts | `send`, `to`, `unknown recipient do not sign`, `cannot sign this transaction`, `press confirm to sign or reject to cancel`, `checksum`, `address phrase`, `enter pin`, `digit`, `wrong pin`, `attempts remaining`, `signed`, `cancelled`, `adding contact`, `remove`, `contact book full`, `already a contact`, `recovery word`, `repeat`, `speaker mode on`, `wallet wiped` | Keep each prompt a separate clip; compose sentences by sequence |
+| Prompts | `send`, `to`, `unknown recipient do not sign`, `cannot sign this transaction`, `press confirm to sign or reject to cancel`, `checksum`, `address phrase`, `enter pin`, `pin digit number`, `starting at`, `wrong pin`, `attempts remaining`, `signed`, `cancelled`, `adding contact`, `remove`, `contact book full`, `already a contact`, `recovery word`, `repeat`, `speaker mode on`, `wallet wiped`; SETUP: `write down your recovery words`, `press OK for the next word, hold OK to repeat`, `hold OK to hear all words again, or press OK to finish`, `choose a new PIN`, `enter your PIN again`, `the PINs do not match`, `please wait`, `wallet created`; recovery word positions `twenty one`–`twenty four` (one clip each, so the number can't run into the letters that follow); and `speaker mode off` | Keep each prompt a separate clip; compose sentences by sequence |
 
 **Amounts** (`core/src/tk_speech.c`) are read in tokens: SOL has 9 decimals, USDC 6. The whole part is read in English words without "and" ("one thousand two hundred five"); the digits after the point are read one by one with trailing zeros dropped (1,500,000 lamports → "zero point zero zero one five"). The largest u64 amount in USDC is about 18 trillion, hence the `trillion` clip.
 
-**Recovery words** are spelled using the first 4 letters of each BIP39 word ("word one: A, B, A, N"). BIP39 English words are unique by their first four letters, so this avoids storing 2048 extra clips.
+**Recovery words** are spelled in full, letter by letter ("recovery word one, A, B, A, N, D, O, N"), so what the user writes down is the real BIP39 word that any wallet accepts. (Spelling only the first 4 letters, which identify every BIP39 word, was tried first and changed 2026-11-17: the prefixes don't look like words and most wallets want the whole word.) This avoids storing 2048 word clips. The letters are secret clips; the position number is public.
 
 **Contact names** are at most 12 characters (`SERIAL_PROTOCOL.md`) and are spelled in full, character by character, using the letter, digit, `space`, `hyphen` and `apostrophe` clips, in P0. P1 option: a name clip recorded at enrollment and verified by the user through the earpiece, then stored on device (needs a protocol change — see `SERIAL_PROTOCOL.md` rules for changing the protocol).
 
@@ -40,25 +40,25 @@ The address phrase is longer because at enrollment the attacker chooses the addr
 - Stored as a **clip pack**: one flat image in the raw `clips` partition (10 MB, `firmware/partitions.csv`), no filesystem. `node tools/pack-clips.mjs` builds `tools/out/clips.bin` from `tools/out/clips/<id>.pcm`. Layout (little-endian): `"TKCP"`, u16 version 1, u16 count, u32 total length, u32 fingerprint, u32 CRC-32 of the clip data, then `count × {u32 offset, u32 len}`, then the PCM (each clip 4-byte aligned). Clip IDs are defined by core in `core/include/tk_clips.h`; `tools/clips.json` must match it.
 - **Stale packs are refused.** The fingerprint is a CRC-32 over `"<id>:<text>\n"` for every clip; `tools/gen-clips.mjs` writes it to `core/include/tk_clips_fp.h` (`TK_CLIPS_FINGERPRINT`). At boot the device checks the header, every index entry, the clip count, the fingerprint and the data CRC (`core/src/tk_clippack.c`, bounds-checked and fuzzed). If any check fails, every clip is silent: a pack built for another clip list would speak the wrong word for an ID. `pack-clips.mjs` also refuses clips that were generated from older text (`tools/out/manifest.json`).
 - Flash it once, and again whenever clips change: `parttool.py -p COMx --partition-table-file partitions.csv write_partition --partition-name clips --input ../tools/out/clips.bin` (from `firmware/`). `idf.py flash` doesn't touch it.
-- Budget: ~0.6 s average × 32 KB/s ≈ 20 KB per clip; 342 clips = 6.94 MB of the 10 MB partition. If space gets tight, switch to IMA ADPCM (4:1) before cutting clips.
+- Budget: ~0.6 s average × 32 KB/s ≈ 20 KB per clip; 356 clips = 7.51 MB of the 10 MB partition. If space gets tight, switch to IMA ADPCM (4:1) before cutting clips.
 - I2S output at 16 kHz; mono is duplicated to both channels (the UDA1334A plays both; the MAX98357A, with SD driven HIGH, plays the left). Gain (set by ear, `firmware/main/audio.c`): −9 dB with the earpiece alone, 50% (−6 dB) while the speaker is on (the bus is shared, so the earbuds get that level too; secret clips never turn the speaker on).
 
 ## Generation (`tools/gen-audio.mjs`)
 
-- **Clip list:** `tools/gen-clips.mjs` builds `tools/clips.json` (`[{id, name, text, say?}]`, one entry per ID in `core/include/tk_clips.h`, 342 clips) and `sim/src/clip_text.c`, so the simulator prints exactly what the device says. `text` is what the clip says; `say`, when present, is what is sent to text-to-speech instead (a pronunciation fix found by listening; e.g. a lone "S" comes back silent, so it is spoken as "ess"). `--check` verifies both files.
+- **Clip list:** `tools/gen-clips.mjs` builds `tools/clips.json` (`[{id, name, text, say?}]`, one entry per ID in `core/include/tk_clips.h`, 356 clips) and `sim/src/clip_text.c`, so the simulator prints exactly what the device says. `text` is what the clip says; `say`, when present, is what is sent to text-to-speech instead (a pronunciation fix found by listening; e.g. "ess" for S); `tts`, when present, overrides generation settings for that clip (e.g. a seed that gave a letter the right pronunciation) and is part of its cache key. `--check` verifies both files.
 - **Generation:** `tools/gen-audio.mjs` calls ElevenLabs `POST /v1/text-to-speech/{voice_id}?output_format=wav_16000` (API checked 2026-11-14). It asks for WAV rather than raw PCM so the sample format is read from the header (must be PCM 16-bit mono 16 kHz) instead of assumed; the header is then dropped. Voice ID and key come from `server/.env`; the key is never printed.
-- **Fixed settings** so every clip sounds like one speaker: `eleven_multilingual_v2`, `stability 0.75`, `similarity_boost 0.75`, `style 0`, `use_speaker_boost true`, `speed 0.95`, `seed 1`, `apply_text_normalization "off"`.
+- **Fixed settings** so every clip sounds like one speaker (a few letters override the seed or text, see the clip inventory): `eleven_multilingual_v2`, `stability 0.75`, `similarity_boost 0.75`, `style 0`, `use_speaker_boost true`, `speed 0.95`, `seed 1`, `apply_text_normalization "off"`.
 - **Processing:** trim leading/trailing audio below −45 dBFS down to 40 ms, peak-normalize to −3 dBFS.
 - **Cache:** raw responses in `tools/out/cache/`, keyed by SHA-256 of (spoken text, voice, every setting), so reruns only pay for changed clips. `--dry-run` shows what would be generated; `--only <ids|names|text>` regenerates a few; `--force` ignores the cache.
-- **Outputs** (gitignored): `tools/out/clips/<id>.pcm` (packed into `tools/out/clips.bin` by `pack-clips.mjs`), `tools/out/preview/<id>-<text>.wav` (listen to these), `tools/out/manifest.json`. First full run: 342 clips, 2,303 characters, 333 ms–2.4 s each, 227 s and 6.94 MB in total (budget 10 MB).
+- **Outputs** (gitignored): `tools/out/clips/<id>.pcm` (packed into `tools/out/clips.bin` by `pack-clips.mjs`), `tools/out/preview/<id>-<text>.wav` (listen to these), `tools/out/manifest.json`. First full run: 342 clips, 2,303 characters, 333 ms–2.4 s each, 227 s and 6.94 MB in total (budget 10 MB). The 9 SETUP / speaker-off prompts added 2026-11-17 (227 characters); then the 26 letters re-recorded from their names, "pin digit number", "starting at" and "twenty one"–"twenty four" (146 characters); then 10 letters picked by listening from 42 candidates (an English-forced model was tried and rejected): 356 clips, 246.1 s, 7.51 MB.
 - **Listen to every preview before packing**: what the device says is trusted output. Fix a bad clip with a `say` override in `gen-clips.mjs`, rerun `gen-clips`, then `gen-audio` (only that clip is regenerated), then `pack-clips` and reflash the pack.
 
 ## Output routing
 
-Core marks each clip it plays as public or secret (`play_clip(..., secret)`): the three checksum words and every PIN digit value are secret; prompts, amounts, tokens, spelled names and PIN positions ("digit three") are public.
+Core marks each clip it plays as public or secret (`play_clip(..., secret)`): the three checksum words, every PIN digit value and every recovery-word letter are secret; prompts, amounts, tokens, spelled names and PIN positions ("pin digit number three, starting at") are public.
 - **Earpiece (UDA1334A) is the default** and the only path for secret clips: checksum words, PIN digit values, and recovery words.
 - **The speaker plays public clips only.** The MAX98357A's SD pin (`SPK_EN`) is driven LOW at boot, before I2S starts, and stays LOW except while a public clip plays in speaker mode. Firmware's `play_clip` drives it LOW before the first sample of every secret clip, whatever the mode, and drains the I2S buffers after every clip, so no secret audio reaches the speaker.
-- **Speaker (MAX98357A) "demo mode"** is enabled only on the device (hold OK + BACK for 3 s), announced with "speaker mode on", and resets at reboot. The host cannot enable it. PIN entry is allowed in speaker mode: the digit values are secret clips, so they stay in the earpiece, and an observer hears only the public parts ("digit three"). Recovery playback is still refused in speaker mode.
+- **Speaker (MAX98357A) "demo mode"** is enabled only on the device (hold OK + BACK for 3 s), announced with "speaker mode on", and resets at reboot. The host cannot enable it. PIN entry is allowed in speaker mode: the digit values are secret clips, so they stay in the earpiece, and an observer hears only the public parts ("pin digit number three, starting at"). Recovery playback is still refused in speaker mode.
 
 ## Buttons
 
@@ -78,11 +78,23 @@ Debounce 30 ms (scanned every 5 ms). UP, DOWN, BACK and CONFIRM count on press; 
 
 For each of the 6 digits:
 
-1. Device picks a random start digit (hardware RNG) and says it in the earpiece.
+1. Device picks a random start digit (hardware RNG) and announces "pin digit number *three*, starting at *seven*": the position and "starting at" are public, the start digit is a secret clip.
 2. UP / DOWN step the digit (wrapping 0–9); the device speaks each new value.
 3. OK commits; BACK goes back one digit.
 
 An observer sees only up/down counts, which reveal nothing without the private start digit. Each press gives a short haptic tick so the user knows it registered.
+
+## SETUP (`core/src/tk_setup.c`)
+
+The host sends `SETUP`; everything else happens on the device. Refused at once and silently with `WALLET_EXISTS` while a wallet exists (I10); refused with `DEVICE_ERROR` without working audio or in speaker mode (recovery words are never offered there).
+
+1. **PIN first**: "choose a new PIN", rotary entry as below; "enter your PIN again", entry again. If they differ: three pulses, "the PINs do not match", start over; after 3 mismatches SETUP is cancelled. The press timing of both entries is mixed into the entropy (SECURITY_MODEL I11), which is why the PIN comes first.
+2. "please wait" while the words are generated (about 0.5 s).
+3. "write down your recovery words", then each of the 24 words: "recovery word *n*, *letters*" (positions 21–24 are single "twenty one"… clips). After word one: "press OK for the next word, hold OK to repeat". **OK** = next word (tick), **long OK** = repeat this word, **BACK** = previous word, **REJECT** = stop (`REJECTED_BY_USER`), **long REJECT** = cancel. Up to 5 minutes per word, then it cancels.
+4. After word 24: "hold OK to hear all words again, or press OK to finish". Long OK starts again at word one; BACK returns to word 24.
+5. OK: "please wait" (the PIN key derivation, about 2.6 s), then "wallet created" and a double pulse. The device stays unlocked until it reboots.
+
+Nothing is stored until step 5, so cancelling, a timeout or unplugging at any earlier point leaves no wallet. The P0 flow only asks the user to acknowledge each word; it does not quiz them on the words.
 
 ## Haptic patterns (DRV2605L, ERM effect library A)
 

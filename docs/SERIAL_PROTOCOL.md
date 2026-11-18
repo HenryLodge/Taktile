@@ -12,7 +12,7 @@ Request/response, one request in flight at a time. The device may also send unso
 - `EVENT` frames carry the seq of the request whose flow sent them.
 - The device never checks seq order; seq only pairs replies with requests.
 
-**Not implemented yet:** `SETUP`, `CONTACT_ADD`, `CONTACT_REMOVE` get `ERROR{UNKNOWN_TYPE}` until their tasks land (TASKS.md, Day 5–6). Requests whose payload must be empty get `ERROR{BAD_PAYLOAD}` if it isn't.
+**Not implemented yet:** `CONTACT_ADD`, `CONTACT_REMOVE` get `ERROR{UNKNOWN_TYPE}` until their tasks land (TASKS.md, Day 5–6). Requests whose payload must be empty get `ERROR{BAD_PAYLOAD}` if it isn't.
 
 ## Frame
 
@@ -43,7 +43,7 @@ Host → device in `0x01–0x7F`, device → host in `0x81–0xFF` (request type
 | --- | --- | --- | --- |
 | 0x01 | `HELLO` | — | `fw_version u16` (LE), `proto_version u8`, `state u8` (0 = no wallet, 1 = locked, 2 = unlocked) |
 | 0x02 | `GET_PUBKEY` | — | `status u8`, `pubkey[32]` (only if a wallet exists; does not require unlock) |
-| 0x03 | `SETUP` | — | `status u8`. Device runs seed generation + recovery-word playback + PIN setup entirely on device. Refused with `WALLET_EXISTS` if a wallet already exists |
+| 0x03 | `SETUP` | — | `status u8`. Device runs PIN setup + seed generation + recovery-word playback entirely on device (`core/src/tk_setup.c`, AUDIO.md "SETUP"); the reply comes when it ends, minutes later. `OK` (wallet stored, device unlocked until reboot), `WALLET_EXISTS` (a wallet exists, I10; answered at once, nothing played), `CANCELLED` (host CANCEL, long REJECT, 3 PIN mismatches, or a timeout), `REJECTED_BY_USER` (REJECT), `DEVICE_ERROR` (no audio, speaker mode on, RNG or storage failure). Nothing is stored unless the reply is `OK`. During the flow: `EVENT AWAITING_PIN` once, HELLO reports state 0, other requests get `BUSY` |
 | 0x10 | `SIGN_REQUEST` | `message[len]` (legacy message bytes, not the full transaction) | `status u8`, then `signature[64]` if `status == OK` |
 | 0x30 | `CONTACT_ADD` | `name_len u8` (1–12), `name[name_len]` (ASCII, rules below), `wallet[32]` | `status u8`: `OK`, `CONTACTS_FULL`, `CONTACT_EXISTS`, `REJECTED_BY_USER`, `CANCELLED`, `NO_WALLET`. A name that breaks the rules gets `ERROR{BAD_PAYLOAD}` |
 | 0x31 | `CONTACT_LIST_COUNT` | — | `count u8` (names are NOT returned; contacts stay on device) |
@@ -72,6 +72,7 @@ Contact name rules (`core/src/tk_contacts.c`): 1–12 characters from ASCII lett
 | 0x09 | `CONTACTS_FULL` | CONTACT_ADD refused; the book holds 16 contacts |
 | 0x0A | `CONTACT_EXISTS` | CONTACT_ADD refused; same name (ignoring case) or same wallet already stored |
 | 0x0B | `NOT_FOUND` | CONTACT_REMOVE index is not in the book |
+| 0x0C | `DEVICE_ERROR` | The device can't do this safely, so it refused: no working audio (clip pack missing or stale, I2S down), the RNG refused, storage failed, or the key store can't check a PIN. Nothing was signed or stored. The app says to check the device (for audio: reflash the clip pack) |
 
 ## Events (`EVENT` payload)
 

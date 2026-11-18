@@ -30,16 +30,21 @@ Keys pressed while a clip is "playing" are discarded, like the device (I6: CONFI
 | --- | --- | --- |
 | `--listen ADDR` | `127.0.0.1` | Address to listen on. Keep it local |
 | `--port N` | `8765` | WebSocket port |
-| `--data DIR` | `./sim-data` | Saved contact book and the dev seed (gitignored) |
+| `--data DIR` | `./sim-data` | Saved wallet (`wallet`, `pin-fails`), contact book, and the dev seed if used (gitignored) |
 | `--clip-ms N` | `300` | How long each clip "plays" |
 | `--contact NAME=ADDR` | | Add a contact (base58 or 64 hex), saved to `DIR/contacts`. Repeatable. `CONTACT_ADD` over the link is not implemented yet |
-| `--seed-hex HEX` | | Use this 32-byte dev seed instead of `DIR/dev-seed` (not saved) |
-| `--pin DDDDDD` | `123456` | Dev wallet PIN |
-| `--unlocked` | off | Start with the dev wallet unlocked (signing still needs CONFIRM) |
+| `--dev-wallet` | off | Use the INSECURE dev wallet (`DIR/dev-seed`) instead of the key store |
+| `--seed-hex HEX` | | INSECURE dev wallet with this 32-byte seed (not saved); implies `--dev-wallet`. `sim/tests/e2e.py` uses it |
+| `--pin DDDDDD` | `123456` | Dev wallet PIN (dev wallet only) |
+| `--unlocked` | off | Start with the dev wallet unlocked (dev wallet only; signing still needs CONFIRM) |
+
+## Wallet
+
+By default the sim uses core's key store (`core/src/tk_keystore.c`), exactly as the device does: the key lives PIN-encrypted in `DIR/wallet`, created by `SETUP` on the device side of the link (keys as below; AUDIO.md "SETUP"). Before that the banner says `wallet: none (key store; run SETUP)`. The PIN's start digits are private audio, so to script a SETUP (as `sim/tests/e2e.py` does) build with `-DTK_SIM_INSECURE_AUDIO=ON`. PIN unlock fails closed until the PIN-unlock task, so a key-store wallet can't sign yet after a restart.
 
 ## Development wallet: INSECURE
 
-Until the real key store exists (SETUP and PIN-unlock tasks), the sim uses a development wallet whose seed is stored **in plaintext** in `DIR/dev-seed`, created from the system RNG on first run. Devnet only; never put real funds on it. The startup banner prints its address (base58) for airdrops. It still follows the device rules: signing needs an unlocked session plus CONFIRM, and 10 wrong PINs wipe the seed.
+With `--dev-wallet` (or `--seed-hex`), the sim uses a development wallet whose seed is stored **in plaintext** in `DIR/dev-seed`, created from the system RNG on first run. Devnet only; never put real funds on it. The startup banner prints its address (base58) for airdrops. It still follows the device rules: signing needs an unlocked session plus CONFIRM, and 10 wrong PINs wipe the seed.
 
 ## Audio and secrets (I2)
 

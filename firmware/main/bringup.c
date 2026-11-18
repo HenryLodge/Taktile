@@ -30,6 +30,7 @@
 #include "tk_contacts.h"
 #include "tk_device.h"
 #include "tk_pins.h"
+#include "tk_keystore.h"
 #include "tk_seed.h"
 
 // Formats and writes straight to the USB-Serial-JTAG driver. Deliberately not printf/stdout: that
@@ -486,15 +487,23 @@ static void step_keys(void) {
     memzero(seed, sizeof(seed));
     memzero(key, sizeof(key));
 
-    // The unlock KDF as the key store runs it: one 32-byte PBKDF2-HMAC-SHA256 block.
+    // PBKDF2-HMAC-SHA256 at the key store's count: one 32-byte block, and the 64 bytes the key
+    // store really derives (two blocks: Kenc and Kmac, core/src/tk_keystore.c).
     static const uint8_t salt[16] = {0};
+    uint8_t k64[64];
     t0 = esp_timer_get_time();
-    pbkdf2_hmac_sha256((const uint8_t *)"123456", 6, salt, sizeof(salt), 20000, key, sizeof(key));
+    pbkdf2_hmac_sha256((const uint8_t *)"123456", 6, salt, sizeof(salt), TK_KDF_ITERS, key, sizeof(key));
     const int64_t kdf_us = esp_timer_get_time() - t0;
+    t0 = esp_timer_get_time();
+    pbkdf2_hmac_sha256((const uint8_t *)"123456", 6, salt, sizeof(salt), TK_KDF_ITERS, k64, sizeof(k64));
+    const int64_t kdf64_us = esp_timer_get_time() - t0;
     memzero(key, sizeof(key));
+    memzero(k64, sizeof(k64));
     out("  BIP39 seed (2048 x PBKDF2-HMAC-SHA512): %lld ms; SLIP-10 (4 levels): %lld ms\n"
-        "  PBKDF2-HMAC-SHA256, 20,000 iterations, 32 bytes (unlock / SETUP commit): %lld ms\n",
-        (long long)(bip39_us / 1000), (long long)(slip_us / 1000), (long long)(kdf_us / 1000));
+        "  PBKDF2-HMAC-SHA256, %u iterations: 32 bytes %lld ms; 64 bytes (key store: unlock and\n"
+        "  SETUP commit) %lld ms\n",
+        (long long)(bip39_us / 1000), (long long)(slip_us / 1000), (unsigned)TK_KDF_ITERS,
+        (long long)(kdf_us / 1000), (long long)(kdf64_us / 1000));
     out("step K: %s\n", ok ? "PASS" : "FAIL");
 }
 

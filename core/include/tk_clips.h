@@ -37,7 +37,7 @@ typedef enum {
     TK_CLIP_CHECKSUM,
     TK_CLIP_ADDRESS_PHRASE,
     TK_CLIP_ENTER_PIN,
-    TK_CLIP_DIGIT,
+    TK_CLIP_DIGIT, // "pin digit number" (then the position, "starting at", the private start digit)
     TK_CLIP_WRONG_PIN,
     TK_CLIP_ATTEMPTS_REMAINING,
     TK_CLIP_SIGNED,
@@ -51,7 +51,23 @@ typedef enum {
     TK_CLIP_SPEAKER_MODE_ON,
     TK_CLIP_WALLET_WIPED,
 
-    TK_CLIP_COUNT
+    // SETUP (core/src/tk_setup.c), and speaker mode off (P1)
+    TK_CLIP_WRITE_DOWN,      // "write down your recovery words"
+    TK_CLIP_NEXT_WORD_HELP,  // "press OK for the next word, hold OK to repeat"
+    TK_CLIP_REPLAY_ALL,      // "hold OK to hear all words again, or press OK to finish"
+    TK_CLIP_CHOOSE_PIN,      // "choose a new PIN"
+    TK_CLIP_ENTER_PIN_AGAIN, // "enter your PIN again"
+    TK_CLIP_PINS_DONT_MATCH, // "the PINs do not match"
+    TK_CLIP_PLEASE_WAIT,
+    TK_CLIP_WALLET_CREATED,
+    TK_CLIP_SPEAKER_MODE_OFF,
+
+    TK_CLIP_STARTING_AT, // PIN entry: "pin digit number three, starting at <digit>"
+    // Recovery word positions 21-24 as one phrase each: TK_CLIP_TWENTY_ONE + (n - 21). Two clips
+    // ("twenty", "one") ran into the spelled letters that follow.
+    TK_CLIP_TWENTY_ONE,
+
+    TK_CLIP_COUNT = TK_CLIP_TWENTY_ONE + 4
 } tk_clip_t;
 
 #endif

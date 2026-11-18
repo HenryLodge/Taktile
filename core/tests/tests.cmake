@@ -12,9 +12,11 @@ set(TK_TESTS
     test_speech
     test_pin_entry
     test_flow
+    test_keystore
     test_parser
     test_proto
     test_rng_health
     test_seed
+    test_setup
     test_solana_consts
 )

@@ -30,7 +30,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 
 ## Day 5–6 (Nov 16–17): device flows
 
-- [ ] P0 SETUP: BIP39 generation, spelled recovery-word playback with repeat, PIN setup (rotary entry); refused with `WALLET_EXISTS` if a wallet exists (I10)
+- [x] P0 SETUP: BIP39 generation, spelled recovery-word playback with repeat, PIN setup (rotary entry); refused with `WALLET_EXISTS` if a wallet exists (I10)
 - [ ] P0 PIN unlock, attempt counter persisted before check, wipe at 10
 - [ ] P0 CONTACT_ADD with spelled name + 8-word address phrase + PIN + CONFIRM (needed for the demo's happy path)
 - [ ] P0 SIGN_REQUEST end to end on hardware

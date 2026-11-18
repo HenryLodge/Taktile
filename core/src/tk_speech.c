@@ -92,6 +92,16 @@ size_t tk_speech_amount(tk_tx_kind_t kind, uint64_t amount, uint16_t *clips, siz
     return o.overflow ? 0 : o.n;
 }
 
+size_t tk_speech_number(uint64_t n, uint16_t *clips, size_t cap) {
+    // say_whole needs every group below 1000, including the trillions: n < 10^15.
+    if (clips == NULL || n >= UINT64_C(1000000000000000)) {
+        return 0;
+    }
+    out_t o = {clips, cap, 0, 0};
+    say_whole(&o, n);
+    return o.overflow ? 0 : o.n;
+}
+
 size_t tk_speech_spell(const char *name, size_t len, uint16_t *clips, size_t cap) {
     if (name == NULL || clips == NULL) {
         return 0;

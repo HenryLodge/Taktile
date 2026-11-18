@@ -45,6 +45,7 @@ typedef enum {
     TK_STATUS_CONTACTS_FULL = 0x09,  // CONTACT_ADD: the book already holds 16 contacts
     TK_STATUS_CONTACT_EXISTS = 0x0A, // CONTACT_ADD: same name (ignoring case) or same wallet
     TK_STATUS_NOT_FOUND = 0x0B,      // CONTACT_REMOVE: index >= count
+    TK_STATUS_DEVICE_ERROR = 0x0C,   // the device can't do this safely: no audio, RNG, storage or key store
 } tk_status_t;
 
 typedef enum {
