@@ -56,7 +56,7 @@ python tools/device_tests.py /dev/ttyACM0   # expects DEVICE TESTS: N/N PASS (~2
 
 # app + server
 cd app && npm install && npm run dev        # Chrome or Edge only (Web Serial)
-cd server && npm install && npm run dev
+cd server && npm run dev                    # no dependencies; dev:canned = no ElevenLabs calls; npm test; npm run probe (live check)
 
 # tools
 node tools/gen-consts.mjs                   # regenerates core/{include,src}/tk_solana_consts.*; add --check to verify
