@@ -27,6 +27,7 @@ CLIP_MS = 60
 
 HELLO, GET_PUBKEY, SETUP, SIGN_REQUEST, CONTACT_LIST_COUNT, CANCEL = 0x01, 0x02, 0x03, 0x10, 0x31, 0x7E
 CONTACT_ADD = 0x30
+UNLOCK = 0x04
 EVENT, RESP, ERROR = 0xF0, 0x80, 0xFF
 BAD_PAYLOAD = 3
 CONTACT_EXISTS = 0x0A
@@ -521,6 +522,27 @@ def unlock_tests(data, pubkey):
         ws.send(frame(HELLO, 22))
         f, _ = ws.until(HELLO | RESP, 22)
         check(f[2] == bytes([1, 0, 1, 1]), "not locked after the app disconnected")
+
+        # UNLOCK first (the PIN, "wallet unlocked"), then SIGN_REQUEST: no PIN, still CONFIRM (I5).
+        ws.send(frame(UNLOCK, 23))
+        sim.wait_line(lambda l: l == "[EARPIECE] enter pin")
+        enter_pin(sim, [1, 2, 3, 4, 5, 6])
+        f, _ = ws.until(UNLOCK | RESP, 23)
+        check(f[2] == bytes([OK]), f"UNLOCK {f[2].hex()}")
+        check("wallet unlocked" in sim.all, "no 'wallet unlocked'")
+        ws.send(frame(UNLOCK, 24))
+        f, _ = ws.until(UNLOCK | RESP, 24)
+        check(f[2] == bytes([OK]), "UNLOCK while unlocked is not OK at once")
+        pins_before = sim.all.count("[EARPIECE] enter pin")
+        ws.send(frame(SIGN_REQUEST, 25, msg))
+        sim.wait_line(lambda l: "press confirm" in l)
+        sim.press(b"c")
+        f, _ = ws.until(SIGN_REQUEST | RESP, 25)
+        check(f[2][0] == OK and len(f[2]) == 65, f"sign after UNLOCK {f[2][:1].hex()}")
+        check(sim.all.count("[EARPIECE] enter pin") == pins_before, "PIN asked again after UNLOCK")
+        ws.send(frame(HELLO, 26))
+        f, _ = ws.until(HELLO | RESP, 26)
+        check(f[2] == bytes([1, 0, 1, 1]), "not locked after the signature that followed UNLOCK")
 
         # Ten wrong PINs in a row: wallet and contacts wiped, LOCKED_OUT.
         ws.send(frame(SIGN_REQUEST, 3, msg))

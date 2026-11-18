@@ -591,6 +591,220 @@ static void test_idle_requests(void) {
     TK_CHECK(has_frame(TK_MSG_GET_PUBKEY | TK_MSG_RESPONSE_BIT, 2, &no_wallet, 1));
 }
 
+// ---- UNLOCK ----
+
+#define USEQ 0x21
+
+static int unlock_status(void) {
+    int status = -1, count = 0;
+    for (size_t i = 0; i < nframes; i++) {
+        if (frames[i].type == (TK_MSG_UNLOCK | TK_MSG_RESPONSE_BIT) && frames[i].seq == USEQ) {
+            status = frames[i].len == 1 ? frames[i].payload[0] : -2;
+            count++;
+        }
+    }
+    return count == 1 ? status : -1;
+}
+
+static size_t all_clips(void) {
+    size_t n = 0;
+    for (size_t i = 0; i < fake_op_count; i++) {
+        n += fake_ops[i].kind == OP_CLIP;
+    }
+    return n;
+}
+
+static void clear_output(void) {
+    fake.tx_len = 0; // frames so far are checked; the op log keeps counting
+}
+
+static void unlock_request(void) {
+    fake_send_now(TK_MSG_UNLOCK, USEQ, NULL, 0);
+}
+
+// Answered at once, silently: bad payload, no wallet, already unlocked; no audio is a haptic only.
+static void test_unlock_refusals(void) {
+    const uint8_t bad_payload = TK_PROTO_ERR_BAD_PAYLOAD;
+    setup(true, false, true);
+    fake_send_now(TK_MSG_UNLOCK, USEQ, (const uint8_t *)"x", 1);
+    script_correct_pin();
+    run();
+    TK_CHECK(nframes == 1 && has_frame(TK_MSG_ERROR, USEQ, &bad_payload, 1));
+    TK_CHECK(fw.unlock_calls == 0 && !fw.unlocked && all_clips() == 0);
+
+    setup(false, false, true);
+    unlock_request();
+    script_correct_pin();
+    run();
+    TK_CHECK(nframes == 1 && unlock_status() == TK_STATUS_NO_WALLET);
+    TK_CHECK(fw.unlock_calls == 0 && all_clips() == 0);
+
+    setup(true, true, true);
+    unlock_request();
+    run();
+    TK_CHECK(nframes == 1 && unlock_status() == TK_STATUS_OK);
+    TK_CHECK(fw.unlock_calls == 0 && fw.unlocked && all_clips() == 0);
+
+    setup(true, false, true);
+    fake.audio_bad = true;
+    unlock_request();
+    script_correct_pin();
+    run();
+    TK_CHECK(nframes == 1 && unlock_status() == TK_STATUS_DEVICE_ERROR);
+    TK_CHECK(fw.unlock_calls == 0 && !fw.unlocked && all_clips() == 0);
+}
+
+// Locked: PIN entry (a wrong PIN counted), then "wallet unlocked". Only events and the status go out (I2).
+static void test_unlock_pin(void) {
+    setup(true, false, true);
+    unlock_request();
+    script_wrong_pin();
+    script_correct_pin();
+    run();
+    TK_CHECK(unlock_status() == TK_STATUS_OK && fw.unlocked && fw.unlock_calls == 2);
+    TK_CHECK(fw.sign_calls == 0);
+    const uint8_t ev_pin = TK_EVENT_AWAITING_PIN;
+    TK_CHECK(nframes == 3);
+    for (size_t i = 0; i < 2 && i < nframes; i++) {
+        TK_CHECK(frames[i].type == TK_MSG_EVENT && frames[i].seq == USEQ && frames[i].len == 1 &&
+                 frames[i].payload[0] == ev_pin);
+    }
+    TK_CHECK(clip_count(TK_CLIP_ENTER_PIN) == 2 && clip_count(TK_CLIP_WRONG_PIN) == 1);
+    TK_CHECK(clip_count(TK_CLIP_PLEASE_WAIT) == 2 && clip_count(TK_CLIP_UNLOCKED) == 1);
+    uint16_t clips[512];
+    size_t n = 0;
+    collect_clips(clips, &n, 512);
+    TK_CHECK(n > 0 && clips[n - 1] == TK_CLIP_UNLOCKED);
+
+    // REJECT during PIN entry: still locked.
+    setup(true, false, true);
+    unlock_request();
+    fake_press(TK_BTN_REJECT);
+    run();
+    TK_CHECK(unlock_status() == TK_STATUS_REJECTED_BY_USER && !fw.unlocked && fw.unlock_calls == 0);
+    TK_CHECK(clip_count(TK_CLIP_UNLOCKED) == 0);
+
+    // Host CANCEL during PIN entry.
+    setup(true, false, true);
+    unlock_request();
+    fake_frame(TK_MSG_CANCEL, 22, NULL, 0);
+    run();
+    TK_CHECK(unlock_status() == TK_STATUS_CANCELLED && !fw.unlocked);
+    const uint8_t ok_status = TK_STATUS_OK;
+    TK_CHECK(has_frame(TK_MSG_CANCEL | TK_MSG_RESPONSE_BIT, 22, &ok_status, 1));
+
+    // Requests during the flow get BUSY.
+    setup(true, false, true);
+    unlock_request();
+    fake_frame(TK_MSG_SIGN_REQUEST, 23, NULL, 0); // BUSY whatever the payload
+    fake_frame(TK_MSG_UNLOCK, 24, NULL, 0);
+    script_correct_pin();
+    run();
+    const uint8_t busy = TK_STATUS_BUSY;
+    TK_CHECK(unlock_status() == TK_STATUS_OK && fw.sign_calls == 0);
+    TK_CHECK(has_frame(TK_MSG_SIGN_REQUEST | TK_MSG_RESPONSE_BIT, 23, &busy, 1));
+    TK_CHECK(has_frame(TK_MSG_UNLOCK | TK_MSG_RESPONSE_BIT, 24, &busy, 1));
+
+    // The last attempt wrong: the lockout wipe, as in a SIGN_REQUEST.
+    setup(true, false, true);
+    fw.attempts_left = 1;
+    unlock_request();
+    script_wrong_pin();
+    run();
+    TK_CHECK(unlock_status() == TK_STATUS_LOCKED_OUT && !fw.has_wallet && book.count == 0);
+    TK_CHECK(clip_count(TK_CLIP_WALLET_WIPED) == 1 && clip_count(TK_CLIP_UNLOCKED) == 0);
+
+    // The key store can't check a PIN: fail closed.
+    setup(true, false, true);
+    fw.unlock_error = true;
+    unlock_request();
+    script_correct_pin();
+    run();
+    TK_CHECK(unlock_status() == TK_STATUS_DEVICE_ERROR && !fw.unlocked && book.count == 1);
+}
+
+// UNLOCK, then SIGN_REQUEST: no PIN in the sign flow, but still the announcement and CONFIRM (I5).
+static void test_unlock_then_sign(void) {
+    const tk_parser_vector_t *v = vec("sol_ok");
+    setup(true, false, true);
+    unlock_request();
+    script_correct_pin();
+    run();
+    TK_CHECK(unlock_status() == TK_STATUS_OK);
+
+    clear_output();
+    sign_request(v);
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    check_signature(v);
+    check_sign_invariant();
+    TK_CHECK(fw.unlock_calls == 1 && clip_count(TK_CLIP_ENTER_PIN) == 1);
+    TK_CHECK(clip_count(TK_CLIP_CHECKSUM) == 1 && clip_count(TK_CLIP_PRESS_CONFIRM) == 1);
+    const uint8_t ev_pin = TK_EVENT_AWAITING_PIN;
+    TK_CHECK(nframes == 4 && !has_frame(TK_MSG_EVENT, SEQ, &ev_pin, 1));
+
+    // Unlocked, but REJECT in the confirm window: nothing signed.
+    setup(true, false, true);
+    unlock_request();
+    script_correct_pin();
+    run();
+    clear_output();
+    sign_request(v);
+    fake_press(TK_BTN_REJECT);
+    run();
+    TK_CHECK(reply_status() == TK_STATUS_REJECTED_BY_USER && fw.sign_calls == 0);
+}
+
+// The real key store: one UNLOCK, one signature; the next SIGN_REQUEST asks for the PIN again.
+static void test_unlock_keystore(void) {
+    const tk_parser_vector_t *v = vec("sol_ok");
+    fake_reset();
+    fake_wallet_reset(false, false); // only for fw.sk / fw.pk: the vector device key
+    uint8_t salt[TK_KEYSTORE_SALT_LEN] = {2};
+    uint8_t blob[TK_KEYSTORE_BLOB_LEN];
+    static const uint8_t pin[TK_PIN_LEN] = {1, 2, 3, 4, 5, 6};
+    TK_CHECK(tk_keystore_seal(pin, fw.sk, fw.pk, salt, TK_KDF_ITERS_MIN, blob));
+    fake_kv_put(TK_STORAGE_WALLET, blob, sizeof(blob));
+    const uint8_t zero = 0;
+    fake_kv_put(TK_STORAGE_PIN_FAILS, &zero, 1);
+    static tk_keystore_t ks;
+    tk_wallet_ops_t ops;
+    tk_keystore_init(&ks, &FAKE_PLATFORM);
+    tk_keystore_ops(&ks, &ops);
+    tk_contacts_init(&book);
+    const tk_contacts_book_entry_t *a = &tk_contacts_book[0];
+    TK_CHECK(tk_contacts_add(&book, (const uint8_t *)a->name, strlen(a->name), a->wallet) == TK_CONTACTS_OK);
+    tk_device_init(&dev, &FAKE_PLATFORM, &ops, &book);
+
+    unlock_request();
+    script_correct_pin();
+    run();
+    TK_CHECK(unlock_status() == TK_STATUS_OK && ops.is_unlocked(ops.ctx));
+    fake_send_now(TK_MSG_HELLO, 9, NULL, 0);
+    run();
+    const uint8_t hello2[4] = {1, 0, 1, TK_STATE_UNLOCKED};
+    TK_CHECK(has_frame(TK_MSG_HELLO | TK_MSG_RESPONSE_BIT, 9, hello2, 4));
+
+    clear_output();
+    sign_request(v);
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    const out_frame_t *r = sign_reply();
+    TK_CHECK(r != NULL && r->len == 1 + TK_SIGNATURE_LEN && r->payload[0] == TK_STATUS_OK);
+    if (r != NULL && r->len == 1 + TK_SIGNATURE_LEN) {
+        TK_CHECK(ed25519_sign_open(v->msg, v->msg_len, v->device_pubkey, r->payload + 1) == 0);
+    }
+    TK_CHECK(!ops.is_unlocked(ops.ctx) && clip_count(TK_CLIP_ENTER_PIN) == 1);
+
+    clear_output();
+    sign_request(v);
+    fake_press(TK_BTN_REJECT);
+    run();
+    const uint8_t ev_pin = TK_EVENT_AWAITING_PIN;
+    TK_CHECK(has_frame(TK_MSG_EVENT, SEQ, &ev_pin, 1));
+    TK_CHECK(reply_status() == TK_STATUS_REJECTED_BY_USER && clip_count(TK_CLIP_ENTER_PIN) == 2);
+}
+
 static uint32_t rs = 0x5EED1234u;
 static uint32_t rnd(void) {
     rs ^= rs << 13;
@@ -625,8 +839,9 @@ static void test_random_scripts(void) {
             } else if (k < 15) {
                 fake_frame(TK_MSG_CANCEL, (uint8_t)(rnd() | 0x80), NULL, 0);
             } else if (k < 17) {
-                const uint8_t types[] = {TK_MSG_HELLO, TK_MSG_GET_PUBKEY, TK_MSG_SIGN_REQUEST, TK_MSG_SETUP};
-                fake_frame(types[rnd() % 4], (uint8_t)(rnd() | 0x80), NULL, 0);
+                const uint8_t types[] = {TK_MSG_HELLO, TK_MSG_GET_PUBKEY, TK_MSG_SIGN_REQUEST, TK_MSG_SETUP,
+                                         TK_MSG_UNLOCK};
+                fake_frame(types[rnd() % 5], (uint8_t)(rnd() | 0x80), NULL, 0);
             } else {
                 uint8_t junk[24];
                 for (size_t b = 0; b < sizeof(junk); b++) {
@@ -675,6 +890,10 @@ int main(void) {
     test_requests_during_flow();
     test_cancel();
     test_idle_requests();
+    test_unlock_refusals();
+    test_unlock_pin();
+    test_unlock_then_sign();
+    test_unlock_keystore();
     test_random_scripts();
     return tk_test_result();
 }

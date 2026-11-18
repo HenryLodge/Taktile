@@ -34,11 +34,11 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 2. `app` sends audio to `server /api/stt`, gets text, parses intent `{amount, token, contactName}`.
 3. `app` looks up Jack's wallet in its own (untrusted) contact cache, builds a devnet `TransferChecked` transaction to Jack's USDC associated token account, serializes the **message bytes**.
 4. `app` computes its checksum phrase from the message bytes and speaks it via `/api/tts`.
-5. `app` sends `SIGN_REQUEST{message}` to the device.
+5. `app` sends `SIGN_REQUEST{message}` to the device. (If the device is locked, the app first sends `UNLOCK` and the user enters the PIN, then the app fetches the blockhash and builds the message: a blockhash lasts about 60 s.)
 6. Device `core/parser` parses the message (rules in `SOLANA.md`). On failure → `SIGN_REQUEST` response with status `PARSE_UNSUPPORTED`.
 7. Device resolves the destination token account against its contact book. Unknown → plays "unknown recipient, do not sign", warning haptic, `SIGN_REQUEST` response with status `UNKNOWN_RECIPIENT`.
 8. Device plays: amount, token, recipient name, then checksum phrase — earpiece only.
-9. If not unlocked, device runs PIN entry (see `AUDIO.md`).
+9. If not unlocked (no `UNLOCK` first), device runs PIN entry (see `AUDIO.md`).
 10. User presses CONFIRM (or REJECT). Device signs with Ed25519 and returns `SIGN_REQUEST` response with status `OK` and the 64-byte signature.
 11. `app` attaches the signature, broadcasts to devnet, and announces the result.
 
@@ -98,7 +98,7 @@ typedef struct {
 
 **Single-threaded request handling** (`core/include/tk_device.h`). The platform's main loop calls `tk_device_poll()` over and over. Core owns the serial protocol: it reads bytes with `serial_read`, decodes frames, and answers. A `SIGN_REQUEST` runs its whole flow (announce → PIN → confirm → sign) inside that call. While the flow runs, core keeps reading the link between clips and between button waits of at most 100 ms, so it can answer `BUSY` and act on `CANCEL` (SERIAL_PROTOCOL.md) without threads or locks. A mid-flow reply waits at most one clip. `tk_device_link_reset()` drops a half-received frame when the link changes (the sim calls it when a WebSocket client connects or disconnects).
 
-**CONTACT_ADD** (`core/src/tk_enroll.c`) runs the same way and shares the sign flow's PIN unlock and confirm window (`core/src/tk_device_io.h`).
+**CONTACT_ADD** (`core/src/tk_enroll.c`) runs the same way and shares the sign flow's PIN unlock and confirm window (`core/src/tk_device_io.h`). **UNLOCK** (`core/src/tk_flow.c`) is that PIN unlock on its own.
 
 **SETUP** (`core/src/tk_setup.c`) is the other on-device flow and runs the same way inside `tk_device_poll()`: PIN and confirmation (rotary entry), entropy from the hardware RNG mixed with the press timing, BIP39 words → seed → SLIP-10 key (`core/src/tk_seed.c`), the 24 words spelled into the earpiece, then `tk_wallet_ops_t.create` (the key store, `core/src/tk_keystore.c`). AUDIO.md "SETUP" has the user's side.
 

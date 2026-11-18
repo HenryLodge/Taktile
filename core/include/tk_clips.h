@@ -71,6 +71,9 @@ typedef enum {
     TK_CLIP_PRESS_CONFIRM_ADD = TK_CLIP_TWENTY_ONE + 4, // "press confirm to add or reject to cancel"
     TK_CLIP_CONTACT_ADDED,
 
+    // UNLOCK (core/src/tk_flow.c)
+    TK_CLIP_UNLOCKED, // "wallet unlocked"
+
     TK_CLIP_COUNT
 } tk_clip_t;
 

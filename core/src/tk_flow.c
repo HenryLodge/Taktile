@@ -1,4 +1,4 @@
-// Request dispatch and the SIGN_REQUEST flow (SETUP is in tk_setup.c, CONTACT_ADD in tk_enroll.c).
+// Request dispatch, the SIGN_REQUEST and UNLOCK flows (SETUP is in tk_setup.c, CONTACT_ADD in tk_enroll.c).
 // See tk_device.h.
 
 #include <string.h>
@@ -421,6 +421,51 @@ static void handle_sign_request(tk_device_t *d, const tk_frame_t *f) {
     d->cancel = false;
 }
 
+// ---- UNLOCK: PIN entry ahead of a SIGN_REQUEST ----
+//
+// The host unlocks first, then fetches a fresh blockhash and sends SIGN_REQUEST, so the signed bytes
+// are built after the PIN (a blockhash lasts ~60 s). It only opens the session the key store already
+// has (I7: locks after one signature, 5 minutes, USB gone, reboot); every signature still needs the
+// announcement and CONFIRM (I5).
+
+static tk_status_t run_unlock(tk_device_t *d) {
+    const tk_wallet_ops_t *w = d->wallet;
+    const tk_platform_t *p = d->platform;
+    if (!w->has_wallet(w->ctx)) {
+        return TK_STATUS_NO_WALLET; // silent
+    }
+    if (w->is_unlocked(w->ctx)) {
+        return TK_STATUS_OK; // silent
+    }
+    if (!audio_ok(d)) {
+        p->haptic(p->ctx, TK_HAPTIC_WARNING); // the user can't hear the PIN digits: refuse (Q7)
+        return TK_STATUS_DEVICE_ERROR;
+    }
+    uint8_t pin[TK_PIN_LEN];
+    const tk_status_t st = tk_dev_unlock(d, pin); // wipes pin
+    memzero(pin, sizeof(pin));
+    if (st != TK_STATUS_OK) {
+        return st;
+    }
+    p->haptic(p->ctx, TK_HAPTIC_SUCCESS);
+    say(d, TK_CLIP_UNLOCKED);
+    return TK_STATUS_OK;
+}
+
+static void handle_unlock(tk_device_t *d, const tk_frame_t *f) {
+    if (f->len != 0) {
+        send_error(d, f->seq, TK_PROTO_ERR_BAD_PAYLOAD);
+        return;
+    }
+    d->in_flow = true;
+    d->flow_seq = f->seq;
+    d->cancel = false;
+    const tk_status_t st = run_unlock(d);
+    send_status(d, TK_MSG_UNLOCK, d->flow_seq, st);
+    d->in_flow = false;
+    d->cancel = false;
+}
+
 // ---- SETUP (the flow itself is tk_setup_run, tk_setup.c) ----
 
 static void handle_setup(tk_device_t *d, const tk_frame_t *f) {
@@ -469,6 +514,9 @@ static void handle_idle(tk_device_t *d, const tk_frame_t *f) {
         return;
     case TK_MSG_SETUP:
         handle_setup(d, f);
+        return;
+    case TK_MSG_UNLOCK:
+        handle_unlock(d, f);
         return;
     case TK_MSG_CONTACT_ADD:
         handle_contact_add(d, f);
