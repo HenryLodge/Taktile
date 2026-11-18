@@ -12,6 +12,7 @@
 #include "platform.h"
 #include "rng.h"
 #include "storage.h"
+#include "tk_clips.h"
 #include "tk_contacts.h"
 #include "tk_device.h"
 #include "tk_keystore.h"
@@ -33,6 +34,22 @@ static void load_contacts(const tk_platform_t *p) {
     }
 }
 
+// Speaker demo mode (docs/AUDIO.md): OK + BACK held 3 s, on the device only, between requests only
+// (never inside a flow, so routing never changes mid-sentence). "speaker mode on" is played with the
+// speaker already on and "speaker mode off" before it goes off, so the room hears both. The host can
+// neither set it nor see it; a reboot turns it off.
+static void toggle_speaker(void) {
+    const bool on = !tk_audio_speaker_mode();
+    tk_haptics_play(TK_HAPTIC_SUCCESS);
+    if (on) {
+        tk_audio_set_speaker_mode(true);
+        tk_audio_play(TK_CLIP_SPEAKER_MODE_ON, false);
+    } else {
+        tk_audio_play(TK_CLIP_SPEAKER_MODE_OFF, false);
+        tk_audio_set_speaker_mode(false);
+    }
+}
+
 static void run_device(void) {
     const tk_platform_t *p = &TK_FW_PLATFORM;
     if (!tk_link_init()) {
@@ -46,6 +63,9 @@ static void run_device(void) {
     tk_device_init(&dev, p, &wallet, &book);
     for (;;) {
         tk_device_poll(&dev);
+        if (tk_buttons_take_chord()) {
+            toggle_speaker();
+        }
         if (tk_link_should_reset(p->now_ms(p->ctx))) {
             tk_device_link_reset(&dev);
         }

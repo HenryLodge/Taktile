@@ -24,6 +24,10 @@ tk_button_t tk_buttons_wait(uint32_t timeout_ms);
 void tk_buttons_clip_start(void);
 void tk_buttons_clip_end(void);
 
+// True once after OK + BACK were held together for 3 s with no clip playing (the speaker-mode toggle);
+// a clip starting or ending clears it. main.c calls it between requests only.
+bool tk_buttons_take_chord(void);
+
 bool tk_buttons_any_down(void); // debounced; for the bring-up LED
 
 const char *tk_button_name(tk_button_t b); // bring-up only

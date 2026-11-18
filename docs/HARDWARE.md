@@ -4,7 +4,7 @@
 
 - 1 × Adafruit Metro ESP32-S3 (16 MB flash, 8 MB PSRAM). The plan called for a second board for flash-encryption testing; there is no second board, so nothing in this project burns eFuses (see below)
 - Adafruit UDA1334A I2S stereo DAC (3.5 mm jack) + wired earbuds — private earpiece
-- Adafruit MAX98357A I2S 3 W amp + small 4–8 Ω speaker — demo speaker mode
+- Adafruit MAX98357A I2S 3 W amp + small 4–8 Ω speaker — demo speaker mode (hold OK + BACK 3 s when idle; AUDIO.md)
 - Adafruit DRV2605L haptic driver (the older breakout with pin headers: VIN, GND, SCL, SDA, IN; no STEMMA QT port) + vibrating mini motor disc
 - 6 × 12 mm tactile buttons (2 large distinct caps for CONFIRM/REJECT)
 - Breadboard, jumpers, USB-C data cables

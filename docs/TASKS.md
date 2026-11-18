@@ -34,7 +34,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [x] P0 PIN unlock, attempt counter persisted before check, wipe at 10
 - [x] P0 CONTACT_ADD with spelled name + 8-word address phrase + PIN + CONFIRM (needed for the demo's happy path)
 - [x] P0 SIGN_REQUEST end to end on hardware: first devnet SOL transfer signed on the device 2026-11-18 (`firmware/tools/sign_devnet.py`; [explorer](https://explorer.solana.com/tx/6bcnCLCBewbasekiG985a1MDT1eGZnTkT1nG6hQDKVkASNET2H1bSeSBiP7cci38JugqFYXLdrJeoVHtZhhnnCk?cluster=devnet), 0.01 SOL to the user's own devnet wallet). The first try expired the blockhash (50 s from request to signature), so `UNLOCK` (0x04) was added: the PIN comes first, then the blockhash
-- [ ] P1 Speaker demo mode (device-only toggle)
+- [x] P1 Speaker demo mode (device-only toggle): OK + BACK held 3 s, idle only, reboot resets it, the host can't set or see it (2026-11-18)
 
 ## Day 5–7 (Nov 16–18): app and server
 

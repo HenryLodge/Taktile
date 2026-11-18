@@ -9,6 +9,11 @@
 // older epoch, so nothing queued before or during a clip is ever returned. A button that is down
 // when the clip starts or ends is ignored until it is released, so a press that began during the
 // clip can't count when it is let go, or as a long press, afterwards.
+//
+// The speaker-mode chord (OK + BACK held 3 s, core/include/tk_chord.h) is counted only while no clip
+// plays and neither button is ignored, and every clip edge restarts it. In a flow, holding OK fires
+// OK_LONG (repeat) at 2 s and BACK makes PIN entry speak, so the chord can't complete there; main.c
+// only takes it between requests (idle only, docs/AUDIO.md).
 
 #include "buttons.h"
 
@@ -18,11 +23,14 @@
 #include "freertos/queue.h"
 #include "freertos/task.h"
 
+#include "tk_chord.h"
 #include "tk_pins.h"
 
 #define N_BTN 6
 #define DEBOUNCE_TICKS (TK_BTN_DEBOUNCE_MS / TK_BTN_SCAN_MS)
 #define QUEUE_LEN 8
+#define BTN_OK 2   // index in DEFS
+#define BTN_BACK 3
 
 typedef struct {
     uint8_t pin;
@@ -58,6 +66,8 @@ static uint32_t epoch;
 static portMUX_TYPE lock = portMUX_INITIALIZER_UNLOCKED;
 static QueueHandle_t queue;
 static esp_timer_handle_t timer;
+static tk_chord_t chord;
+static bool chord_pending;
 
 static void scan(void *arg) {
     (void)arg;
@@ -103,6 +113,11 @@ static void scan(void *arg) {
         if (ev != TK_BTN_NONE && !playing) {
             out[n_out++] = (event_t){.button = (uint8_t)ev, .epoch = epoch};
         }
+    }
+    const btn_state_t *ok = &state[BTN_OK], *back = &state[BTN_BACK];
+    const bool both = !playing && ok->down && back->down && !ok->ignore && !back->ignore;
+    if (tk_chord_step(&chord, both, TK_BTN_SCAN_MS)) {
+        chord_pending = true;
     }
     taskEXIT_CRITICAL(&lock);
 
@@ -183,6 +198,8 @@ static void clip_edge(bool now_playing) {
             state[i].ignore = true;
         }
     }
+    tk_chord_reset(&chord);
+    chord_pending = false;
     taskEXIT_CRITICAL(&lock);
     if (queue != NULL) {
         xQueueReset(queue);
@@ -195,6 +212,14 @@ void tk_buttons_clip_start(void) {
 
 void tk_buttons_clip_end(void) {
     clip_edge(false);
+}
+
+bool tk_buttons_take_chord(void) {
+    taskENTER_CRITICAL(&lock);
+    const bool pending = chord_pending;
+    chord_pending = false;
+    taskEXIT_CRITICAL(&lock);
+    return pending;
 }
 
 bool tk_buttons_any_down(void) {
