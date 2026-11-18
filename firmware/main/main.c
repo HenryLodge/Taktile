@@ -49,6 +49,9 @@ static void run_device(void) {
         if (tk_link_should_reset(p->now_ms(p->ctx))) {
             tk_device_link_reset(&dev);
         }
+        if (tk_link_host_lost()) {
+            tk_device_lock(&dev); // between flows, never during one
+        }
         vTaskDelay(1); // 1 ms (FREERTOS_HZ=1000): lets the idle task run and feed the watchdog
     }
 }

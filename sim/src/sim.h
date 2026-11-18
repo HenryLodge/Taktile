@@ -35,6 +35,7 @@ typedef struct {
     uint8_t out[16 + 4096];
 
     tk_device_t *dev; // for tk_device_link_reset when the client changes
+    bool lock_pending; // the app disconnected: the main loop ends any unlocked session
 } sim_t;
 
 // Opens the listening socket. Returns false (and prints why) on failure.

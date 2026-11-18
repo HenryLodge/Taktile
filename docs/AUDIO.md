@@ -84,6 +84,8 @@ For each of the 6 digits:
 
 An observer sees only up/down counts, which reveal nothing without the private start digit. Each press gives a short haptic tick so the user knows it registered.
 
+When signing (or adding a contact) needs the PIN: "enter pin", the six digits as above, then "please wait" during the 2.6 s check. A wrong PIN: three pulses, "wrong pin, *n* attempts remaining", and entry starts again; the tenth wrong PIN in a row: "wallet wiped" (SECURITY_MODEL I7). The PIN is needed again after every signature.
+
 ## SETUP (`core/src/tk_setup.c`)
 
 The host sends `SETUP`; everything else happens on the device. Refused at once and silently with `WALLET_EXISTS` while a wallet exists (I10); refused with `DEVICE_ERROR` without working audio or in speaker mode (recovery words are never offered there).

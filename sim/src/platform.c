@@ -298,6 +298,7 @@ bool sim_listen(sim_t *s, const char *addr, unsigned port) {
 static void drop_client(sim_t *s) {
     if (s->client_fd >= 0) {
         close(s->client_fd);
+        s->lock_pending = true; // like the device losing its USB host
     }
     s->client_fd = -1;
     s->client_open = false;

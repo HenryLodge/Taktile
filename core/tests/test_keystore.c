@@ -129,6 +129,9 @@ static void test_create_and_reload(void) {
     uint8_t sig[TK_SIGNATURE_LEN];
     TK_CHECK(ops.sign(ops.ctx, msg, sizeof(msg), sig));
     TK_CHECK(ed25519_sign_open(msg, sizeof(msg), pk, sig) == 0);
+    // One unlock, one signature: locked again, key gone from RAM.
+    TK_CHECK(!ops.is_unlocked(ops.ctx) && is_zero(ks.sk, sizeof(ks.sk)));
+    TK_CHECK(!ops.sign(ops.ctx, msg, sizeof(msg), sig));
 
     // Second create: refused, nothing written (I10).
     fake.set_count = 0;
@@ -152,11 +155,194 @@ static void test_create_and_reload(void) {
     TK_CHECK(!ops.create(ops.ctx, PIN, sk, pk));
     TK_CHECK(fake.set_count == 0);
 
-    // Unlock fails closed in this step, writes nothing, and never unlocks.
+    // The right PIN after the reboot (full 20,000 iterations): unlocked, and it can sign once.
     uint8_t left = 0xFF;
-    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_ERROR);
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_OK && ops.is_unlocked(ops.ctx));
+    TK_CHECK(ops.sign(ops.ctx, msg, sizeof(msg), sig) && ed25519_sign_open(msg, sizeof(msg), pk, sig) == 0);
     TK_CHECK(!ops.is_unlocked(ops.ctx));
-    TK_CHECK(fake.set_count == 0);
+}
+
+// ---- Unlock, counter, wipe, auto-lock (wallets sealed at TK_KDF_ITERS_MIN: fast on the device) ----
+
+static uint8_t stored_fails(void) {
+    uint8_t v = 0xEE;
+    size_t len = 1;
+    return stored(TK_STORAGE_PIN_FAILS, &v, &len) && len == 1 ? v : 0xEE;
+}
+
+static size_t stored_wallet_len(void) {
+    uint8_t buf[TK_KEYSTORE_BLOB_LEN + 1];
+    size_t len = sizeof(buf);
+    return stored(TK_STORAGE_WALLET, buf, &len) ? len : 9999;
+}
+
+static void put_wallet(uint8_t fails) {
+    uint8_t salt[TK_KEYSTORE_SALT_LEN] = {7};
+    uint8_t blob[TK_KEYSTORE_BLOB_LEN];
+    TK_CHECK(tk_keystore_seal(PIN, sk, pk, salt, TK_KDF_ITERS_MIN, blob));
+    fake_kv_put(TK_STORAGE_WALLET, blob, sizeof(blob));
+    fake_kv_put(TK_STORAGE_PIN_FAILS, &fails, 1);
+}
+
+// A stored wallet (PIN 123456) with pin-fails = fails, then a "boot" (init).
+static void install(uint8_t fails) {
+    fresh();
+    put_wallet(fails);
+    tk_keystore_init(&ks, &FAKE_PLATFORM);
+    tk_keystore_ops(&ks, &ops);
+    fake.set_count = 0;
+}
+
+static void test_unlock(void) {
+    uint8_t left = 0;
+    install(0);
+    TK_CHECK(ks.state == TK_KEYSTORE_READY && !ops.is_unlocked(ops.ctx));
+
+    // Wrong: counted, 9 left, still locked.
+    TK_CHECK(ops.unlock(ops.ctx, OTHER_PIN, &left) == TK_UNLOCK_WRONG && left == 9);
+    TK_CHECK(stored_fails() == 1 && !ops.is_unlocked(ops.ctx) && is_zero(ks.sk, sizeof(ks.sk)));
+    TK_CHECK(ops.unlock(ops.ctx, OTHER_PIN, &left) == TK_UNLOCK_WRONG && left == 8 && stored_fails() == 2);
+
+    // Right: unlocked, counter back to 0; the count is written first, then the reset.
+    fake.set_count = 0;
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_OK && ops.is_unlocked(ops.ctx));
+    TK_CHECK(stored_fails() == 0);
+    TK_CHECK(fake.set_count == 2 && strcmp(fake.set_log[0], TK_STORAGE_PIN_FAILS) == 0 &&
+             strcmp(fake.set_log[1], TK_STORAGE_PIN_FAILS) == 0);
+    TK_CHECK_MEM(ks.sk, sk, 32);
+
+    // Unlocking again while unlocked is harmless (and also counted first).
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_OK && stored_fails() == 0);
+
+    // The lock op (USB host lost) ends the session.
+    ops.lock(ops.ctx);
+    TK_CHECK(!ops.is_unlocked(ops.ctx) && is_zero(ks.sk, sizeof(ks.sk)));
+    const uint8_t msg[] = "x";
+    uint8_t sig[TK_SIGNATURE_LEN];
+    TK_CHECK(!ops.sign(ops.ctx, msg, sizeof(msg), sig));
+}
+
+static void test_counter_before_check(void) {
+    uint8_t left = 0;
+    // The counter can't be written: even the RIGHT PIN is not checked (I7).
+    install(0);
+    fake.fail_set_key = TK_STORAGE_PIN_FAILS;
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_ERROR);
+    TK_CHECK(!ops.is_unlocked(ops.ctx) && is_zero(ks.sk, sizeof(ks.sk)));
+    TK_CHECK(stored_fails() == 0 && stored_wallet_len() == TK_KEYSTORE_BLOB_LEN); // nothing wiped
+
+    // The counter can't be read (missing value, or the wrong size): ERROR, nothing written or wiped.
+    install(0);
+    fake_kv_put(TK_STORAGE_PIN_FAILS, NULL, 0);
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_ERROR && fake.set_count == 0);
+    const uint8_t two[2] = {0, 0};
+    fake_kv_put(TK_STORAGE_PIN_FAILS, two, 2);
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_ERROR && fake.set_count == 0);
+    TK_CHECK(stored_wallet_len() == TK_KEYSTORE_BLOB_LEN && !ops.is_unlocked(ops.ctx));
+
+    // Power cut right after the count is written (no later write lands): the next boot still sees
+    // the attempt, even though the PIN was right.
+    install(3);
+    fake.fail_set_after = 1;
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_OK); // its reset write was "lost"
+    TK_CHECK(stored_fails() == 4);
+    fake.fail_set_after = 0;
+    tk_keystore_init(&ks, &FAKE_PLATFORM); // reboot
+    tk_keystore_ops(&ks, &ops);
+    TK_CHECK(!ops.is_unlocked(ops.ctx));
+    TK_CHECK(ops.unlock(ops.ctx, OTHER_PIN, &left) == TK_UNLOCK_WRONG && left == 5); // 4 + 1 counted
+}
+
+static void test_wipe(void) {
+    uint8_t left = 0;
+    // The 10th wrong PIN in a row wipes: count, wallet, then the counter reset.
+    install(9);
+    TK_CHECK(ops.unlock(ops.ctx, OTHER_PIN, &left) == TK_UNLOCK_LOCKED_OUT);
+    TK_CHECK(ks.state == TK_KEYSTORE_EMPTY && !ops.has_wallet(ops.ctx) && is_zero(ks.sk, sizeof(ks.sk)));
+    TK_CHECK(is_zero(ks.pubkey, sizeof(ks.pubkey)) && is_zero(ks.blob, sizeof(ks.blob)));
+    TK_CHECK(stored_wallet_len() == 0 && stored_fails() == 0);
+    TK_CHECK(fake.set_count == 3 && strcmp(fake.set_log[0], TK_STORAGE_PIN_FAILS) == 0 &&
+             strcmp(fake.set_log[1], TK_STORAGE_WALLET) == 0 && strcmp(fake.set_log[2], TK_STORAGE_PIN_FAILS) == 0);
+    // No wallet now: a new one can be created (I10's documented exception).
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_LOCKED_OUT);
+    TK_CHECK(ops.create(ops.ctx, PIN, sk, pk));
+
+    // Ten in a row from zero.
+    install(0);
+    tk_unlock_result_t r = TK_UNLOCK_WRONG;
+    for (unsigned i = 1; i <= TK_PIN_MAX_FAILS; i++) {
+        r = ops.unlock(ops.ctx, OTHER_PIN, &left);
+        TK_CHECK(i < TK_PIN_MAX_FAILS ? (r == TK_UNLOCK_WRONG && left == TK_PIN_MAX_FAILS - i)
+                                      : r == TK_UNLOCK_LOCKED_OUT);
+    }
+    TK_CHECK(r == TK_UNLOCK_LOCKED_OUT && !ops.has_wallet(ops.ctx) && stored_wallet_len() == 0);
+
+    // Already at the limit (a wipe cut short after boot): wiped even with the right PIN, unchecked.
+    install(9);
+    const uint8_t ten = TK_PIN_MAX_FAILS;
+    fake_kv_put(TK_STORAGE_PIN_FAILS, &ten, 1);
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_LOCKED_OUT && !ops.has_wallet(ops.ctx));
+
+    // The wallet can't be cleared: CORRUPT, never unlocks, can't be replaced.
+    install(9);
+    fake.fail_set_key = TK_STORAGE_WALLET;
+    TK_CHECK(ops.unlock(ops.ctx, OTHER_PIN, &left) == TK_UNLOCK_LOCKED_OUT);
+    TK_CHECK(ks.state == TK_KEYSTORE_CORRUPT && ops.has_wallet(ops.ctx));
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_ERROR && !ops.create(ops.ctx, PIN, sk, pk));
+}
+
+static void test_resume_wipe(void) {
+    // Boot with the counter at the limit and the wallet still stored: init finishes the wipe.
+    fresh();
+    put_wallet(TK_PIN_MAX_FAILS);
+    tk_keystore_init(&ks, &FAKE_PLATFORM);
+    TK_CHECK(ks.state == TK_KEYSTORE_EMPTY && stored_wallet_len() == 0 && stored_fails() == 0);
+
+    // Same, but the wallet write fails: CORRUPT (fail closed), never EMPTY.
+    fresh();
+    put_wallet(TK_PIN_MAX_FAILS);
+    fake.fail_set_key = TK_STORAGE_WALLET;
+    tk_keystore_init(&ks, &FAKE_PLATFORM);
+    TK_CHECK(ks.state == TK_KEYSTORE_CORRUPT);
+
+    // Below the limit: nothing happens at boot.
+    fresh();
+    put_wallet(TK_PIN_MAX_FAILS - 1);
+    tk_keystore_init(&ks, &FAKE_PLATFORM);
+    TK_CHECK(ks.state == TK_KEYSTORE_READY && fake.set_count == 0);
+}
+
+static void test_autolock(void) {
+    uint8_t left = 0;
+    install(0);
+    fake.now = 1000;
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_OK);
+    fake.now = 1000 + TK_AUTOLOCK_MS - 1;
+    TK_CHECK(ops.is_unlocked(ops.ctx));
+    fake.now = 1000 + TK_AUTOLOCK_MS;
+    TK_CHECK(!ops.is_unlocked(ops.ctx) && is_zero(ks.sk, sizeof(ks.sk)));
+    const uint8_t msg[] = "x";
+    uint8_t sig[TK_SIGNATURE_LEN];
+    TK_CHECK(!ops.sign(ops.ctx, msg, sizeof(msg), sig));
+
+    // Across the 32-bit millisecond wrap (after ~49.7 days up).
+    fake.now = UINT32_MAX - 1000;
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_OK);
+    fake.now = 5000; // wrapped: 6001 ms later
+    TK_CHECK(ops.is_unlocked(ops.ctx));
+    fake.now = (uint32_t)(UINT32_MAX - 1000 + TK_AUTOLOCK_MS);
+    TK_CHECK(!ops.is_unlocked(ops.ctx));
+
+    // create starts a session too (SETUP leaves the device unlocked), with the same limit.
+    fresh();
+    fake.now = 50;
+    TK_CHECK(ops.create(ops.ctx, PIN, sk, pk) && ops.is_unlocked(ops.ctx));
+    fake.now = 50 + TK_AUTOLOCK_MS;
+    TK_CHECK(!ops.is_unlocked(ops.ctx));
+
+    // EMPTY never touches storage when asked to unlock.
+    fresh();
+    TK_CHECK(ops.unlock(ops.ctx, PIN, &left) == TK_UNLOCK_LOCKED_OUT && fake.set_count == 0);
 }
 
 static void test_create_failures(void) {
@@ -272,5 +458,10 @@ int main(void) {
     test_create_and_reload();
     test_create_failures();
     test_init_corrupt();
+    test_unlock();
+    test_counter_before_check();
+    test_wipe();
+    test_resume_wipe();
+    test_autolock();
     return tk_test_result();
 }

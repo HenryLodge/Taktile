@@ -136,11 +136,39 @@ void tk_keystore_init(tk_keystore_t *ks, const tk_platform_t *platform) {
     memcpy(ks->blob, buf, TK_KEYSTORE_BLOB_LEN);
     memcpy(ks->pubkey, buf + OFF_PUBKEY, 32);
     ks->state = TK_KEYSTORE_READY;
+
+    // A lockout wipe that a power cut interrupted: the counter already reached the limit.
+    uint8_t fails = 0;
+    size_t flen = sizeof(fails);
+    if (platform->storage_get(platform->ctx, TK_STORAGE_PIN_FAILS, &fails, &flen) && flen == 1 &&
+        fails >= TK_PIN_MAX_FAILS) {
+        (void)tk_keystore_wipe(ks);
+    }
 }
 
 void tk_keystore_lock(tk_keystore_t *ks) {
     memzero(ks->sk, sizeof(ks->sk));
     ks->unlocked = false;
+    ks->unlocked_at = 0;
+}
+
+bool tk_keystore_wipe(tk_keystore_t *ks) {
+    const tk_platform_t *p = ks->platform;
+    // 1. The wallet, first: once this commits, the key is gone from storage.
+    const bool cleared = p->storage_set(p->ctx, TK_STORAGE_WALLET, NULL, 0);
+    // 2. RAM.
+    tk_keystore_lock(ks);
+    memzero(ks->blob, sizeof(ks->blob));
+    memzero(ks->pubkey, sizeof(ks->pubkey));
+    if (!cleared) {
+        ks->state = TK_KEYSTORE_CORRUPT; // still stored: never unlocks, never replaced (fail closed)
+        return false;
+    }
+    ks->state = TK_KEYSTORE_EMPTY;
+    // 3. The counter, last: if this write is lost, the next boot sees no wallet anyway.
+    static const uint8_t zero = 0;
+    (void)p->storage_set(p->ctx, TK_STORAGE_PIN_FAILS, &zero, 1);
+    return true;
 }
 
 // ---- tk_wallet_ops_t ----
@@ -158,18 +186,65 @@ static bool k_pubkey(void *ctx, uint8_t out[32]) {
     return true;
 }
 
+static uint32_t now_ms(const tk_keystore_t *ks) {
+    return ks->platform->now_ms(ks->platform->ctx);
+}
+
 static bool k_unlocked(void *ctx) {
     tk_keystore_t *ks = ctx;
-    return ks->state == TK_KEYSTORE_READY && ks->unlocked;
+    if (ks->state != TK_KEYSTORE_READY || !ks->unlocked) {
+        return false;
+    }
+    if (now_ms(ks) - ks->unlocked_at >= TK_AUTOLOCK_MS) { // unsigned: safe when the clock wraps
+        tk_keystore_lock(ks);
+        return false;
+    }
+    return true;
 }
 
 static tk_unlock_result_t k_unlock(void *ctx, const uint8_t pin[TK_PIN_LEN], uint8_t *attempts_left) {
-    (void)ctx;
-    (void)pin;
-    (void)attempts_left;
-    // Fail closed until the PIN-unlock task adds the attempt counter (persisted before the check)
-    // and the 10-failure wipe (I7).
-    return TK_UNLOCK_ERROR;
+    tk_keystore_t *ks = ctx;
+    const tk_platform_t *p = ks->platform;
+    if (ks->state == TK_KEYSTORE_EMPTY) {
+        return TK_UNLOCK_LOCKED_OUT;
+    }
+    if (ks->state != TK_KEYSTORE_READY || !pin_ok(pin) || attempts_left == NULL) {
+        return TK_UNLOCK_ERROR;
+    }
+
+    uint8_t fails = 0;
+    size_t flen = sizeof(fails);
+    if (!p->storage_get(p->ctx, TK_STORAGE_PIN_FAILS, &fails, &flen) || flen != 1) {
+        return TK_UNLOCK_ERROR; // can't count this attempt: don't check the PIN (fail closed)
+    }
+    if (fails >= TK_PIN_MAX_FAILS) {
+        (void)tk_keystore_wipe(ks);
+        return TK_UNLOCK_LOCKED_OUT;
+    }
+    // I7: count the attempt, committed, BEFORE the PIN is checked.
+    const uint8_t counted = (uint8_t)(fails + 1);
+    if (!p->storage_set(p->ctx, TK_STORAGE_PIN_FAILS, &counted, 1)) {
+        return TK_UNLOCK_ERROR;
+    }
+
+    const tk_keystore_open_t r = tk_keystore_open(ks->blob, sizeof(ks->blob), pin, ks->sk);
+    if (r == TK_KEYSTORE_OPEN_OK) {
+        ks->unlocked = true;
+        ks->unlocked_at = now_ms(ks);
+        static const uint8_t zero = 0;
+        (void)p->storage_set(p->ctx, TK_STORAGE_PIN_FAILS, &zero, 1); // if lost: stays counted (safe)
+        return TK_UNLOCK_OK;
+    }
+    tk_keystore_lock(ks);
+    if (r != TK_KEYSTORE_OPEN_WRONG_PIN) {
+        return TK_UNLOCK_ERROR; // the blob itself is bad; the attempt still counted
+    }
+    if (counted >= TK_PIN_MAX_FAILS) {
+        (void)tk_keystore_wipe(ks);
+        return TK_UNLOCK_LOCKED_OUT;
+    }
+    *attempts_left = (uint8_t)(TK_PIN_MAX_FAILS - counted);
+    return TK_UNLOCK_WRONG;
 }
 
 static bool k_sign(void *ctx, const uint8_t *msg, size_t len, uint8_t sig[TK_SIGNATURE_LEN]) {
@@ -178,7 +253,12 @@ static bool k_sign(void *ctx, const uint8_t *msg, size_t len, uint8_t sig[TK_SIG
         return false;
     }
     ed25519_sign(msg, len, ks->sk, sig);
+    tk_keystore_lock(ks); // one unlock, one signature
     return true;
+}
+
+static void k_lock(void *ctx) {
+    tk_keystore_lock(ctx);
 }
 
 static bool k_create(void *ctx, const uint8_t pin[TK_PIN_LEN], const uint8_t sk[32], const uint8_t pubkey[32]) {
@@ -210,6 +290,7 @@ static bool k_create(void *ctx, const uint8_t pin[TK_PIN_LEN], const uint8_t sk[
         memcpy(ks->sk, sk, 32);
         ks->state = TK_KEYSTORE_READY;
         ks->unlocked = true;
+        ks->unlocked_at = now_ms(ks);
     } else if (wrote) {
         // Best effort: drop what this call may have written. Only ever our own new blob, because
         // create runs only when no wallet was stored.
@@ -229,4 +310,5 @@ void tk_keystore_ops(tk_keystore_t *ks, tk_wallet_ops_t *ops) {
     ops->unlock = k_unlock;
     ops->sign = k_sign;
     ops->create = k_create;
+    ops->lock = k_lock;
 }

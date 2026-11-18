@@ -40,11 +40,11 @@ Keys pressed while a clip is "playing" are discarded, like the device (I6: CONFI
 
 ## Wallet
 
-By default the sim uses core's key store (`core/src/tk_keystore.c`), exactly as the device does: the key lives PIN-encrypted in `DIR/wallet`, created by `SETUP` on the device side of the link (keys as below; AUDIO.md "SETUP"). Before that the banner says `wallet: none (key store; run SETUP)`. The PIN's start digits are private audio, so to script a SETUP (as `sim/tests/e2e.py` does) build with `-DTK_SIM_INSECURE_AUDIO=ON`. PIN unlock fails closed until the PIN-unlock task, so a key-store wallet can't sign yet after a restart.
+By default the sim uses core's key store (`core/src/tk_keystore.c`), exactly as the device does: the key lives PIN-encrypted in `DIR/wallet`, created by `SETUP` on the device side of the link (keys as below; AUDIO.md "SETUP"). Before that the banner says `wallet: none (key store; run SETUP)`. The PIN's start digits are private audio, so to script a SETUP (as `sim/tests/e2e.py` does) build with `-DTK_SIM_INSECURE_AUDIO=ON`. Like the device, it counts PIN attempts before checking them, wipes the wallet and contacts after 10 wrong PINs, and locks again after every signature, 5 minutes after an unlock, and when the app disconnects.
 
 ## Development wallet: INSECURE
 
-With `--dev-wallet` (or `--seed-hex`), the sim uses a development wallet whose seed is stored **in plaintext** in `DIR/dev-seed`, created from the system RNG on first run. Devnet only; never put real funds on it. The startup banner prints its address (base58) for airdrops. It still follows the device rules: signing needs an unlocked session plus CONFIRM, and 10 wrong PINs wipe the seed.
+With `--dev-wallet` (or `--seed-hex`), the sim uses a development wallet whose seed is stored **in plaintext** in `DIR/dev-seed`, created from the system RNG on first run. Devnet only; never put real funds on it. The startup banner prints its address (base58) for airdrops. It still follows the main device rules: signing needs an unlocked session plus CONFIRM, and 10 wrong PINs wipe the seed. Unlike the key store it stays unlocked after a signature (the end-to-end test relies on that).
 
 ## Audio and secrets (I2)
 

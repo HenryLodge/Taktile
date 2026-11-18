@@ -124,4 +124,6 @@ static bool w_create(void *ctx, const uint8_t pin[TK_PIN_LEN], const uint8_t sk[
     return false;
 }
 
-const tk_wallet_ops_t SIM_WALLET_OPS_TEMPLATE = {NULL, w_has, w_pubkey, w_unlocked, w_unlock, w_sign, w_create};
+// The dev wallet keeps its session (e2e.py signs several times with --unlocked); the key store,
+// the default, locks after each signature and when the app disconnects.
+const tk_wallet_ops_t SIM_WALLET_OPS_TEMPLATE = {NULL, w_has, w_pubkey, w_unlocked, w_unlock, w_sign, w_create, NULL};

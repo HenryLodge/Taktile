@@ -41,7 +41,7 @@ Host → device in `0x01–0x7F`, device → host in `0x81–0xFF` (request type
 
 | Type | Name | Payload (host → device) | Response payload |
 | --- | --- | --- | --- |
-| 0x01 | `HELLO` | — | `fw_version u16` (LE), `proto_version u8`, `state u8` (0 = no wallet, 1 = locked, 2 = unlocked) |
+| 0x01 | `HELLO` | — | `fw_version u16` (LE), `proto_version u8`, `state u8` (0 = no wallet, 1 = locked, 2 = unlocked). Unlocked lasts until the next signature, 5 minutes, the USB host going away, or a reboot (SECURITY_MODEL I7) |
 | 0x02 | `GET_PUBKEY` | — | `status u8`, `pubkey[32]` (only if a wallet exists; does not require unlock) |
 | 0x03 | `SETUP` | — | `status u8`. Device runs PIN setup + seed generation + recovery-word playback entirely on device (`core/src/tk_setup.c`, AUDIO.md "SETUP"); the reply comes when it ends, minutes later. `OK` (wallet stored, device unlocked until reboot), `WALLET_EXISTS` (a wallet exists, I10; answered at once, nothing played), `CANCELLED` (host CANCEL, long REJECT, 3 PIN mismatches, or a timeout), `REJECTED_BY_USER` (REJECT), `DEVICE_ERROR` (no audio, speaker mode on, RNG or storage failure). Nothing is stored unless the reply is `OK`. During the flow: `EVENT AWAITING_PIN` once, HELLO reports state 0, other requests get `BUSY` |
 | 0x10 | `SIGN_REQUEST` | `message[len]` (legacy message bytes, not the full transaction) | `status u8`, then `signature[64]` if `status == OK` |

@@ -6,6 +6,7 @@
 #include "tk_contacts_vectors.h"
 #include "tk_device.h"
 #include "tk_fakes.h"
+#include "tk_keystore.h"
 #include "tk_parser_vectors.h"
 #include "tk_test.h"
 
@@ -345,6 +346,106 @@ static void test_wrong_pin_and_lockout(void) {
     TK_CHECK(tk_contacts_load(&reloaded, fake.stored, fake.stored_len) == TK_CONTACTS_OK && reloaded.count == 0);
 }
 
+// Every PIN check is preceded by "please wait" (the key derivation is ~2.6 s of silence).
+static void test_please_wait(void) {
+    const tk_parser_vector_t *v = vec("sol_ok");
+    setup(true, false, true);
+    sign_request(v);
+    script_wrong_pin();
+    script_wrong_pin();
+    script_correct_pin();
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    check_signature(v);
+    TK_CHECK(fw.unlock_calls == 3 && clip_count(TK_CLIP_PLEASE_WAIT) == 3);
+    for (size_t i = 0; i < fake_op_count; i++) {
+        if (fake_ops[i].kind == OP_UNLOCK) {
+            int last_clip = -1;
+            for (size_t j = i; j-- > 0;) {
+                if (fake_ops[j].kind == OP_CLIP) {
+                    last_clip = fake_ops[j].value;
+                    break;
+                }
+            }
+            TK_CHECK(last_clip == TK_CLIP_PLEASE_WAIT);
+        }
+    }
+}
+
+// The USB host went away: the session ends, and the next signature asks for the PIN again.
+static void test_device_lock(void) {
+    const tk_parser_vector_t *v = vec("sol_ok");
+    setup(true, true, true);
+    tk_device_lock(&dev);
+    TK_CHECK(!fw.unlocked);
+    sign_request(v);
+    script_correct_pin();
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    check_signature(v);
+    TK_CHECK(fw.unlock_calls == 1);
+}
+
+// The real key store: ten wrong PINs in one request wipe the wallet and the contact book.
+static void test_keystore_lockout(void) {
+    const tk_parser_vector_t *v = vec("sol_ok");
+    fake_reset();
+    fake_wallet_reset(false, false); // only for fw.sk / fw.pk: the vector device key
+    uint8_t salt[TK_KEYSTORE_SALT_LEN] = {1};
+    uint8_t blob[TK_KEYSTORE_BLOB_LEN];
+    static const uint8_t pin[TK_PIN_LEN] = {1, 2, 3, 4, 5, 6};
+    TK_CHECK(tk_keystore_seal(pin, fw.sk, fw.pk, salt, TK_KDF_ITERS_MIN, blob));
+    fake_kv_put(TK_STORAGE_WALLET, blob, sizeof(blob));
+    const uint8_t zero = 0;
+    fake_kv_put(TK_STORAGE_PIN_FAILS, &zero, 1);
+    static tk_keystore_t ks;
+    tk_wallet_ops_t ops;
+    tk_keystore_init(&ks, &FAKE_PLATFORM);
+    tk_keystore_ops(&ks, &ops);
+    tk_contacts_init(&book);
+    const tk_contacts_book_entry_t *a = &tk_contacts_book[0];
+    TK_CHECK(tk_contacts_add(&book, (const uint8_t *)a->name, strlen(a->name), a->wallet) == TK_CONTACTS_OK);
+    tk_device_init(&dev, &FAKE_PLATFORM, &ops, &book);
+
+    sign_request(v);
+    for (int i = 0; i < 10; i++) {
+        script_wrong_pin();
+    }
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    TK_CHECK(reply_status() == TK_STATUS_LOCKED_OUT);
+    TK_CHECK(clip_count(TK_CLIP_WRONG_PIN) == 9 && clip_count(TK_CLIP_WALLET_WIPED) == 1);
+    TK_CHECK(clip_count(TK_CLIP_PRESS_CONFIRM) == 0);
+    TK_CHECK(!ops.has_wallet(ops.ctx) && book.count == 0);
+    tk_contacts_t reloaded;
+    TK_CHECK(fake.stored_set && tk_contacts_load(&reloaded, fake.stored, fake.stored_len) == TK_CONTACTS_OK &&
+             reloaded.count == 0);
+    fake_send_now(TK_MSG_HELLO, 9, NULL, 0);
+    run();
+    const uint8_t hello0[4] = {1, 0, 1, TK_STATE_NO_WALLET};
+    TK_CHECK(has_frame(TK_MSG_HELLO | TK_MSG_RESPONSE_BIT, 9, hello0, 4));
+
+    // Right PIN instead: signs once, then the key store is locked again (one unlock, one signature).
+    fake_reset();
+    fake_kv_put(TK_STORAGE_WALLET, blob, sizeof(blob));
+    fake_kv_put(TK_STORAGE_PIN_FAILS, &zero, 1);
+    tk_keystore_init(&ks, &FAKE_PLATFORM);
+    tk_keystore_ops(&ks, &ops);
+    tk_contacts_init(&book);
+    TK_CHECK(tk_contacts_add(&book, (const uint8_t *)a->name, strlen(a->name), a->wallet) == TK_CONTACTS_OK);
+    tk_device_init(&dev, &FAKE_PLATFORM, &ops, &book);
+    sign_request(v);
+    script_correct_pin();
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    const out_frame_t *r = sign_reply();
+    TK_CHECK(r != NULL && r->len == 1 + TK_SIGNATURE_LEN && r->payload[0] == TK_STATUS_OK);
+    if (r != NULL && r->len == 1 + TK_SIGNATURE_LEN) {
+        TK_CHECK(ed25519_sign_open(v->msg, v->msg_len, v->device_pubkey, r->payload + 1) == 0);
+    }
+    TK_CHECK(!ops.is_unlocked(ops.ctx));
+}
+
 // The key store can't check a PIN (e.g. storage failed): DEVICE_ERROR, nothing signed (fail closed).
 static void test_unlock_error(void) {
     const tk_parser_vector_t *v = vec("sol_ok");
@@ -564,6 +665,9 @@ int main(void) {
     test_confirm_window();
     test_wrong_pin_and_lockout();
     test_unlock_error();
+    test_please_wait();
+    test_device_lock();
+    test_keystore_lockout();
     test_no_audio();
     test_requests_during_flow();
     test_cancel();

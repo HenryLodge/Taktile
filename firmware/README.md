@@ -71,6 +71,8 @@ python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-tabl
 
 **Key derivation check** (bring-up step K, menu key `k`): BIP39 and SLIP-10 known answers from `tests/vectors/seed.json` on the device, and the timings of SETUP's BIP39 seed and of the 20,000-iteration unlock KDF. Public test data only; it never reads or writes NVS.
 
+**Unlock check** (bring-up step U, menu key `u`), on a **disposable** wallet only: it runs PIN entry on the device's buttons against the **real** key store and NVS, then prints `unlock: OK`, `WRONG (n left)`, `LOCKED_OUT` or `ERROR` and the stored `pin-fails` (never a PIN digit). It counts like the real thing: the tenth wrong PIN in a row wipes the wallet and the contacts. For the I7 power-cut check, unplug USB while it says "please wait" after a wrong PIN; after replugging, step U must show the attempt counted.
+
 `COMx` on Windows, `/dev/ttyACM0` on Linux, `/dev/cu.usbmodem*` on macOS. In the monitor, `Ctrl-]` exits.
 
 **First flash of a new board:** Adafruit's factory firmware enumerates as a different USB device (VID 239A) and can't be reset into the bootloader automatically. Hold **BOOT**, tap **RESET**, release **BOOT**; flash to the port that appears (VID 303A). When download mode was entered with the BOOT button, the reset after flashing does **not** start the app (the chip stays in the bootloader, silent): tap **RESET** once, or run `python -m esptool --chip esp32s3 -p COMx --before no_reset --after watchdog_reset read_mac`. From then on, with our firmware running, `idf.py flash` enters the bootloader and restarts the app by itself. If a flash ever fails, BOOT/RESET always works.

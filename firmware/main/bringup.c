@@ -31,12 +31,13 @@
 #include "tk_device.h"
 #include "tk_pins.h"
 #include "tk_keystore.h"
+#include "tk_pin_entry.h"
 #include "tk_seed.h"
 
 // Formats and writes straight to the USB-Serial-JTAG driver. Deliberately not printf/stdout: that
 // needs the vfs component, which drags the UART and PSRAM drivers into the build.
 __attribute__((format(printf, 1, 2))) static void out(const char *fmt, ...) {
-    char line[768]; // longest output is the menu; longer text is cut off with "..."
+    char line[1280]; // longest output is the menu (about 1 KB); longer text is cut off with "..."
     va_list ap;
     va_start(ap, fmt);
     const int n = vsnprintf(line, sizeof(line), fmt, ap);
@@ -71,6 +72,7 @@ static void menu(void) {
         "  9  storage: NVS round-trips and refusals; boot counter (reset, run again: +1)\n"
         "  0  Ed25519: RFC 8032 known answer, signatures for the laptop to verify, timings\n"
         "  k  keys: BIP39 + SLIP-10 known answers on device, SETUP and unlock timings (no NVS)\n"
+        "  u  UNLOCK on the REAL wallet: PIN on the device; counts attempts; 10 wrong WIPE IT\n"
         "Reset the board to come back here.\n",
         TK_FW_VERSION);
 }
@@ -507,6 +509,98 @@ static void step_keys(void) {
     out("step K: %s\n", ok ? "PASS" : "FAIL");
 }
 
+// Step U: PIN unlock on the real key store and NVS (I7), for the power-cut and lockout checks.
+// The PIN is entered on the device's buttons and spoken only in the earbuds; nothing here prints
+// a digit. Wrong PINs count against the real wallet, and the tenth wipes it (and the contacts).
+static tk_keystore_t unlock_ks;
+
+static void u_play(void *ctx, uint16_t clip, bool secret) {
+    (void)ctx;
+    TK_FW_PLATFORM.play_clip(TK_FW_PLATFORM.ctx, clip, secret);
+}
+
+static void u_haptic(void *ctx, tk_haptic_t pattern) {
+    (void)ctx;
+    TK_FW_PLATFORM.haptic(TK_FW_PLATFORM.ctx, pattern);
+}
+
+static tk_button_t u_wait(void *ctx, uint32_t timeout_ms) {
+    (void)ctx;
+    return TK_FW_PLATFORM.wait_button(TK_FW_PLATFORM.ctx, timeout_ms);
+}
+
+static bool u_random(void *ctx, uint8_t *out_buf, size_t len) {
+    (void)ctx;
+    return TK_FW_PLATFORM.random_bytes(TK_FW_PLATFORM.ctx, out_buf, len);
+}
+
+static int stored_pin_fails(const tk_platform_t *p) {
+    uint8_t v = 0;
+    size_t len = sizeof(v);
+    return p->storage_get(p->ctx, TK_STORAGE_PIN_FAILS, &v, &len) && len == 1 ? v : -1;
+}
+
+static void step_unlock(void) {
+    const tk_platform_t *p = &TK_FW_PLATFORM;
+    tk_wallet_ops_t ops;
+    tk_keystore_init(&unlock_ks, p); // also finishes a lockout wipe a power cut interrupted
+    tk_keystore_ops(&unlock_ks, &ops);
+    static const char *const STATE[] = {"no wallet", "wallet (locked)", "CORRUPT wallet"};
+    out("step U: %s, pin-fails %d\n", STATE[unlock_ks.state], stored_pin_fails(p));
+    if (unlock_ks.state != TK_KEYSTORE_READY) {
+        out("step U: nothing to unlock (run SETUP with the protocol firmware first)\n");
+        return;
+    }
+    out("  enter the PIN on the device (UP/DOWN, OK; long REJECT cancels). The tenth wrong PIN in a\n"
+        "  row WIPES this wallet and the contacts.\n");
+    const tk_ui_t ui = {NULL, u_play, u_haptic, u_wait, u_random};
+    uint8_t pin[TK_PIN_LEN];
+    p->play_clip(p->ctx, TK_CLIP_ENTER_PIN, false);
+    const tk_pin_result_t pr = tk_pin_entry(&ui, pin);
+    if (pr != TK_PIN_OK) {
+        out("step U: PIN entry ended without a PIN (%d); nothing counted\n", (int)pr);
+        return;
+    }
+    out("  checking (about 2.6 s): unplug USB NOW for the power-cut test\n");
+    p->play_clip(p->ctx, TK_CLIP_PLEASE_WAIT, false);
+    uint8_t left = 0;
+    const int64_t t0 = esp_timer_get_time();
+    const tk_unlock_result_t r = ops.unlock(ops.ctx, pin, &left);
+    const long long ms_taken = (esp_timer_get_time() - t0) / 1000;
+    memzero(pin, sizeof(pin));
+    switch (r) {
+    case TK_UNLOCK_OK:
+        p->haptic(p->ctx, TK_HAPTIC_SUCCESS);
+        out("unlock: OK (%lld ms)\n", ms_taken);
+        break;
+    case TK_UNLOCK_WRONG:
+        p->haptic(p->ctx, TK_HAPTIC_WARNING);
+        p->play_clip(p->ctx, TK_CLIP_WRONG_PIN, false);
+        p->play_clip(p->ctx, (uint16_t)(TK_CLIP_ZERO + (left < 20 ? left : 19)), false);
+        p->play_clip(p->ctx, TK_CLIP_ATTEMPTS_REMAINING, false);
+        out("unlock: WRONG (%u left)\n", (unsigned)left);
+        break;
+    case TK_UNLOCK_LOCKED_OUT: {
+        static tk_contacts_t book;
+        static uint8_t blob[TK_CONTACTS_BLOB_LEN];
+        tk_contacts_init(&book);
+        tk_contacts_wipe(&book); // the flow wipes contacts with the wallet (I7)
+        const bool saved = tk_contacts_save(&book, blob, sizeof(blob)) == sizeof(blob) &&
+                           p->storage_set(p->ctx, TK_STORAGE_CONTACTS, blob, sizeof(blob));
+        p->haptic(p->ctx, TK_HAPTIC_WARNING);
+        p->play_clip(p->ctx, TK_CLIP_WALLET_WIPED, false);
+        out("unlock: LOCKED_OUT (wallet wiped; contacts %s)\n", saved ? "wiped" : "NOT saved");
+        break;
+    }
+    case TK_UNLOCK_ERROR:
+    default:
+        out("unlock: ERROR (storage or wallet problem; the PIN was not checked or the blob is bad)\n");
+        break;
+    }
+    tk_keystore_lock(&unlock_ks);
+    out("step U: now %s, pin-fails %d\n", STATE[unlock_ks.state], stored_pin_fails(p));
+}
+
 void tk_bringup_main(void) {
     // From here on, all output goes through the driver (out() and the raw reads and writes), so
     // nothing fights over the hardware FIFO. Only the boot log before this point uses the ROM path.
@@ -530,6 +624,8 @@ void tk_bringup_main(void) {
         case '0': step_ed25519(); break;
         case 'k':
         case 'K': step_keys(); break;
+        case 'u':
+        case 'U': step_unlock(); break;
         default: menu(); break;
         }
     }

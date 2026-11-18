@@ -93,6 +93,8 @@ typedef struct {
     size_t set_count;
     const char *fail_set_key;
     const char *flip_get_key; // storage_get of this key returns its first byte flipped
+    int fail_set_after;       // if > 0: after this many successful storage_set calls, every one fails
+    int sets_ok;
     bool storage_off;
 
     bool audio_bad;    // audio_ok() returns false
@@ -275,6 +277,12 @@ static inline bool fp_storage_set(void *ctx, const char *key, const void *buf, s
         len > sizeof(fake.stored)) {
         return false;
     }
+    if (fake.fail_set_after > 0) {
+        if (fake.sets_ok >= fake.fail_set_after) {
+            return false; // "power cut": nothing after this point reaches storage
+        }
+        fake.sets_ok++;
+    }
     fake_kv_put(key, buf, len);
     if (strcmp(key, "contacts") == 0) {
         if (len > 0) {
@@ -453,6 +461,11 @@ static inline bool fwl_create(void *ctx, const uint8_t pin[TK_PIN_LEN], const ui
     return true;
 }
 
-static const tk_wallet_ops_t FAKE_WALLET = {NULL, fwl_has, fwl_pubkey, fwl_unlocked, fwl_unlock, fwl_sign, fwl_create};
+static inline void fwl_lock(void *ctx) {
+    (void)ctx;
+    fw.unlocked = false;
+}
+
+static const tk_wallet_ops_t FAKE_WALLET = {NULL, fwl_has, fwl_pubkey, fwl_unlocked, fwl_unlock, fwl_sign, fwl_create, fwl_lock};
 
 #endif
