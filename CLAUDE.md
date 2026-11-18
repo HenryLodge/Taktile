@@ -55,7 +55,8 @@ idf.py -p /dev/ttyACM0 flash monitor        # port differs on macOS: /dev/cu.usb
 python tools/device_tests.py /dev/ttyACM0   # expects DEVICE TESTS: N/N PASS (~2 min; --full ~40 min); then reflash the protocol firmware
 
 # app + server
-cd app && npm install && npm run dev        # Chrome or Edge only (Web Serial)
+cd app && npm install && npm run dev        # http://localhost:5173; Chrome or Edge for USB (Web Serial)
+cd app && npm test && npm run check         # protocol/client/checksum tests; tsc + eslint + prettier
 cd server && npm run dev                    # no dependencies; dev:canned = no ElevenLabs calls; npm test; npm run probe (live check)
 
 # tools

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="light dark" />
+        <title>Taktile</title>
+    </head>
+    <body>
+        <a class="skip" href="#main">Skip to main content</a>
+        <header>
+            <h1>Taktile</h1>
+            <p>Companion app for the Taktile hardware wallet. Solana devnet only.</p>
+        </header>
+
+        <main id="main">
+            <p id="status-line" class="status-line">Not connected.</p>
+
+            <section aria-labelledby="h-conn">
+                <h2 id="h-conn">Connection</h2>
+                <div class="buttons">
+                    <button id="btn-usb" type="button">Connect device (USB)</button>
+                    <button id="btn-sim" type="button">Use simulator</button>
+                    <button id="btn-disconnect" type="button" aria-disabled="true">Disconnect</button>
+                </div>
+                <p id="usb-note" class="note" hidden></p>
+                <p id="server-line">Speech service: checking…</p>
+            </section>
+
+            <section aria-labelledby="h-device">
+                <h2 id="h-device" tabindex="-1">Device</h2>
+                <dl>
+                    <dt>State</dt>
+                    <dd id="dev-state">Not connected</dd>
+                    <dt>Wallet address</dt>
+                    <dd>
+                        <code id="dev-address">—</code>
+                        <button id="btn-copy" type="button" aria-disabled="true">Copy address</button>
+                    </dd>
+                    <dt>Firmware</dt>
+                    <dd id="dev-fw">—</dd>
+                    <dt>Contacts on the device</dt>
+                    <dd id="dev-contacts">—</dd>
+                </dl>
+                <div class="buttons">
+                    <button id="btn-unlock" type="button" aria-disabled="true">Unlock on device</button>
+                    <button id="btn-cancel" type="button" aria-disabled="true">Cancel on device</button>
+                </div>
+            </section>
+
+            <section aria-labelledby="h-log">
+                <h2 id="h-log">What the app heard (untrusted)</h2>
+                <p class="note">
+                    This laptop can be compromised. Only the device's own voice in your earpiece tells you what you are
+                    signing.
+                </p>
+                <ol id="log" class="log"></ol>
+            </section>
+        </main>
+
+        <footer>
+            <h2>Keyboard</h2>
+            <p>Tab and Shift+Tab move between controls. Enter or Space presses a button.</p>
+        </footer>
+
+        <div id="live-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+        <div id="live-alert" class="sr-only" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+        <script type="module" src="/src/main.ts"></script>
+    </body>
+</html>
