@@ -1,0 +1,9 @@
+Command: C:\Espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:\Espressif\frameworks\esp-idf-v5.5.6\tools/idf_monitor.py -p COM3 -b 115200 --toolchain-prefix xtensa-esp32s3-elf- --target esp32s3 --revision 0 C:\Taktile\firmware\test_app\build-bringup\taktile_tests.elf C:\Taktile\firmware\test_app\build-bringup\bootloader\bootloader.elf --force-color -m 'C:\Espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe' 'C:\Espressif\frameworks\esp-idf-v5.5.6\tools\idf.py' '-B' 'build-bringup' '-D' 'SDKCONFIG=build-bringup/sdkconfig' '-D' 'SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.bringup' '-p' 'COM3'
+--- WARNING: GDB cannot open serial ports accessed as COMx
+--- NOTE: Using \\.\COM3 instead...
+--- esp-idf-monitor 1.10.0 on \\.\COM3 115200
+--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+--- 0x42019ee8: sha256_Transform at C:/Taktile/core/third_party/trezor-crypto/sha2.c:820
+--- 0x403c8700: _stext at ??:?
+--- 0x403c8870: call_start_cpu0 at C:/Espressif/frameworks/esp-idf-v5.5.6/components/bootloader/subproject/main/bootloader_start.c:27
+

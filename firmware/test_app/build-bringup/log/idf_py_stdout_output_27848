@@ -1,0 +1,56 @@
+Command: ninja flash
+[1/5] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Taktile\firmware\test_app\build-bringup\esp-idf\esptool_py && C:\Espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:/Espressif/frameworks/esp-idf-v5.5.6/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Taktile/firmware/test_app/build-bringup/partition_table/partition-table.bin C:/Taktile/firmware/test_app/build-bringup/taktile_tests.bin"
+taktile_tests.bin binary size 0x74a30 bytes. Smallest app partition is 0x300000 bytes. 0x28b5d0 bytes (85%) free.
+[2/5] Performing build step for 'bootloader'
+[1/1] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Taktile\firmware\test_app\build-bringup\bootloader\esp-idf\esptool_py && C:\Espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:/Espressif/frameworks/esp-idf-v5.5.6/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 C:/Taktile/firmware/test_app/build-bringup/bootloader/bootloader.bin"
+Bootloader binary size 0x3560 bytes. 0x4aa0 bytes (58%) free.
+[3/5] No install step for 'bootloader'
+[4/5] Completed 'bootloader'
+[4/5] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Espressif\frameworks\esp-idf-v5.5.6\components\esptool_py && C:\Espressif\tools\cmake\3.30.2\bin\cmake.exe -D IDF_PATH=C:/Espressif/frameworks/esp-idf-v5.5.6 -D SERIAL_TOOL=C:/Espressif/python_env/idf5.5_py3.11_env/Scripts/python.exe;;C:/Espressif/frameworks/esp-idf-v5.5.6/components/esptool_py/esptool/esptool.py;--chip;esp32s3 -D SERIAL_TOOL_ARGS=--before=default_reset;--after=hard_reset;write_flash;@flash_args -D WORKING_DIRECTORY=C:/Taktile/firmware/test_app/build-bringup -P C:/Espressif/frameworks/esp-idf-v5.5.6/components/esptool_py/run_serial_tool.cmake"
+esptool.py --chip esp32s3 -p COM3 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x0 bootloader/bootloader.bin 0x20000 taktile_tests.bin 0x8000 partition_table/partition-table.bin
+esptool.py v4.12.0
+Serial port COM3
+Connecting...
+Chip is ESP32-S3 (QFN56) (revision v0.2)
+Features: WiFi, BLE, Embedded PSRAM 8MB (AP_3v3)
+Crystal is 40MHz
+USB mode: USB-Serial/JTAG
+MAC: 58:e6:c5:58:42:88
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00003fff...
+Flash will be erased from 0x00020000 to 0x00094fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+SHA digest in image updated
+Compressed 13664 bytes to 9527...
+Writing at 0x00000000... (100 %)
+Wrote 13664 bytes (9527 compressed) at 0x00000000 in 0.1 seconds (effective 764.0 kbit/s)...
+Hash of data verified.
+Compressed 477744 bytes to 214665...
+Writing at 0x00020000... (7 %)
+Writing at 0x0002caa8... (14 %)
+Writing at 0x0004c303... (21 %)
+Writing at 0x00054a1b... (28 %)
+Writing at 0x0005adb0... (35 %)
+Writing at 0x000613f6... (42 %)
+Writing at 0x000675f1... (50 %)
+Writing at 0x0006d73f... (57 %)
+Writing at 0x000737c1... (64 %)
+Writing at 0x000795e1... (71 %)
+Writing at 0x0007f602... (78 %)
+Writing at 0x00086224... (85 %)
+Writing at 0x0008de30... (92 %)
+Writing at 0x00093daf... (100 %)
+Wrote 477744 bytes (214665 compressed) at 0x00020000 in 2.5 seconds (effective 1557.9 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 100...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (100 compressed) at 0x00008000 in 0.0 seconds (effective 913.4 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...

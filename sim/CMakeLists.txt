@@ -53,5 +53,5 @@ if(PYTHON3)
     add_test(NAME sim_e2e
              COMMAND ${PYTHON3} ${CMAKE_CURRENT_SOURCE_DIR}/tests/e2e.py $<TARGET_FILE:taktile-sim>
                      ${CMAKE_CURRENT_SOURCE_DIR}/../tests/vectors ${SIM_INSECURE_FLAG})
-    set_tests_properties(sim_e2e PROPERTIES TIMEOUT 240) # the insecure build runs a full SETUP by keystrokes (~75 s)
+    set_tests_properties(sim_e2e PROPERTIES TIMEOUT 600) # the insecure build types a SETUP and 12 PINs by keystrokes
 endif()

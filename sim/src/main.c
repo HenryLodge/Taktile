@@ -206,6 +206,10 @@ int main(int argc, char **argv) {
 
     while (!stop) {
         tk_device_poll(&dev);
+        if (sim.lock_pending) { // after the flow, never in the middle of one
+            sim.lock_pending = false;
+            tk_device_lock(&dev);
+        }
         struct pollfd fds[3];
         nfds_t n = 0;
         fds[n++] = (struct pollfd){sim.listen_fd, POLLIN, 0};

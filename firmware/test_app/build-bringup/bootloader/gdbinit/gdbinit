@@ -1,0 +1,2 @@
+source C:/Taktile/firmware/test_app/build-bringup/bootloader/gdbinit/symbols
+source C:/Taktile/firmware/test_app/build-bringup/bootloader/gdbinit/connect

@@ -256,6 +256,7 @@ static tk_status_t unlock(tk_device_t *d, flow_secrets_t *s) {
             return finish_rejected(d);
         }
         uint8_t left = 0;
+        say(d, TK_CLIP_PLEASE_WAIT); // the PIN key derivation takes ~2.6 s (I7)
         const tk_unlock_result_t ur = w->unlock(w->ctx, s->pin, &left);
         memzero(s->pin, sizeof(s->pin));
         if (ur == TK_UNLOCK_OK) {
@@ -460,6 +461,12 @@ void tk_device_init(tk_device_t *d, const tk_platform_t *platform, const tk_wall
     d->ui.haptic = ui_haptic;
     d->ui.wait = ui_wait;
     d->ui.random_bytes = ui_random;
+}
+
+void tk_device_lock(tk_device_t *d) {
+    if (d->wallet->lock != NULL) {
+        d->wallet->lock(d->wallet->ctx);
+    }
 }
 
 void tk_device_link_reset(tk_device_t *d) {

@@ -13,8 +13,13 @@
 // A wrong PIN fails the tag check (constant time); after decryption the key must also give pubkey.
 // Storage key "pin-fails" (u8) is the failed-attempt counter, written 0 before "wallet" at create.
 //
-// This step: unlock always fails closed (TK_UNLOCK_ERROR). The PIN-unlock task adds the counter
-// (persisted before each check) and the 10-failure wipe.
+// Unlock (I7): the counter is incremented and committed BEFORE the PIN is checked, so cutting power
+// during the check still counts the attempt. A storage problem fails closed (TK_UNLOCK_ERROR, PIN
+// not checked). After TK_PIN_MAX_FAILS failures the wallet is wiped: "wallet" cleared first, then
+// RAM, then the counter reset; tk_keystore_init finishes a wipe that a power cut interrupted.
+//
+// Auto-lock: after every signature, TK_AUTOLOCK_MS after an unlock, on the lock op (USB host lost),
+// and at every boot (the key is in RAM only).
 
 #ifndef TK_KEYSTORE_H
 #define TK_KEYSTORE_H
@@ -31,6 +36,8 @@
 #define TK_KDF_ITERS_MAX 1000000u
 #define TK_KEYSTORE_SALT_LEN 16u
 #define TK_KEYSTORE_BLOB_LEN 121u
+#define TK_PIN_MAX_FAILS 10u      // I7: this many wrong PINs in a row wipe the wallet
+#define TK_AUTOLOCK_MS 300000u    // an unlock lasts at most 5 minutes (and only until the next signature)
 
 #define TK_STORAGE_WALLET "wallet"
 #define TK_STORAGE_PIN_FAILS "pin-fails"
@@ -48,6 +55,7 @@ typedef struct {
     uint8_t blob[TK_KEYSTORE_BLOB_LEN]; // READY: the stored blob
     uint8_t pubkey[32];                 // READY
     uint8_t sk[32];                     // only while unlocked; wiped by tk_keystore_lock
+    uint32_t unlocked_at;               // now_ms when the session began
 } tk_keystore_t;
 
 typedef enum {
@@ -57,7 +65,8 @@ typedef enum {
 } tk_keystore_open_t;
 
 // Loads "wallet" from storage. Missing or zero-length: EMPTY. Wrong length, magic, version or
-// iteration count: CORRUPT. Always starts locked.
+// iteration count: CORRUPT. Always starts locked. If "pin-fails" is already at TK_PIN_MAX_FAILS (a
+// lockout wipe was cut short), finishes the wipe first.
 void tk_keystore_init(tk_keystore_t *ks, const tk_platform_t *platform);
 
 // The flows' view (tk_wallet_ops_t) with ctx = ks.
@@ -65,6 +74,11 @@ void tk_keystore_ops(tk_keystore_t *ks, tk_wallet_ops_t *ops);
 
 // Forget the key (memzero); the wallet stays stored.
 void tk_keystore_lock(tk_keystore_t *ks);
+
+// The lockout wipe (I7): clear "wallet" in storage, wipe RAM (state EMPTY), reset "pin-fails".
+// False if "wallet" could not be cleared: then the state is CORRUPT (never unlocks, never replaced).
+// The caller wipes the contact book.
+bool tk_keystore_wipe(tk_keystore_t *ks);
 
 // Pure helpers (no storage, no RNG). seal: false on a PIN digit > 9, iterations out of range or NULL.
 bool tk_keystore_seal(const uint8_t pin[TK_PIN_LEN], const uint8_t sk[32], const uint8_t pubkey[32],

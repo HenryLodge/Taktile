@@ -22,4 +22,8 @@ void tk_link_write(const uint8_t *buf, size_t len);
 // after bytes arrived, or the USB host going away.
 bool tk_link_should_reset(uint32_t now_ms);
 
+// True once each time the USB host goes away (it was connected and now is not). The main loop then
+// ends any unlocked session (tk_device_lock).
+bool tk_link_host_lost(void);
+
 #endif

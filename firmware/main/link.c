@@ -56,6 +56,14 @@ void tk_link_write(const uint8_t *buf, size_t len) {
     }
 }
 
+bool tk_link_host_lost(void) {
+    static bool seen;
+    const bool connected = usb_serial_jtag_is_connected();
+    const bool lost = seen && !connected;
+    seen = connected;
+    return lost;
+}
+
 bool tk_link_should_reset(uint32_t now_ms) {
     const bool connected = usb_serial_jtag_is_connected();
     const bool dropped = was_connected && !connected;

@@ -90,6 +90,7 @@ typedef struct {
     tk_unlock_result_t (*unlock)(void *ctx, const uint8_t pin[6], uint8_t *attempts_left);
     bool (*sign)(void *ctx, const uint8_t *msg, size_t len, uint8_t sig[64]); // refuses unless unlocked
     bool (*create)(void *ctx, const uint8_t pin[6], const uint8_t sk[32], const uint8_t pubkey[32]); // SETUP; refuses if a wallet exists (I10)
+    void (*lock)(void *ctx); // tk_device_lock: the USB host went away
 } tk_wallet_ops_t;
 ```
 

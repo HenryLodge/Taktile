@@ -28,6 +28,7 @@ CLIP_MS = 60
 HELLO, GET_PUBKEY, SETUP, SIGN_REQUEST, CONTACT_LIST_COUNT, CANCEL = 0x01, 0x02, 0x03, 0x10, 0x31, 0x7E
 EVENT, RESP = 0xF0, 0x80
 OK, REJECTED, UNKNOWN_RECIPIENT, BUSY, CANCELLED, WALLET_EXISTS = 0, 1, 2, 6, 7, 8
+LOCKED_OUT = 4
 EV_ANNOUNCING, EV_AWAITING_PIN, EV_AWAITING_CONFIRM = 1, 2, 3
 NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
 KEY_UP, KEY_OK = b"\x1b[A", b"\n"
@@ -94,7 +95,7 @@ class Sim:
         self.p.stdin.write(k)
         self.p.stdin.flush()
 
-    def settle(self, quiet=0.3, timeout=15):
+    def settle(self, quiet=0.15, timeout=15):
         """Wait until nothing has been printed for `quiet` seconds (no clip is playing)."""
         end, n, last = time.time() + timeout, len(self.all), time.time()
         while time.time() < end:
@@ -365,6 +366,70 @@ def setup_tests():
         check(f[2] == bytes([WALLET_EXISTS]), "second SETUP was not refused")
         time.sleep(0.2)
         check(not any(l.startswith("[EARPIECE]") for l in sim.all[n:]), "refused SETUP played audio")
+    finally:
+        sim.stop()
+
+    unlock_tests(data, pubkey)
+
+
+def sol_from(pubkey):
+    """sol_ok, but sent from this wallet: account key 0 (fee payer and sender) is at offset 4."""
+    msg = bytearray(SOL_OK)
+    check(msg[3] == 3, "sol_ok layout changed")
+    msg[4:36] = pubkey
+    return bytes(msg)
+
+
+def unlock_tests(data, pubkey):
+    """PIN unlock on the key store (I7): counted attempts, one signature per unlock, lockout wipe."""
+    sim = Sim(["--contact", "Alice=" + alice["wallet"]], seed=False, data=data)
+    try:
+        ws = Ws(sim.port)
+        msg = sol_from(pubkey)
+
+        # One wrong PIN, then the right one: "wrong pin, nine, attempts remaining", then it signs.
+        ws.send(frame(SIGN_REQUEST, 1, msg))
+        sim.wait_line(lambda l: l == "[EARPIECE] enter pin")
+        enter_pin(sim, [0, 0, 0, 0, 0, 0])
+        sim.wait_line(lambda l: l == "[EARPIECE] wrong pin")
+        sim.wait_line(lambda l: l == "[EARPIECE] nine")
+        sim.wait_line(lambda l: l == "[EARPIECE] enter pin")
+        enter_pin(sim, [1, 2, 3, 4, 5, 6])
+        sim.wait_line(lambda l: "press confirm" in l)
+        sim.press(b"c")
+        f, _ = ws.until(SIGN_REQUEST | RESP, 1)
+        check(f[2][0] == OK and len(f[2]) == 65, f"key-store sign reply {f[2][:1].hex()}")
+        check(sim.all.count("[EARPIECE] please wait") >= 2, "no 'please wait' before the PIN checks")
+
+        # One unlock, one signature: locked again.
+        ws.send(frame(HELLO, 2))
+        f, _ = ws.until(HELLO | RESP, 2)
+        check(f[2] == bytes([1, 0, 1, 1]), "not locked after the signature")
+
+        # Ten wrong PINs in a row: wallet and contacts wiped, LOCKED_OUT.
+        ws.send(frame(SIGN_REQUEST, 3, msg))
+        for i in range(10):
+            sim.wait_line(lambda l: l == "[EARPIECE] enter pin", 30)
+            enter_pin(sim, [0, 0, 0, 0, 0, 0])
+        f, _ = ws.until(SIGN_REQUEST | RESP, 3)
+        check(f[2] == bytes([LOCKED_OUT]), f"10 wrong PINs: {f[2].hex()}")
+        check("[EARPIECE] wallet wiped" in sim.all, "no 'wallet wiped'")
+        ws.send(frame(HELLO, 4))
+        f, _ = ws.until(HELLO | RESP, 4)
+        check(f[2] == bytes([1, 0, 1, 0]), "a wallet is still there after the lockout")
+        ws.send(frame(CONTACT_LIST_COUNT, 5))
+        f, _ = ws.until(CONTACT_LIST_COUNT | RESP, 5)
+        check(f[2] == bytes([0]), "contacts survived the lockout")
+        with open(os.path.join(data, "wallet"), "rb") as fh:
+            check(fh.read() == b"", "wallet file not cleared")
+
+        # And a new SETUP is accepted (I10's documented exception); cancel it.
+        ws.send(frame(SETUP, 6))
+        f = ws.frame()
+        check(f == (EVENT, 6, bytes([EV_AWAITING_PIN])), f"SETUP after the wipe: {f}")
+        ws.send(frame(CANCEL, 7))
+        f, _ = ws.until(SETUP | RESP, 6)
+        check(f[2] == bytes([CANCELLED]), "SETUP after the wipe did not cancel")
     finally:
         sim.stop()
 
