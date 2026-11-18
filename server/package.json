@@ -1,0 +1,15 @@
+{
+  "name": "taktile-server",
+  "private": true,
+  "type": "module",
+  "description": "Localhost proxy for ElevenLabs speech-to-text and text-to-speech; keeps the API key off the browser.",
+  "engines": {
+    "node": ">=22.9"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env server.mjs",
+    "dev:canned": "node --env-file-if-exists=.env server.mjs --canned",
+    "test": "node --test",
+    "probe": "node --env-file-if-exists=.env probe.mjs"
+  }
+}

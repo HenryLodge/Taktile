@@ -60,7 +60,7 @@ When signing, a SOL destination is looked up only among contacts' wallets and a 
 | `sim` | core + WebSocket server on `ws://localhost:8765` + keyboard buttons + audio as printed text (optionally plays clips via `afplay`/`aplay`) | Develop the whole flow before hardware arrives |
 | `firmware` | core + ESP-IDF drivers (USB CDC, I2S, GPIO, I2C haptics, NVS, clip pack partition) | The real device |
 | `app` | Vite + TS | User-facing frontend (required by the Consumer track) |
-| `server` | Node + Express | Holds the ElevenLabs key (STT/TTS proxy) |
+| `server` | Node (`node:http`, no dependencies) | Holds the ElevenLabs key (STT/TTS proxy on `127.0.0.1:8787`; `server/README.md`) |
 
 ## Abstractions in core/ that firmware and sim implement
 
