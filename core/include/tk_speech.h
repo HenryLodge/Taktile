@@ -17,6 +17,10 @@
 // Returns the number of clips written, or 0 if kind is unknown or cap is too small.
 size_t tk_speech_amount(tk_tx_kind_t kind, uint64_t amount, uint16_t *clips, size_t cap);
 
+// A whole number in English words ("twenty four"), e.g. recovery word positions. Returns the number
+// of clips written, or 0 if n >= 10^15, clips is NULL or cap is too small.
+size_t tk_speech_number(uint64_t n, uint16_t *clips, size_t cap);
+
 // Spell a contact name: letters (any case), digits, space, hyphen, apostrophe. Returns the number
 // of clips written, or 0 on an unspellable character or too small a buffer.
 size_t tk_speech_spell(const char *name, size_t len, uint16_t *clips, size_t cap);

@@ -74,6 +74,8 @@ typedef struct {
     uint8_t rng[64];
     size_t rng_len, rng_pos; // rng[] repeats; empty means always 0
     bool rng_fail;
+    size_t rng_calls;     // random_bytes calls so far
+    size_t rng_fail_from; // if > 0: call number rng_fail_from (1-based) and later fail
     size_t discarded_presses;
     uint8_t stored[1024]; // mirror of the "contacts" key, for the flow tests
     size_t stored_len;
@@ -210,7 +212,8 @@ static inline uint32_t fp_now(void *ctx) {
 
 static inline bool fp_random(void *ctx, uint8_t *out, size_t len) {
     (void)ctx;
-    if (fake.rng_fail) {
+    fake.rng_calls++;
+    if (fake.rng_fail || (fake.rng_fail_from > 0 && fake.rng_calls >= fake.rng_fail_from)) {
         return false;
     }
     for (size_t i = 0; i < len; i++) {

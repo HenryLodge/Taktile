@@ -472,7 +472,8 @@ static void test_idle_requests(void) {
     TK_CHECK(has_frame(TK_MSG_HELLO | TK_MSG_RESPONSE_BIT, 1, hello, 4));
     TK_CHECK(has_frame(TK_MSG_GET_PUBKEY | TK_MSG_RESPONSE_BIT, 2, pub, 33));
     TK_CHECK(has_frame(TK_MSG_CONTACT_LIST_COUNT | TK_MSG_RESPONSE_BIT, 3, &one, 1));
-    TK_CHECK(has_frame(TK_MSG_ERROR, 4, &unknown, 1));
+    const uint8_t exists = TK_STATUS_WALLET_EXISTS;
+    TK_CHECK(has_frame(TK_MSG_SETUP | TK_MSG_RESPONSE_BIT, 4, &exists, 1)); // I10
     TK_CHECK(has_frame(TK_MSG_ERROR, 5, &unknown, 1));
     TK_CHECK(has_frame(TK_MSG_ERROR, 6, &bad_payload, 1));
     TK_CHECK(has_frame(TK_MSG_ERROR, 7, &unknown, 1));

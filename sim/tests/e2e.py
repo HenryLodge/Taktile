@@ -25,10 +25,12 @@ import zlib
 SIM, VECTORS, INSECURE = sys.argv[1], sys.argv[2], sys.argv[3] == "1"
 CLIP_MS = 60
 
-HELLO, GET_PUBKEY, SIGN_REQUEST, CONTACT_LIST_COUNT, CANCEL = 0x01, 0x02, 0x10, 0x31, 0x7E
+HELLO, GET_PUBKEY, SETUP, SIGN_REQUEST, CONTACT_LIST_COUNT, CANCEL = 0x01, 0x02, 0x03, 0x10, 0x31, 0x7E
 EVENT, RESP = 0xF0, 0x80
-OK, REJECTED, UNKNOWN_RECIPIENT, BUSY, CANCELLED = 0, 1, 2, 6, 7
-EV_ANNOUNCING, EV_AWAITING_CONFIRM = 1, 3
+OK, REJECTED, UNKNOWN_RECIPIENT, BUSY, CANCELLED, WALLET_EXISTS = 0, 1, 2, 6, 7, 8
+EV_ANNOUNCING, EV_AWAITING_PIN, EV_AWAITING_CONFIRM = 1, 2, 3
+NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+KEY_UP, KEY_OK = b"\x1b[A", b"\n"
 
 
 def load(name):
@@ -59,11 +61,11 @@ def free_port():
 
 
 class Sim:
-    def __init__(self, extra):
-        self.dir = tempfile.mkdtemp(prefix="taktile-sim-")
+    def __init__(self, extra, seed=True, data=None):
+        self.dir = data or tempfile.mkdtemp(prefix="taktile-sim-")
         self.port = free_port()
-        args = [SIM, "--port", str(self.port), "--data", self.dir, "--clip-ms", str(CLIP_MS),
-                "--seed-hex", SEED] + extra
+        args = [SIM, "--port", str(self.port), "--data", self.dir, "--clip-ms", str(CLIP_MS)]
+        args += (["--seed-hex", SEED] if seed else []) + extra
         self.p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT, bufsize=0)
         self.lines = queue.Queue()
@@ -91,6 +93,23 @@ class Sim:
     def key(self, k):
         self.p.stdin.write(k)
         self.p.stdin.flush()
+
+    def settle(self, quiet=0.3, timeout=15):
+        """Wait until nothing has been printed for `quiet` seconds (no clip is playing)."""
+        end, n, last = time.time() + timeout, len(self.all), time.time()
+        while time.time() < end:
+            time.sleep(0.02)
+            if len(self.all) != n:
+                n, last = len(self.all), time.time()
+            elif time.time() - last >= quiet:
+                return
+        raise AssertionError("sim never went quiet; last lines:\n" + "\n".join(self.all[-10:]))
+
+    def press(self, k):
+        """A key pressed after the current clips end (presses during a clip are discarded, I6)."""
+        self.settle()
+        self.key(k)
+        self.settle()
 
     def stop(self):
         self.p.terminate()
@@ -253,7 +272,101 @@ def main():
         sim.wait_line(lambda l: "unknown recipient" in l)
     finally:
         sim.stop()
+    setup_tests()
     print("e2e: all checks passed")
+
+
+def enter_pin(sim, pin):
+    """Rotary PIN entry. Needs the insecure build: the start digit is private audio."""
+    for d in pin:
+        sim.settle()
+        value = next(NUMBERS.index(l.split()[-1]) for l in reversed(sim.all)
+                     if l.startswith("[EARPIECE] (private) ") and l.split()[-1] in NUMBERS)
+        for _ in range((d - value) % 10):
+            sim.press(KEY_UP)
+        sim.press(KEY_OK)
+
+
+def setup_tests():
+    """SETUP on the sim's key store (no --seed-hex)."""
+    # Started, then cancelled from the host: no wallet afterwards. Works in every build.
+    sim = Sim([], seed=False)
+    try:
+        ws = Ws(sim.port)
+        ws.send(frame(SETUP, 1))
+        f = ws.frame()
+        check(f == (EVENT, 1, bytes([EV_AWAITING_PIN])), f"SETUP did not start: {f}")
+        sim.wait_line(lambda l: l == "[EARPIECE] choose a new PIN")
+        ws.send(frame(HELLO, 2))
+        f, _ = ws.until(HELLO | RESP, 2)
+        check(f[2] == bytes([1, 0, 1, 0]), "HELLO during SETUP is not state 0")
+        ws.send(frame(CANCEL, 3))
+        f, _ = ws.until(CANCEL | RESP, 3)
+        check(f[2] == bytes([OK]), "CANCEL reply")
+        f, _ = ws.until(SETUP | RESP, 1)
+        check(f[2] == bytes([CANCELLED]), f"SETUP after CANCEL: {f[2].hex()}")
+        check(not os.path.exists(os.path.join(sim.dir, "wallet")), "a cancelled SETUP stored a wallet")
+        if not INSECURE:
+            private = [l for l in sim.all if l.startswith("[EARPIECE] (private)")]
+            check(all(l == "[EARPIECE] (private)" for l in private), "PIN digit printed")
+    finally:
+        sim.stop()
+
+    if not INSECURE:
+        print("e2e: full SETUP skipped (needs -DTK_SIM_INSECURE_AUDIO=ON to read the private start digits)")
+        return
+
+    # The whole flow by keystrokes: PIN, PIN again, 24 words, finish.
+    sim = Sim([], seed=False)
+    data = sim.dir
+    try:
+        ws = Ws(sim.port)
+        ws.send(frame(SETUP, 1))
+        sim.wait_line(lambda l: l == "[EARPIECE] choose a new PIN")
+        enter_pin(sim, [1, 2, 3, 4, 5, 6])
+        sim.wait_line(lambda l: l == "[EARPIECE] enter your PIN again")
+        enter_pin(sim, [1, 2, 3, 4, 5, 6])
+        sim.wait_line(lambda l: l == "[EARPIECE] write down your recovery words")
+        for _ in range(24):
+            sim.press(KEY_OK)
+        sim.wait_line(lambda l: "press OK to finish" in l)
+        sim.press(KEY_OK)
+        f, _ = ws.until(SETUP | RESP, 1)
+        check(f[2] == bytes([OK]), f"SETUP reply {f[2].hex()}")
+        check(sim.all.count("[EARPIECE] recovery word") == 24, "not 24 recovery words")
+        letters = [l for l in sim.all if l.startswith("[EARPIECE] (private) ") and len(l.split()[-1]) == 1]
+        check(72 <= len(letters) <= 192, f"{len(letters)} recovery letters, want 3-8 per word (whole words)")
+        check("[EARPIECE] wallet created" in sim.all, "no 'wallet created'")
+        check(os.path.exists(os.path.join(data, "wallet")), "no wallet stored")
+        ws.send(frame(HELLO, 2))
+        f, _ = ws.until(HELLO | RESP, 2)
+        check(f[2] == bytes([1, 0, 1, 2]), "HELLO after SETUP is not state 2 (unlocked)")
+        ws.send(frame(GET_PUBKEY, 3))
+        f, _ = ws.until(GET_PUBKEY | RESP, 3)
+        check(f[2][0] == OK and len(f[2]) == 33, "GET_PUBKEY after SETUP")
+        pubkey = f[2][1:]
+    finally:
+        sim.stop()
+
+    # Restart on the same data: the wallet is there, locked; SETUP is refused (I10).
+    sim = Sim([], seed=False, data=data)
+    try:
+        check(any(l.startswith("wallet: ") and "key store, locked" in l for l in sim.all), "banner after restart")
+        ws = Ws(sim.port)
+        ws.send(frame(HELLO, 1))
+        f, _ = ws.until(HELLO | RESP, 1)
+        check(f[2] == bytes([1, 0, 1, 1]), "HELLO after restart is not state 1 (locked)")
+        ws.send(frame(GET_PUBKEY, 2))
+        f, _ = ws.until(GET_PUBKEY | RESP, 2)
+        check(f[2] == bytes([OK]) + pubkey, "pubkey changed across restart")
+        n = len(sim.all)
+        ws.send(frame(SETUP, 3))
+        f, _ = ws.until(SETUP | RESP, 3)
+        check(f[2] == bytes([WALLET_EXISTS]), "second SETUP was not refused")
+        time.sleep(0.2)
+        check(not any(l.startswith("[EARPIECE]") for l in sim.all[n:]), "refused SETUP played audio")
+    finally:
+        sim.stop()
 
 
 if __name__ == "__main__":

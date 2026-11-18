@@ -65,6 +65,15 @@ test('parseEnv: quotes, comments, CRLF, export', () => {
     assert.deepEqual(env, { A: '1', B: 'two words', C: 'x', D: 'val', E: '' });
 });
 
+test('a clip\'s own tts settings change its key and override the defaults', () => {
+    const c = { id: 1, name: 'X', text: 'A' };
+    const base = cacheKey(c, 'voice', DEFAULT_SETTINGS);
+    const english = { ...c, tts: { model_id: 'eleven_turbo_v2_5', language_code: 'en' } };
+    assert.notEqual(base, cacheKey(english, 'voice', DEFAULT_SETTINGS));
+    // Without tts the key is what it was before per-clip settings existed (the cache stays valid).
+    assert.equal(base, cacheKey({ ...c }, 'voice', DEFAULT_SETTINGS));
+});
+
 test('cacheKey changes with text, say, voice and every setting', () => {
     const c = { id: 1, name: 'X', text: 'send' };
     const base = cacheKey(c, 'voice', DEFAULT_SETTINGS);

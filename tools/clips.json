@@ -1452,92 +1452,116 @@
   {
     "id": 290,
     "name": "TK_CLIP_LETTER_A",
-    "text": "A"
+    "text": "A",
+    "say": "ey."
   },
   {
     "id": 291,
     "name": "TK_CLIP_LETTER_A+1",
-    "text": "B"
+    "text": "B",
+    "say": "bee"
   },
   {
     "id": 292,
     "name": "TK_CLIP_LETTER_A+2",
-    "text": "C"
+    "text": "C",
+    "say": "see"
   },
   {
     "id": 293,
     "name": "TK_CLIP_LETTER_A+3",
-    "text": "D"
+    "text": "D",
+    "say": "dee."
   },
   {
     "id": 294,
     "name": "TK_CLIP_LETTER_A+4",
-    "text": "E"
+    "text": "E",
+    "say": "ii."
   },
   {
     "id": 295,
     "name": "TK_CLIP_LETTER_A+5",
-    "text": "F"
+    "text": "F",
+    "say": "eff"
   },
   {
     "id": 296,
     "name": "TK_CLIP_LETTER_A+6",
-    "text": "G"
+    "text": "G",
+    "say": "gee."
   },
   {
     "id": 297,
     "name": "TK_CLIP_LETTER_A+7",
-    "text": "H"
+    "text": "H",
+    "say": "aitch",
+    "tts": {
+      "seed": 2
+    }
   },
   {
     "id": 298,
     "name": "TK_CLIP_LETTER_A+8",
-    "text": "I"
+    "text": "I",
+    "say": "eye"
   },
   {
     "id": 299,
     "name": "TK_CLIP_LETTER_A+9",
-    "text": "J"
+    "text": "J",
+    "say": "jay"
   },
   {
     "id": 300,
     "name": "TK_CLIP_LETTER_A+10",
-    "text": "K"
+    "text": "K",
+    "say": "kay",
+    "tts": {
+      "seed": 2
+    }
   },
   {
     "id": 301,
     "name": "TK_CLIP_LETTER_A+11",
-    "text": "L"
+    "text": "L",
+    "say": "ell."
   },
   {
     "id": 302,
     "name": "TK_CLIP_LETTER_A+12",
-    "text": "M"
+    "text": "M",
+    "say": "emm."
   },
   {
     "id": 303,
     "name": "TK_CLIP_LETTER_A+13",
-    "text": "N"
+    "text": "N",
+    "say": "enn."
   },
   {
     "id": 304,
     "name": "TK_CLIP_LETTER_A+14",
-    "text": "O"
+    "text": "O",
+    "say": "oh"
   },
   {
     "id": 305,
     "name": "TK_CLIP_LETTER_A+15",
-    "text": "P"
+    "text": "P",
+    "say": "pee"
   },
   {
     "id": 306,
     "name": "TK_CLIP_LETTER_A+16",
-    "text": "Q"
+    "text": "Q",
+    "say": "cue"
   },
   {
     "id": 307,
     "name": "TK_CLIP_LETTER_A+17",
-    "text": "R"
+    "text": "R",
+    "say": "ar"
   },
   {
     "id": 308,
@@ -1548,37 +1572,44 @@
   {
     "id": 309,
     "name": "TK_CLIP_LETTER_A+19",
-    "text": "T"
+    "text": "T",
+    "say": "tee"
   },
   {
     "id": 310,
     "name": "TK_CLIP_LETTER_A+20",
-    "text": "U"
+    "text": "U",
+    "say": "you"
   },
   {
     "id": 311,
     "name": "TK_CLIP_LETTER_A+21",
-    "text": "V"
+    "text": "V",
+    "say": "vii."
   },
   {
     "id": 312,
     "name": "TK_CLIP_LETTER_A+22",
-    "text": "W"
+    "text": "W",
+    "say": "double you"
   },
   {
     "id": 313,
     "name": "TK_CLIP_LETTER_A+23",
-    "text": "X"
+    "text": "X",
+    "say": "ex"
   },
   {
     "id": 314,
     "name": "TK_CLIP_LETTER_A+24",
-    "text": "Y"
+    "text": "Y",
+    "say": "why"
   },
   {
     "id": 315,
     "name": "TK_CLIP_LETTER_A+25",
-    "text": "Z"
+    "text": "Z",
+    "say": "zee"
   },
   {
     "id": 316,
@@ -1648,7 +1679,7 @@
   {
     "id": 329,
     "name": "TK_CLIP_DIGIT",
-    "text": "digit"
+    "text": "pin digit number"
   },
   {
     "id": 330,
@@ -1709,5 +1740,75 @@
     "id": 341,
     "name": "TK_CLIP_WALLET_WIPED",
     "text": "wallet wiped"
+  },
+  {
+    "id": 342,
+    "name": "TK_CLIP_WRITE_DOWN",
+    "text": "write down your recovery words"
+  },
+  {
+    "id": 343,
+    "name": "TK_CLIP_NEXT_WORD_HELP",
+    "text": "press OK for the next word, hold OK to repeat"
+  },
+  {
+    "id": 344,
+    "name": "TK_CLIP_REPLAY_ALL",
+    "text": "hold OK to hear all words again, or press OK to finish"
+  },
+  {
+    "id": 345,
+    "name": "TK_CLIP_CHOOSE_PIN",
+    "text": "choose a new PIN"
+  },
+  {
+    "id": 346,
+    "name": "TK_CLIP_ENTER_PIN_AGAIN",
+    "text": "enter your PIN again"
+  },
+  {
+    "id": 347,
+    "name": "TK_CLIP_PINS_DONT_MATCH",
+    "text": "the PINs do not match"
+  },
+  {
+    "id": 348,
+    "name": "TK_CLIP_PLEASE_WAIT",
+    "text": "please wait"
+  },
+  {
+    "id": 349,
+    "name": "TK_CLIP_WALLET_CREATED",
+    "text": "wallet created"
+  },
+  {
+    "id": 350,
+    "name": "TK_CLIP_SPEAKER_MODE_OFF",
+    "text": "speaker mode off"
+  },
+  {
+    "id": 351,
+    "name": "TK_CLIP_STARTING_AT",
+    "text": "starting at"
+  },
+  {
+    "id": 352,
+    "name": "TK_CLIP_TWENTY_ONE",
+    "text": "twenty one"
+  },
+  {
+    "id": 353,
+    "name": "TK_CLIP_TWENTY_ONE+1",
+    "text": "twenty two"
+  },
+  {
+    "id": 354,
+    "name": "TK_CLIP_TWENTY_ONE+2",
+    "text": "twenty three"
+  },
+  {
+    "id": 355,
+    "name": "TK_CLIP_TWENTY_ONE+3",
+    "text": "twenty four"
   }
 ]

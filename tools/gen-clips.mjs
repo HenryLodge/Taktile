@@ -48,7 +48,7 @@ export const TEXT = {
     TK_CLIP_CHECKSUM: 'checksum',
     TK_CLIP_ADDRESS_PHRASE: 'address phrase',
     TK_CLIP_ENTER_PIN: 'enter pin',
-    TK_CLIP_DIGIT: 'digit',
+    TK_CLIP_DIGIT: 'pin digit number',
     TK_CLIP_WRONG_PIN: 'wrong pin',
     TK_CLIP_ATTEMPTS_REMAINING: 'attempts remaining',
     TK_CLIP_SIGNED: 'signed',
@@ -61,13 +61,50 @@ export const TEXT = {
     TK_CLIP_REPEAT: 'repeat',
     TK_CLIP_SPEAKER_MODE_ON: 'speaker mode on',
     TK_CLIP_WALLET_WIPED: 'wallet wiped',
+    TK_CLIP_WRITE_DOWN: 'write down your recovery words',
+    TK_CLIP_NEXT_WORD_HELP: 'press OK for the next word, hold OK to repeat',
+    TK_CLIP_REPLAY_ALL: 'hold OK to hear all words again, or press OK to finish',
+    TK_CLIP_CHOOSE_PIN: 'choose a new PIN',
+    TK_CLIP_ENTER_PIN_AGAIN: 'enter your PIN again',
+    TK_CLIP_PINS_DONT_MATCH: 'the PINs do not match',
+    TK_CLIP_PLEASE_WAIT: 'please wait',
+    TK_CLIP_WALLET_CREATED: 'wallet created',
+    TK_CLIP_SPEAKER_MODE_OFF: 'speaker mode off',
+    TK_CLIP_STARTING_AT: 'starting at',
+    TK_CLIP_TWENTY_ONE: () => ['twenty one', 'twenty two', 'twenty three', 'twenty four'],
 };
 
 // Pronunciation fixes, by clip name (see the header comment). Empty until listening says otherwise.
-export const SAY = {
-    // A lone "S" comes back from text-to-speech as silence (2026-11-14); spell out the letter name.
-    'TK_CLIP_LETTER_A+18': 'ess',
+// Letters: a bare "A" or "B" is read as a sound ("ah", "buh"; heard on the device 2026-11-17), and a
+// lone "S" came back silent (2026-11-14), so every letter is sent as its spoken name. (An
+// English-forced model, eleven_turbo_v2_5 with language_code "en", was tried 2026-11-17 and sounded
+// worse on more letters.)
+const LETTER_NAMES = ['ay', 'bee', 'see', 'dee', 'ee', 'eff', 'gee', 'aitch', 'eye', 'jay', 'kay', 'el', 'em',
+    'en', 'oh', 'pee', 'cue', 'ar', 'ess', 'tee', 'you', 'vee', 'double you', 'ex', 'why', 'zee'];
+const letterName = (i) => (i === 0 ? 'TK_CLIP_LETTER_A' : `TK_CLIP_LETTER_A+${i}`);
+
+// Letters whose plain name came out wrong, with the version picked by listening (2026-11-17,
+// candidates generated three or four ways): a different text, or the same name with another seed.
+const LETTER_PICKS = {
+    A: { say: 'ey.' }, // round 2: Spanish spelling of the English sound (the voice read "ay" as Spanish)
+    D: { say: 'dee.' },
+    E: { say: 'ii.' }, // round 2, same reason
+    G: { say: 'gee.' },
+    H: { seed: 2 }, // "aitch"
+    K: { seed: 2 }, // "kay"
+    L: { say: 'ell.' },
+    M: { say: 'emm.' },
+    N: { say: 'enn.' },
+    V: { say: 'vii.' }, // round 2
 };
+const pickFor = (i) => LETTER_PICKS[String.fromCharCode(65 + i)];
+
+export const SAY = Object.fromEntries(LETTER_NAMES.map((say, i) => [letterName(i), pickFor(i)?.say ?? say]));
+
+// Per-clip text-to-speech settings, merged over gen-audio's defaults (and part of the cache key).
+export const TTS = Object.fromEntries(
+    LETTER_NAMES.flatMap((_, i) => (pickFor(i)?.seed !== undefined ? [[letterName(i), { seed: pickFor(i).seed }]] : [])),
+);
 
 // Parse `typedef enum { ... } tk_clip_t;` into [{name, value}] in declaration order. Supports
 // NAME, NAME = <int>, NAME = OTHER, NAME = OTHER + <int>.
@@ -137,6 +174,7 @@ export function buildClips(headerSrc = readFileSync(join(ROOT, HEADER), 'utf8'))
             const name = k === 0 ? a.name : `${a.name}+${k}`;
             const clip = { id, name, text };
             if (SAY[name] !== undefined) clip.say = SAY[name];
+            if (TTS[name] !== undefined) clip.tts = { ...TTS[name] };
             clips[id] = clip;
         });
     }

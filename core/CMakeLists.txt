@@ -57,6 +57,7 @@ add_library(tk_core STATIC
     src/tk_proto.c
     src/tk_rng_health.c
     src/tk_seed.c
+    src/tk_setup.c
     src/tk_solana_consts.c
     src/tk_speech.c
     src/tk_util.c

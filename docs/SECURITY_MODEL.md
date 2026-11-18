@@ -22,7 +22,7 @@
 8. **I8 — No radios.** Wi-Fi and Bluetooth are never initialized.
 9. **I9 — Devnet only** for the hackathon build. The USDC mint is pinned in firmware.
 10. **I10 — No silent wallet replacement.** `SETUP` is refused with `WALLET_EXISTS` while a wallet exists. The only way to a new wallet is the 10-failure wipe (or a future on-device wipe that requires PIN + CONFIRM).
-11. **I11 — True entropy.** With radios off, the ESP32-S3 RNG is only truly random when its internal entropy source is enabled. Firmware calls `bootloader_random_enable()` early in `app_main`, before anything uses `random_bytes` (seed generation, PIN start digits), and never disables it. Firmware never initializes the ADC: ESP-IDF documents that using the ADC interferes with the entropy source (the build checks also keep the `esp_adc` component out).
+11. **I11 — True entropy.** With radios off, the ESP32-S3 RNG is only truly random when its internal entropy source is enabled. Firmware calls `bootloader_random_enable()` early in `app_main`, before anything uses `random_bytes` (seed generation, PIN start digits), and never disables it. Firmware never initializes the ADC: ESP-IDF documents that using the ADC interferes with the entropy source (the build checks also keep the `esp_adc` component out). SETUP's 256 bits of BIP39 entropy are `SHA-256("TK-ENT-v1" || 32 hardware RNG bytes || digest of the PIN-entry presses and their timing)` (`core/src/tk_seed.c`, `tk_setup.c`): defense in depth only, since the hardware bytes alone are full-entropy; mixing can never reduce it. The PIN is therefore chosen before the words are generated.
 
 ## Transaction limits
 

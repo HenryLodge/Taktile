@@ -90,14 +90,15 @@ static void test_basic(void) {
     TK_CHECK_MEM(pin, want, TK_PIN_LEN);
     TK_CHECK(sc.ticks == (int)sc.n); // one tick per press
     TK_CHECK(sc.waited_timeout == TK_PIN_IDLE_TIMEOUT_MS);
-    // First announcement: "digit one seven".
-    TK_CHECK(sc.clips[0] == TK_CLIP_DIGIT && sc.clips[1] == TK_CLIP_ZERO + 1 && sc.clips[2] == TK_CLIP_ZERO + 7);
+    // First announcement: "pin digit number one, starting at seven".
+    TK_CHECK(sc.clips[0] == TK_CLIP_DIGIT && sc.clips[1] == TK_CLIP_ZERO + 1 && sc.clips[2] == TK_CLIP_STARTING_AT &&
+             sc.clips[3] == TK_CLIP_ZERO + 7);
     // Then UP x4 speaks 8 9 0 1 (wrap).
-    TK_CHECK(sc.clips[3] == TK_CLIP_ZERO + 8 && sc.clips[5] == TK_CLIP_ZERO + 0 && sc.clips[6] == TK_CLIP_ZERO + 1);
-    // I2: every digit value is secret; only "digit" and the position number are public.
+    TK_CHECK(sc.clips[4] == TK_CLIP_ZERO + 8 && sc.clips[6] == TK_CLIP_ZERO + 0 && sc.clips[7] == TK_CLIP_ZERO + 1);
+    // I2: every digit value is secret; only "pin digit number", the position and "starting at" are public.
     for (size_t i = 0; i < sc.clip_n; i++) {
         const bool is_position = i > 0 && sc.clips[i - 1] == TK_CLIP_DIGIT;
-        const bool want_secret = sc.clips[i] != TK_CLIP_DIGIT && !is_position;
+        const bool want_secret = sc.clips[i] != TK_CLIP_DIGIT && sc.clips[i] != TK_CLIP_STARTING_AT && !is_position;
         TK_CHECK(sc.secret[i] == want_secret);
     }
 }
@@ -161,7 +162,7 @@ static void test_rejection_sampling(void) {
     press(TK_BTN_REJECT, 1);
     uint8_t pin[TK_PIN_LEN];
     tk_pin_entry(&UI, pin);
-    TK_CHECK(sc.clips[2] == TK_CLIP_ZERO + 3); // start digit came from the byte 3
+    TK_CHECK(sc.clips[3] == TK_CLIP_ZERO + 3); // start digit (after "starting at") came from the byte 3
     TK_CHECK(sc.rng_pos >= 4);
 
     // An RNG stuck at 255 fails closed instead of looping forever.

@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """Protocol smoke test against the real device over USB (docs/SERIAL_PROTOCOL.md).
 
-usage: python firmware/tools/smoke.py COMx        (Linux: /dev/ttyACM0, macOS: /dev/cu.usbmodem*)
+usage: python firmware/tools/smoke.py COMx [--setup | --wallet]
+       (Linux: /dev/ttyACM0, macOS: /dev/cu.usbmodem*)
 
 Run it with ESP-IDF's Python (it ships pyserial) against the protocol build, not the bring-up build.
-Expects the Day 3-4 firmware: no wallet yet, so every flow answers NO_WALLET. Exits 0 if all pass.
-The port is opened with DTR and RTS low; the last check confirms that reopening it never resets
-the chip (the ROM would print "ESP-ROM" text if it did).
+Exits 0 if all pass.
+
+  (no option)  A device with NO wallet: every flow answers NO_WALLET, framing errors, and a SETUP that
+               starts (you hear "choose a new PIN") and is then cancelled from here: BUSY and HELLO
+               during the flow, CANCEL -> OK, SETUP -> CANCELLED. Needs no button presses.
+  --setup      Sends SETUP and waits up to 15 minutes while you do it on the device, then prints
+               the result and the new address.
+  --wallet     A device WITH a wallet: HELLO state, GET_PUBKEY (prints the address), and SETUP
+               refused at once with WALLET_EXISTS (I10).
+
+The port is opened with DTR and RTS low; the default run's last check confirms that reopening it
+never resets the chip (the ROM would print "ESP-ROM" text if it did).
 """
 
 import json
@@ -20,8 +30,13 @@ import serial
 
 HELLO, GET_PUBKEY, SETUP, SIGN_REQUEST, CONTACT_LIST_COUNT, CANCEL = 0x01, 0x02, 0x03, 0x10, 0x31, 0x7E
 EVENT, ERROR = 0xF0, 0xFF
-OK, NO_WALLET = 0x00, 0x05
-BAD_FRAME, UNKNOWN_TYPE = 0x01, 0x02
+OK, NO_WALLET, BUSY, CANCELLED, WALLET_EXISTS = 0x00, 0x05, 0x06, 0x07, 0x08
+BAD_FRAME, UNKNOWN_TYPE, BAD_PAYLOAD = 0x01, 0x02, 0x03
+AWAITING_PIN = 0x02
+STATUS = {0x00: "OK", 0x01: "REJECTED_BY_USER", 0x02: "UNKNOWN_RECIPIENT", 0x03: "PARSE_UNSUPPORTED",
+          0x04: "LOCKED_OUT", 0x05: "NO_WALLET", 0x06: "BUSY", 0x07: "CANCELLED", 0x08: "WALLET_EXISTS",
+          0x09: "CONTACTS_FULL", 0x0A: "CONTACT_EXISTS", 0x0B: "NOT_FOUND", 0x0C: "DEVICE_ERROR"}
+B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 
 VECTORS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tests", "vectors")
 failures = 0
@@ -85,24 +100,132 @@ def check(name, cond, detail=""):
         failures += 1
 
 
-def expect(r, name, seq, want_type, want_payload):
-    got = r.response()
+def b58(data):
+    n = int.from_bytes(data, "big")
+    out = ""
+    while n:
+        n, rem = divmod(n, 58)
+        out = B58[rem] + out
+    return "1" * (len(data) - len(data.lstrip(b"\0"))) + out
+
+
+def expect(r, name, seq, want_type, want_payload, timeout=2.0):
+    got = r.response(timeout)
     ok = got == (want_type, seq, want_payload)
     check(name, ok, f"expected {(hex(want_type), seq, want_payload.hex())}, got "
           f"{None if got is None else (hex(got[0]), got[1], got[2].hex())}")
 
 
+def setup_cancelled(r, port):
+    """SETUP starts the on-device flow; the host cancels it before anything is stored."""
+    print("SETUP: you should hear 'choose a new PIN, pin digit number one, starting at ...' in the earbuds,\n"
+          "then 'cancelled'.")
+    port.write(frame(SETUP, 20))
+    f = r.next_frame(3.0)
+    if f == (SETUP | 0x80, 20, bytes([0x0C])):
+        check("SETUP started", False, "DEVICE_ERROR: no working audio. Flash the clip pack (tools/out/clips.bin, "
+              "firmware/README.md); a pack built for another clip list is refused")
+        return
+    check("SETUP -> EVENT AWAITING_PIN (flow started)", f == (EVENT, 20, bytes([AWAITING_PIN])),
+          f"got {None if f is None else (hex(f[0]), f[1], f[2].hex())}")
+    time.sleep(1.5)
+    # A reply during the flow can wait for the clip that is playing (at most ~2.4 s).
+    port.write(frame(HELLO, 21))
+    expect(r, "HELLO during SETUP -> state 0 (no wallet yet)", 21, HELLO | 0x80,
+           struct.pack("<HBB", 1, 1, 0), 4.0)
+    port.write(frame(GET_PUBKEY, 22))
+    expect(r, "GET_PUBKEY during SETUP -> BUSY", 22, GET_PUBKEY | 0x80, bytes([BUSY]), 4.0)
+    port.write(frame(CANCEL, 23))
+    expect(r, "CANCEL during SETUP -> OK", 23, CANCEL | 0x80, bytes([OK]), 4.0)
+    expect(r, "SETUP -> CANCELLED (nothing stored)", 20, SETUP | 0x80, bytes([CANCELLED]), 6.0)
+    port.write(frame(HELLO, 24))
+    expect(r, "HELLO after the cancel -> still state 0", 24, HELLO | 0x80, struct.pack("<HBB", 1, 1, 0))
+
+
+def hello_state(r, port, seq):
+    port.write(frame(HELLO, seq))
+    f = r.response()
+    if f is None or f[0] != HELLO | 0x80 or len(f[2]) != 4:
+        return None
+    return f[2][3]
+
+
+def run_setup(port):
+    r = Reader(port)
+    state = hello_state(r, port, 1)
+    if state != 0:
+        print(f"HELLO state is {state}, not 0 (no wallet): SETUP would be refused. Use --wallet.")
+        return 1
+    print("Sent SETUP. On the device: choose a PIN, enter it again, then write down all 24 words\n"
+          "(OK = next, hold OK = repeat, BACK = previous). Waiting up to 15 minutes...")
+    port.write(frame(SETUP, 2))
+    f = r.response(15 * 60)
+    if f is None or f[0] != SETUP | 0x80 or len(f[2]) != 1:
+        print(f"no SETUP reply: {f}")
+        return 1
+    print(f"SETUP -> {STATUS.get(f[2][0], hex(f[2][0]))}")
+    if f[2][0] != OK:
+        return 1
+    port.write(frame(GET_PUBKEY, 3))
+    g = r.response()
+    if g is not None and g[0] == GET_PUBKEY | 0x80 and len(g[2]) == 33 and g[2][0] == OK:
+        print(f"address: {b58(g[2][1:])}")
+    print(f"HELLO state {hello_state(r, port, 4)} (2 = unlocked)")
+    return 0
+
+
+def run_wallet(port):
+    r = Reader(port)
+    state = hello_state(r, port, 1)
+    check("HELLO -> state 1 or 2 (a wallet exists)", state in (1, 2), f"got {state}")
+    print(f"      state {state} ({'locked' if state == 1 else 'unlocked' if state == 2 else '?'})")
+    port.write(frame(GET_PUBKEY, 2))
+    g = r.response()
+    ok = g is not None and g[0] == GET_PUBKEY | 0x80 and len(g[2]) == 33 and g[2][0] == OK
+    check("GET_PUBKEY -> OK", ok, f"got {g}")
+    if ok:
+        print(f"      address: {b58(g[2][1:])}")
+    port.write(frame(SETUP, 3))
+    expect(r, "SETUP -> WALLET_EXISTS at once, no audio (I10)", 3, SETUP | 0x80, bytes([WALLET_EXISTS]), 1.0)
+    port.write(frame(HELLO, 4))
+    f = r.response()
+    check("HELLO after the refused SETUP -> same state", f is not None and len(f[2]) == 4 and f[2][3] == state)
+    print(f"\n{'ALL PASS' if failures == 0 else f'{failures} FAILED'}")
+    return 0 if failures == 0 else 1
+
+
 def main():
-    if len(sys.argv) != 2:
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    opts = [a for a in sys.argv[1:] if a.startswith("--")]
+    if len(args) != 1 or len(opts) > 1 or any(o not in ("--setup", "--wallet") for o in opts):
         print(__doc__)
         return 2
+    if opts:
+        port = open_port(args[0])
+        time.sleep(0.3)
+        port.read(4096)  # drain anything already waiting
+        try:
+            return run_setup(port) if opts[0] == "--setup" else run_wallet(port)
+        finally:
+            port.close()
     with open(os.path.join(VECTORS, "parser.json")) as f:
         sol_ok = bytes.fromhex(next(v for v in json.load(f) if v["name"] == "sol_ok")["message_hex"])
 
-    port = open_port(sys.argv[1])
+    port = open_port(args[0])
     r = Reader(port)
     time.sleep(0.3)
     r.buf += port.read(4096)  # drain anything already waiting
+
+    # The default run is for a device with no wallet. Say so plainly instead of failing every check.
+    state = hello_state(r, port, 30)
+    if state != 0:
+        print(f"HELLO state is {state} ({'a wallet exists' if state in (1, 2) else 'no answer'}): this run needs a\n"
+              "device with no wallet. Use --wallet for a device that has one, or erase NVS first (deletes the\n"
+              "wallet; firmware/README.md) if it is a disposable test wallet.")
+        port.close()
+        return 1
+    # A wallet-less SIGN_REQUEST never reaches the audio check, so test the clip pack with SETUP below:
+    # a missing or stale pack makes SETUP answer DEVICE_ERROR at once.
 
     port.write(frame(HELLO, 1))
     expect(r, "HELLO -> fw 0x0001, proto 1, state 0 (no wallet)", 1, HELLO | 0x80,
@@ -115,8 +238,9 @@ def main():
     expect(r, "CONTACT_LIST_COUNT -> 0", 4, CONTACT_LIST_COUNT | 0x80, bytes([0]))
     port.write(frame(CANCEL, 5))
     expect(r, "CANCEL (no flow) -> OK", 5, CANCEL | 0x80, bytes([OK]))
-    port.write(frame(SETUP, 6))
-    expect(r, "SETUP -> ERROR UNKNOWN_TYPE (not implemented yet)", 6, ERROR, bytes([UNKNOWN_TYPE]))
+    port.write(frame(SETUP, 6, b"\x00"))
+    expect(r, "SETUP with a payload -> ERROR BAD_PAYLOAD", 6, ERROR, bytes([BAD_PAYLOAD]))
+    setup_cancelled(r, port)
 
     port.write(b"hello garbage\r\n" + frame(HELLO, 7))
     expect(r, "garbage then HELLO -> answered", 7, HELLO | 0x80, struct.pack("<HBB", 1, 1, 0))
@@ -133,7 +257,7 @@ def main():
     for i in range(3):  # R8: reopening the port must not reset the chip
         port.close()
         time.sleep(0.3)
-        port = open_port(sys.argv[1])
+        port = open_port(args[0])
         r.port = port
         time.sleep(0.5)
         r.junk += port.read(4096)

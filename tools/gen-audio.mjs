@@ -56,9 +56,15 @@ export function spokenText(clip) {
     return clip.say ?? clip.text;
 }
 
+// The settings one clip is generated with: the run's settings, then the clip's own overrides
+// (clips.json "tts", e.g. the letters' English-forced model).
+export function clipSettings(clip, settings) {
+    return clip.tts ? { ...settings, ...clip.tts } : settings;
+}
+
 export function cacheKey(clip, voiceId, settings) {
     const h = createHash('sha256');
-    h.update(JSON.stringify({ text: spokenText(clip), voiceId, settings }));
+    h.update(JSON.stringify({ text: spokenText(clip), voiceId, settings: clipSettings(clip, settings) }));
     return h.digest('hex');
 }
 
@@ -81,7 +87,7 @@ class FatalApiError extends Error {}
 
 // One API call with retries on 429 / 409 / 5xx / network errors.
 async function synthesize(clip, { apiKey, voiceId, settings, fetchImpl, sleep, redact }) {
-    const { output_format, ...body } = settings;
+    const { output_format, ...body } = clipSettings(clip, settings);
     const url = `${API}/${encodeURIComponent(voiceId)}?output_format=${encodeURIComponent(output_format)}`;
     for (let attempt = 0; ; attempt++) {
         let res;

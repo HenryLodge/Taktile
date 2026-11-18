@@ -40,7 +40,7 @@ Keys pressed while a clip is "playing" are discarded, like the device (I6: CONFI
 
 ## Wallet
 
-By default the sim uses core's key store (`core/src/tk_keystore.c`), exactly as the device does: the key lives PIN-encrypted in `DIR/wallet`, created by `SETUP` (the SETUP flow is the next step of the SETUP task; until then the banner says `wallet: none (key store; run SETUP)`). PIN unlock fails closed until the PIN-unlock task, so a key-store wallet can't sign yet after a restart.
+By default the sim uses core's key store (`core/src/tk_keystore.c`), exactly as the device does: the key lives PIN-encrypted in `DIR/wallet`, created by `SETUP` on the device side of the link (keys as below; AUDIO.md "SETUP"). Before that the banner says `wallet: none (key store; run SETUP)`. The PIN's start digits are private audio, so to script a SETUP (as `sim/tests/e2e.py` does) build with `-DTK_SIM_INSECURE_AUDIO=ON`. PIN unlock fails closed until the PIN-unlock task, so a key-store wallet can't sign yet after a restart.
 
 ## Development wallet: INSECURE
 
