@@ -1810,5 +1810,15 @@
     "id": 355,
     "name": "TK_CLIP_TWENTY_ONE+3",
     "text": "twenty four"
+  },
+  {
+    "id": 356,
+    "name": "TK_CLIP_PRESS_CONFIRM_ADD",
+    "text": "press confirm to add or reject to cancel"
+  },
+  {
+    "id": 357,
+    "name": "TK_CLIP_CONTACT_ADDED",
+    "text": "contact added"
   }
 ]

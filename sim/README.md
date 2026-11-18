@@ -32,7 +32,7 @@ Keys pressed while a clip is "playing" are discarded, like the device (I6: CONFI
 | `--port N` | `8765` | WebSocket port |
 | `--data DIR` | `./sim-data` | Saved wallet (`wallet`, `pin-fails`), contact book, and the dev seed if used (gitignored) |
 | `--clip-ms N` | `300` | How long each clip "plays" |
-| `--contact NAME=ADDR` | | Add a contact (base58 or 64 hex), saved to `DIR/contacts`. Repeatable. `CONTACT_ADD` over the link is not implemented yet |
+| `--contact NAME=ADDR` | | Add a contact (base58 or 64 hex), saved to `DIR/contacts`. Repeatable. `CONTACT_ADD` over the link works too (confirm with `c`) |
 | `--dev-wallet` | off | Use the INSECURE dev wallet (`DIR/dev-seed`) instead of the key store |
 | `--seed-hex HEX` | | INSECURE dev wallet with this 32-byte seed (not saved); implies `--dev-wallet`. `sim/tests/e2e.py` uses it |
 | `--pin DDDDDD` | `123456` | Dev wallet PIN (dev wallet only) |

@@ -34,7 +34,7 @@ Be precise about this in the README and pitch.
 
 - The **primary** defense against a compromised laptop is I1 + I3: the device itself announces the real amount and the real recipient name (or "unknown recipient"). Full laptop compromise cannot change what the device says.
 - The **checksum phrase** binds the user's request to the exact bytes. The app computes it from the bytes it built; the device computes it from the bytes it received. A mismatch catches tampering *between* the app and the device (malicious extension, a different app grabbing the serial port, a stale or queued request) and confirms "this is the request I just made." It does **not** by itself defeat malware that controls the app, since that malware would compute a matching phrase for its own bytes.
-- The **address phrase** used at contact enrollment is 8 words (64 bits), not 3. Enrollment is the one place an attacker can choose the address, and a 24-bit phrase could be matched by brute-forcing keypairs against a known target address in minutes.
+- The **address phrase** used at contact enrollment is 8 words (64 bits), not 3. Enrollment is the one place an attacker can choose the address, and a 24-bit phrase could be matched by brute-forcing keypairs against a known target address in minutes. Unlike the tx checksum words, the address phrase is **public** audio (decided 2026-11-18): it is computed from the contact's public address, which the laptop already has, and is meant to be read aloud over the phone, so marking it secret would protect nothing. Its strength comes from the contact reading it from their own device, not from secrecy.
 
 ## Threats and status
 

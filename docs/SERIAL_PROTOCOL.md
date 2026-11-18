@@ -12,7 +12,7 @@ Request/response, one request in flight at a time. The device may also send unso
 - `EVENT` frames carry the seq of the request whose flow sent them.
 - The device never checks seq order; seq only pairs replies with requests.
 
-**Not implemented yet:** `CONTACT_ADD`, `CONTACT_REMOVE` get `ERROR{UNKNOWN_TYPE}` until their tasks land (TASKS.md, Day 5–6). Requests whose payload must be empty get `ERROR{BAD_PAYLOAD}` if it isn't.
+**Not implemented yet:** `CONTACT_REMOVE` gets `ERROR{UNKNOWN_TYPE}` until its task lands (TASKS.md, deferred). Requests whose payload must be empty get `ERROR{BAD_PAYLOAD}` if it isn't.
 
 ## Frame
 
@@ -45,7 +45,7 @@ Host → device in `0x01–0x7F`, device → host in `0x81–0xFF` (request type
 | 0x02 | `GET_PUBKEY` | — | `status u8`, `pubkey[32]` (only if a wallet exists; does not require unlock) |
 | 0x03 | `SETUP` | — | `status u8`. Device runs PIN setup + seed generation + recovery-word playback entirely on device (`core/src/tk_setup.c`, AUDIO.md "SETUP"); the reply comes when it ends, minutes later. `OK` (wallet stored, device unlocked until reboot), `WALLET_EXISTS` (a wallet exists, I10; answered at once, nothing played), `CANCELLED` (host CANCEL, long REJECT, 3 PIN mismatches, or a timeout), `REJECTED_BY_USER` (REJECT), `DEVICE_ERROR` (no audio, speaker mode on, RNG or storage failure). Nothing is stored unless the reply is `OK`. During the flow: `EVENT AWAITING_PIN` once, HELLO reports state 0, other requests get `BUSY` |
 | 0x10 | `SIGN_REQUEST` | `message[len]` (legacy message bytes, not the full transaction) | `status u8`, then `signature[64]` if `status == OK` |
-| 0x30 | `CONTACT_ADD` | `name_len u8` (1–12), `name[name_len]` (ASCII, rules below), `wallet[32]` | `status u8`: `OK`, `CONTACTS_FULL`, `CONTACT_EXISTS`, `REJECTED_BY_USER`, `CANCELLED`, `NO_WALLET`. A name that breaks the rules gets `ERROR{BAD_PAYLOAD}` |
+| 0x30 | `CONTACT_ADD` | `name_len u8` (1–12), `name[name_len]` (ASCII, rules below), `wallet[32]`; the payload is exactly `1 + name_len + 32` bytes | `status u8`. Answered at once: `NO_WALLET` (silent), `DEVICE_ERROR` (no audio), `CONTACTS_FULL` ("contact book full"), `CONTACT_EXISTS` ("already a contact"). Otherwise the device runs enrollment on device (`core/src/tk_enroll.c`, AUDIO.md "Adding a contact": the spelled name and 8-word address phrase, PIN if locked, CONFIRM) and replies when it ends: `OK` (stored), `REJECTED_BY_USER` (REJECT, no press for 60 s during PIN entry, or the 30 s confirm window timed out), `CANCELLED` (host CANCEL, long REJECT), `LOCKED_OUT` (10th wrong PIN: wallet and contacts wiped), `DEVICE_ERROR` (the key store can't check a PIN, or saving failed). Nothing is stored unless the reply is `OK`. It is not a signature, so an unlocked session stays unlocked. During the flow: `EVENT ANNOUNCING`, `AWAITING_PIN` (if locked), `AWAITING_CONFIRM`; HELLO is answered, other requests get `BUSY`. A payload of the wrong length or a name that breaks the rules gets `ERROR{BAD_PAYLOAD}`, nothing played |
 | 0x31 | `CONTACT_LIST_COUNT` | — | `count u8` (names are NOT returned; contacts stay on device) |
 | 0x32 | `CONTACT_REMOVE` | `index u8` (insertion order; removal keeps the order of the rest) | `status u8`: `NOT_FOUND` if `index ≥ count`; otherwise the device says "remove <spelled name>", then requires PIN + CONFIRM (`OK`, `REJECTED_BY_USER`, `CANCELLED`) |
 | 0x7E | `CANCEL` | — | `status u8` — aborts the current on-device flow |

@@ -26,7 +26,10 @@ SIM, VECTORS, INSECURE = sys.argv[1], sys.argv[2], sys.argv[3] == "1"
 CLIP_MS = 60
 
 HELLO, GET_PUBKEY, SETUP, SIGN_REQUEST, CONTACT_LIST_COUNT, CANCEL = 0x01, 0x02, 0x03, 0x10, 0x31, 0x7E
-EVENT, RESP = 0xF0, 0x80
+CONTACT_ADD = 0x30
+EVENT, RESP, ERROR = 0xF0, 0x80, 0xFF
+BAD_PAYLOAD = 3
+CONTACT_EXISTS = 0x0A
 OK, REJECTED, UNKNOWN_RECIPIENT, BUSY, CANCELLED, WALLET_EXISTS = 0, 1, 2, 6, 7, 8
 LOCKED_OUT = 4
 EV_ANNOUNCING, EV_AWAITING_PIN, EV_AWAITING_CONFIRM = 1, 2, 3
@@ -42,6 +45,8 @@ def load(name):
 parser = {v["name"]: v for v in load("parser.json")}
 checksum = {v["name"]: v for v in load("checksum.json")["tx"]}
 alice = load("contacts.json")["book"][0]
+bob = load("contacts.json")["book"][1]
+ADDR_WORDS = {v["name"]: v["words"] for v in load("checksum.json")["addr"]}
 SEED = hashlib.sha256(b"taktile-vector:device").hexdigest()
 SOL_OK = bytes.fromhex(parser["sol_ok"]["message_hex"])
 DEVICE_PUBKEY = bytes.fromhex(parser["sol_ok"]["device_pubkey"])
@@ -273,8 +278,98 @@ def main():
         sim.wait_line(lambda l: "unknown recipient" in l)
     finally:
         sim.stop()
+    contact_add_tests()
     setup_tests()
     print("e2e: all checks passed")
+
+
+def add_payload(name, wallet_hex):
+    wallet = bytes.fromhex(wallet_hex)
+    check(len(wallet) == 32, "vector wallet is not 32 bytes")
+    return bytes([len(name)]) + name.encode() + wallet
+
+
+def addr_phrase(wallet_hex):
+    """The 8-word address phrase (AUDIO.md), computed here independently of the device."""
+    with open(os.path.join(VECTORS, "..", "..", "tools", "data", "pgp-even-words.txt")) as f:
+        words = [l.strip() for l in f if l.strip() and not l.startswith("#")]
+    check(len(words) == 256, "word list")
+    h = hashlib.sha256(b"TK-ADDR-v1" + bytes.fromhex(wallet_hex)).digest()
+    return [words[b] for b in h[:8]]
+
+
+def announced(sim, start):
+    """The public earpiece lines printed since index start."""
+    return [l[len("[EARPIECE] "):] for l in sim.all[start:]
+            if l.startswith("[EARPIECE] ") and not l.startswith("[EARPIECE] (private)")]
+
+
+def contact_add_tests():
+    """CONTACT_ADD on the dev wallet (already unlocked, so no PIN): announce, confirm, store."""
+    phrase = addr_phrase(alice["wallet"])
+    check(phrase == ADDR_WORDS["alice"], "address phrase disagrees with the shared vectors")
+    sim = Sim(["--unlocked"])
+    data = sim.dir
+    try:
+        ws = Ws(sim.port)
+        n = len(sim.all)
+        ws.send(frame(CONTACT_ADD, 1, add_payload("Alice", alice["wallet"])))
+        f = ws.frame()
+        check(f == (EVENT, 1, bytes([EV_ANNOUNCING])), f"CONTACT_ADD did not start: {f}")
+        sim.wait_line(lambda l: "press confirm to add" in l)
+        want = ["adding contact", "A", "L", "I", "C", "E", "address phrase"] + phrase
+        check(announced(sim, n)[:len(want)] == want, f"announcement: {announced(sim, n)}")
+        sim.press(b"c")
+        f, _ = ws.until(CONTACT_ADD | RESP, 1)
+        check(f[2] == bytes([OK]), f"CONTACT_ADD reply {f[2].hex()}")
+        check("[EARPIECE] contact added" in sim.all, "no 'contact added'")
+        ws.send(frame(CONTACT_LIST_COUNT, 2))
+        f, _ = ws.until(CONTACT_LIST_COUNT | RESP, 2)
+        check(f[2] == bytes([1]), "count after CONTACT_ADD")
+
+        # The same wallet again (another name): refused at once, "already a contact".
+        ws.send(frame(CONTACT_ADD, 3, add_payload("Al", alice["wallet"])))
+        f, seen = ws.until(CONTACT_ADD | RESP, 3)
+        check(f[2] == bytes([CONTACT_EXISTS]) and len(seen) == 1, f"duplicate wallet: {f[2].hex()}")
+        sim.wait_line(lambda l: l == "[EARPIECE] already a contact")
+
+        # REJECT: nothing stored.
+        ws.send(frame(CONTACT_ADD, 4, add_payload("Bob", bob["wallet"])))
+        sim.wait_line(lambda l: "press confirm to add" in l)
+        sim.press(b"r")
+        f, _ = ws.until(CONTACT_ADD | RESP, 4)
+        check(f[2] == bytes([REJECTED]), f"rejected CONTACT_ADD: {f[2].hex()}")
+
+        # A name that breaks the rules: ERROR BAD_PAYLOAD, nothing played.
+        n = len(sim.all)
+        ws.send(frame(CONTACT_ADD, 5, add_payload(" Bob", bob["wallet"])))
+        f = ws.frame()
+        check(f == (ERROR, 5, bytes([BAD_PAYLOAD])), f"bad name: {f}")
+        time.sleep(0.2)
+        check(not any(l.startswith("[EARPIECE]") for l in sim.all[n:]), "bad name played audio")
+        ws.send(frame(CONTACT_LIST_COUNT, 6))
+        f, _ = ws.until(CONTACT_LIST_COUNT | RESP, 6)
+        check(f[2] == bytes([1]), "count after the refusals")
+    finally:
+        sim.stop()
+
+    # Restart on the same data: the contact is saved, and a SOL transfer to it is announced by name.
+    sim = Sim(["--unlocked"], data=data)
+    try:
+        ws = Ws(sim.port)
+        ws.send(frame(CONTACT_LIST_COUNT, 1))
+        f, _ = ws.until(CONTACT_LIST_COUNT | RESP, 1)
+        check(f[2] == bytes([1]), "contact not saved across restart")
+        n = len(sim.all)
+        ws.send(frame(SIGN_REQUEST, 2, SOL_OK))
+        sim.wait_line(lambda l: "press confirm to sign" in l)
+        a = announced(sim, n)
+        check("to" in a and a[a.index("to") + 1:a.index("to") + 6] == list("ALICE"), f"sign announcement: {a}")
+        sim.press(b"c")
+        f, _ = ws.until(SIGN_REQUEST | RESP, 2)
+        check(f[2][0] == OK and len(f[2]) == 65, f"sign to the added contact: {f[2][:1].hex()}")
+    finally:
+        sim.stop()
 
 
 def enter_pin(sim, pin):
@@ -405,6 +500,27 @@ def unlock_tests(data, pubkey):
         ws.send(frame(HELLO, 2))
         f, _ = ws.until(HELLO | RESP, 2)
         check(f[2] == bytes([1, 0, 1, 1]), "not locked after the signature")
+
+        # CONTACT_ADD on the locked key store: the PIN after the announcement, then CONFIRM. Adding
+        # a contact is not a signature, so the session stays unlocked.
+        ws.send(frame(CONTACT_ADD, 20, add_payload("Bob", bob["wallet"])))
+        sim.wait_line(lambda l: l == "[EARPIECE] enter pin")
+        enter_pin(sim, [1, 2, 3, 4, 5, 6])
+        sim.wait_line(lambda l: "press confirm to add" in l)
+        sim.press(b"c")
+        f, _ = ws.until(CONTACT_ADD | RESP, 20)
+        check(f[2] == bytes([OK]), f"key-store CONTACT_ADD {f[2].hex()}")
+        ws.send(frame(HELLO, 21))
+        f, _ = ws.until(HELLO | RESP, 21)
+        check(f[2] == bytes([1, 0, 1, 2]), "CONTACT_ADD ended the unlocked session")
+
+        # Disconnecting locks it again (the USB host went away).
+        ws.s.close()
+        time.sleep(0.3)
+        ws = Ws(sim.port)
+        ws.send(frame(HELLO, 22))
+        f, _ = ws.until(HELLO | RESP, 22)
+        check(f[2] == bytes([1, 0, 1, 1]), "not locked after the app disconnected")
 
         # Ten wrong PINs in a row: wallet and contacts wiped, LOCKED_OUT.
         ws.send(frame(SIGN_REQUEST, 3, msg))

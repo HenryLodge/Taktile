@@ -49,7 +49,9 @@ idf.py -p COMx flash
 python tools/smoke.py COMx              # IDF's Python (has pyserial); expects ALL PASS (device with no wallet;
                                         #   starts a SETUP and cancels it: you hear "choose a new PIN", then "cancelled")
 python tools/smoke.py COMx --setup      # runs SETUP: do it on the device (about 5 min); prints the new address
-python tools/smoke.py COMx --wallet     # device with a wallet: state, address, SETUP refused with WALLET_EXISTS
+python tools/smoke.py COMx --wallet     # device with a wallet: state, address, contact count, SETUP refused with WALLET_EXISTS
+python tools/smoke.py COMx --contact Alice   # CONTACT_ADD with Alice's public test-vector wallet (or NAME=ADDRESS):
+                                        # prints the 8 address-phrase words to listen for; confirm on the device
 
 # Bring-up build (separate build dir and sdkconfig, so the two never mix)
 idf.py -B build-bringup -D SDKCONFIG=build-bringup/sdkconfig -D "SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.bringup" -p COMx flash monitor

@@ -67,7 +67,11 @@ typedef enum {
     // ("twenty", "one") ran into the spelled letters that follow.
     TK_CLIP_TWENTY_ONE,
 
-    TK_CLIP_COUNT = TK_CLIP_TWENTY_ONE + 4
+    // CONTACT_ADD (core/src/tk_enroll.c)
+    TK_CLIP_PRESS_CONFIRM_ADD = TK_CLIP_TWENTY_ONE + 4, // "press confirm to add or reject to cancel"
+    TK_CLIP_CONTACT_ADDED,
+
+    TK_CLIP_COUNT
 } tk_clip_t;
 
 #endif
