@@ -69,6 +69,8 @@ python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-tabl
 
 Without a valid pack every clip is silent; bring-up step 5 prints the pack status.
 
+**Speaker demo mode:** hold OK + BACK together for 3 s while the device is idle: "speaker mode on". Public clips then also play on the speaker; secret ones (PIN digits, checksum and recovery words) never do. The same chord turns it off; a reboot (RESET) always does. It does nothing during a flow, and SETUP is refused while it is on (docs/AUDIO.md).
+
 **NVS** (bring-up step 9 prints its status). If it won't open (for example data left by the board's factory firmware), the firmware never erases it by itself: storage stays off. To erase it yourself, which deletes the wallet and contacts (**never on the funded demo wallet**, created 2026-11-18; its 24 words are the only backup):
 
 ```bash

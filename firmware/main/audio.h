@@ -23,8 +23,8 @@ bool tk_audio_init(void);
 // SPK_EN is driven LOW before any sample is written (decision #9, I2). Never logs the clip id.
 void tk_audio_play(uint16_t clip, bool secret);
 
-// Speaker ("demo") mode: public clips also play on the speaker. Off at boot; the device-only toggle
-// is the P1 speaker-mode task. Secret clips ignore it.
+// Speaker ("demo") mode: public clips also play on the speaker. Off at boot (and only a reboot resets
+// it); the device-only toggle is in main.c (OK + BACK held 3 s, between requests). Secret clips ignore it.
 void tk_audio_set_speaker_mode(bool on);
 bool tk_audio_speaker_mode(void);
 
