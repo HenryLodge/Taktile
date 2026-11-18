@@ -4,6 +4,6 @@
 #ifndef TK_CLIPS_FP_H
 #define TK_CLIPS_FP_H
 
-#define TK_CLIPS_FINGERPRINT 0xb8783ff2u
+#define TK_CLIPS_FINGERPRINT 0x90f37d51u
 
 #endif

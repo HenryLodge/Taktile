@@ -25,6 +25,7 @@ ESP-IDF (v5.5) project for the Adafruit Metro ESP32-S3. A thin layer: drivers pl
 | `sdkconfig.defaults` | Protocol build: console and logs **off**, so USB carries only frames |
 | `sdkconfig.bringup` | Bring-up overlay: console and logs on USB for `idf.py monitor` |
 | `tools/smoke.py` | Protocol smoke test against the device |
+| `tools/sign_devnet.py` | SIGN_REQUEST end to end: builds a devnet SOL transfer, the device signs it, broadcasts to devnet (`python -m unittest firmware/tools/test_sign_devnet.py` for its tests) |
 | `test_app/` | Device test app: every `core/` host test (list in `core/tests/tests.cmake`) built for the ESP32-S3 and run at boot. Never shipped, holds no key |
 | `tools/device_tests.py` | Runs the device tests over USB and exits 0 only on PASS |
 
@@ -49,9 +50,14 @@ idf.py -p COMx flash
 python tools/smoke.py COMx              # IDF's Python (has pyserial); expects ALL PASS (device with no wallet;
                                         #   starts a SETUP and cancels it: you hear "choose a new PIN", then "cancelled")
 python tools/smoke.py COMx --setup      # runs SETUP: do it on the device (about 5 min); prints the new address
-python tools/smoke.py COMx --wallet     # device with a wallet: state, address, contact count, SETUP refused with WALLET_EXISTS
+python tools/smoke.py COMx --wallet     # device with a wallet: state, address, contact count, SETUP refused with WALLET_EXISTS,
+                                        #   UNLOCK with a payload refused (silent; safe on the demo wallet)
 python tools/smoke.py COMx --contact Alice   # CONTACT_ADD with Alice's public test-vector wallet (or NAME=ADDRESS):
                                         # prints the 8 address-phrase words to listen for; confirm on the device
+python tools/sign_devnet.py COMx --balance            # device address and devnet balance
+python tools/sign_devnet.py COMx --airdrop 1          # devnet faucet (rate-limited; else faucet.solana.com)
+python tools/sign_devnet.py COMx --to ADDR --sol 0.01 # UNLOCK (PIN) first, then a fresh blockhash, CONFIRM, broadcast, explorer link
+python tools/sign_devnet.py COMx --unknown            # to a non-contact: expects UNKNOWN_RECIPIENT, nothing sent
 
 # Bring-up build (separate build dir and sdkconfig, so the two never mix)
 idf.py -B build-bringup -D SDKCONFIG=build-bringup/sdkconfig -D "SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.bringup" -p COMx flash monitor
@@ -63,7 +69,7 @@ python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-tabl
 
 Without a valid pack every clip is silent; bring-up step 5 prints the pack status.
 
-**NVS** (bring-up step 9 prints its status). If it won't open (for example data left by the board's factory firmware), the firmware never erases it by itself: storage stays off. To erase it yourself, which deletes the wallet and contacts:
+**NVS** (bring-up step 9 prints its status). If it won't open (for example data left by the board's factory firmware), the firmware never erases it by itself: storage stays off. To erase it yourself, which deletes the wallet and contacts (**never on the funded demo wallet**, created 2026-11-18; its 24 words are the only backup):
 
 ```bash
 python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-table-file partitions.csv erase_partition --partition-name nvs

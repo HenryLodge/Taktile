@@ -13,7 +13,8 @@ Exits 0 if all pass.
   --setup      Sends SETUP and waits up to 15 minutes while you do it on the device, then prints
                the result and the new address.
   --wallet     A device WITH a wallet: HELLO state, GET_PUBKEY (prints the address), CONTACT_LIST_COUNT,
-               and SETUP refused at once with WALLET_EXISTS (I10).
+               SETUP refused at once with WALLET_EXISTS (I10), and UNLOCK with a payload refused
+               (BAD_PAYLOAD, no PIN asked). Safe on the funded demo wallet: nothing is played.
   --contact    Sends CONTACT_ADD and waits up to 5 minutes while you listen and confirm on the device.
                NAME alone uses that name's public test-vector wallet (Alice, Bob or Carol in
                tests/vectors/contacts.json); NAME=ADDRESS takes base58 or 64 hex. Prints the 8-word
@@ -35,7 +36,7 @@ import zlib
 import serial
 
 HELLO, GET_PUBKEY, SETUP, SIGN_REQUEST, CONTACT_LIST_COUNT, CANCEL = 0x01, 0x02, 0x03, 0x10, 0x31, 0x7E
-CONTACT_ADD = 0x30
+CONTACT_ADD, UNLOCK = 0x30, 0x04
 EVENT, ERROR = 0xF0, 0xFF
 OK, NO_WALLET, BUSY, CANCELLED, WALLET_EXISTS = 0x00, 0x05, 0x06, 0x07, 0x08
 BAD_FRAME, UNKNOWN_TYPE, BAD_PAYLOAD = 0x01, 0x02, 0x03
@@ -269,6 +270,8 @@ def run_wallet(port):
         print(f"      contacts: {c[2][0]}")
     port.write(frame(SETUP, 3))
     expect(r, "SETUP -> WALLET_EXISTS at once, no audio (I10)", 3, SETUP | 0x80, bytes([WALLET_EXISTS]), 1.0)
+    port.write(frame(UNLOCK, 6, b"\x00"))
+    expect(r, "UNLOCK with a payload -> ERROR BAD_PAYLOAD (no PIN asked)", 6, ERROR, bytes([BAD_PAYLOAD]), 1.0)
     port.write(frame(HELLO, 4))
     f = r.response()
     check("HELLO after the refused SETUP -> same state", f is not None and len(f[2]) == 4 and f[2][3] == state)
@@ -337,6 +340,10 @@ def main():
     expect(r, "CONTACT_ADD -> NO_WALLET (silent)", 11, CONTACT_ADD | 0x80, bytes([NO_WALLET]))
     port.write(frame(CONTACT_ADD, 12, b"\x05Al!ce" + alice))
     expect(r, "CONTACT_ADD with a bad name -> ERROR BAD_PAYLOAD", 12, ERROR, bytes([BAD_PAYLOAD]))
+    port.write(frame(UNLOCK, 14))
+    expect(r, "UNLOCK -> NO_WALLET (silent)", 14, UNLOCK | 0x80, bytes([NO_WALLET]))
+    port.write(frame(UNLOCK, 15, b"\x00"))
+    expect(r, "UNLOCK with a payload -> ERROR BAD_PAYLOAD", 15, ERROR, bytes([BAD_PAYLOAD]))
     setup_cancelled(r, port)
 
     port.write(b"hello garbage\r\n" + frame(HELLO, 7))

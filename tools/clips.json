@@ -1820,5 +1820,10 @@
     "id": 357,
     "name": "TK_CLIP_CONTACT_ADDED",
     "text": "contact added"
+  },
+  {
+    "id": 358,
+    "name": "TK_CLIP_UNLOCKED",
+    "text": "wallet unlocked"
   }
 ]
