@@ -27,8 +27,9 @@ tk_status_t tk_dev_finish_cancelled(tk_device_t *d);
 
 // PIN entry until the wallet is unlocked (I7): "please wait" during each check, wrong PINs counted,
 // the lockout wipe (contacts too). Returns OK, or the status to reply with (the ending is played).
-// pin is scratch space for the digits and is wiped before returning.
-tk_status_t tk_dev_unlock(tk_device_t *d, uint8_t pin[TK_PIN_LEN]);
+// pin is scratch space for the digits and is wiped before returning. If the key store can't check a
+// PIN, it says "cannot sign this transaction" when signing, otherwise "cancelled".
+tk_status_t tk_dev_unlock(tk_device_t *d, uint8_t pin[TK_PIN_LEN], bool signing);
 
 // The confirm window (I6): EVENT AWAITING_CONFIRM, the prompt, then 30 s for CONFIRM. Hold OK calls
 // repeat(d, ctx) (the flow's announcement), says the prompt again and restarts the 30 s. Returns OK

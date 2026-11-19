@@ -56,8 +56,8 @@ When signing, a SOL destination is looked up only among contacts' wallets and a 
 | Target | Contents | Purpose |
 | --- | --- | --- |
 | `core` (static lib + tests) | parser, contacts, checksum, ata, flow, proto | All security logic; host-tested with ctest (`-DTK_SANITIZE=ON` for ASan + UBSan) |
-| `core` fuzz targets | `fuzz_parser`, `fuzz_frame` (`-DTK_FUZZ=ON`, clang) | libFuzzer on the two untrusted-input decoders, seeded from `tests/vectors/` |
-| `sim` | core + WebSocket server on `ws://localhost:8765` + keyboard buttons + audio as printed text (optionally plays clips via `afplay`/`aplay`) | Develop the whole flow before hardware arrives |
+| `core` fuzz targets | `fuzz_parser`, `fuzz_frame`, `fuzz_clippack` (`-DTK_FUZZ=ON`, clang) | libFuzzer on the three untrusted-input decoders (transaction message, serial frames, clip pack header), seeded from `tests/vectors/` and the clip-pack seeds |
+| `sim` | core + WebSocket server on `ws://localhost:8765` + keyboard buttons + audio as printed text (`[EARPIECE] …`; secret clips print `(private)` unless built with `-DTK_SIM_INSECURE_AUDIO=ON`; no sound is played) | Develop the whole flow before hardware arrives |
 | `firmware` | core + ESP-IDF drivers (USB CDC, I2S, GPIO, I2C haptics, NVS, clip pack partition) | The real device |
 | `app` | Vite + TS | User-facing frontend (required by the Consumer track) |
 | `server` | Node (`node:http`, no dependencies) | Holds the ElevenLabs key (STT/TTS proxy on `127.0.0.1:8787`; `server/README.md`) |
@@ -90,7 +90,7 @@ typedef struct {
     tk_unlock_result_t (*unlock)(void *ctx, const uint8_t pin[6], uint8_t *attempts_left);
     bool (*sign)(void *ctx, const uint8_t *msg, size_t len, uint8_t sig[64]); // refuses unless unlocked
     bool (*create)(void *ctx, const uint8_t pin[6], const uint8_t sk[32], const uint8_t pubkey[32]); // SETUP; refuses if a wallet exists (I10)
-    void (*lock)(void *ctx); // tk_device_lock: the USB host went away
+    void (*lock)(void *ctx); // tk_device_lock: the USB host went away (cable or laptop sleep; not a closed port)
 } tk_wallet_ops_t;
 ```
 

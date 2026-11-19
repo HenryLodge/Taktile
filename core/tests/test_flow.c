@@ -654,6 +654,36 @@ static void test_unlock_refusals(void) {
     TK_CHECK(fw.unlock_calls == 0 && !fw.unlocked && all_clips() == 0);
 }
 
+// UNLOCK when the key store can't check a PIN: DEVICE_ERROR, "cancelled" (nothing is being signed).
+static void test_unlock_flow_error(void) {
+    setup(true, false, true);
+    fw.unlock_error = true;
+    unlock_request();
+    script_correct_pin();
+    run();
+    TK_CHECK(unlock_status() == TK_STATUS_DEVICE_ERROR && !fw.unlocked && fw.unlock_calls == 1);
+    TK_CHECK(clip_count(TK_CLIP_CANCELLED) == 1 && clip_count(TK_CLIP_CANNOT_SIGN) == 0);
+    TK_CHECK(clip_count(TK_CLIP_UNLOCKED) == 0 && book.count == 1);
+}
+
+// Contacts but no wallet at init (a lockout wipe cut short after the wallet was cleared): the
+// contacts are wiped and the empty book saved. With a wallet they are kept.
+static void test_init_orphan_contacts(void) {
+    setup(false, false, true);
+    TK_CHECK(book.count == 0);
+    const int i = fake_kv_find(TK_STORAGE_CONTACTS);
+    TK_CHECK(i >= 0);
+    if (i >= 0) {
+        tk_contacts_t loaded;
+        tk_contacts_init(&loaded);
+        TK_CHECK(tk_contacts_load(&loaded, fake.kv[i].val, fake.kv[i].len) == TK_CONTACTS_OK && loaded.count == 0);
+    }
+    TK_CHECK(all_clips() == 0);
+
+    setup(true, false, true);
+    TK_CHECK(book.count == 1 && fake_kv_find(TK_STORAGE_CONTACTS) < 0);
+}
+
 // Locked: PIN entry (a wrong PIN counted), then "wallet unlocked". Only events and the status go out (I2).
 static void test_unlock_pin(void) {
     setup(true, false, true);
@@ -892,6 +922,8 @@ int main(void) {
     test_idle_requests();
     test_unlock_refusals();
     test_unlock_pin();
+    test_unlock_flow_error();
+    test_init_orphan_contacts();
     test_unlock_then_sign();
     test_unlock_keystore();
     test_random_scripts();

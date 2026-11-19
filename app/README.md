@@ -1,6 +1,6 @@
 # app/
 
-Companion web app (Vite + TypeScript, strict mode, no UI framework). It connects to the device over Web Serial or to `sim/` over WebSocket. It will add voice input via push-to-talk, intent parsing, devnet transaction building with `@solana/web3.js`, the app-side checksum phrase and broadcasting (docs/TASKS.md, Day 5–7).
+Companion web app (Vite + TypeScript, strict mode, no UI framework). It connects to the device over Web Serial or to `sim/` over WebSocket. It turns typed or spoken commands (push-to-talk through `server/`) into devnet SOL and USDC transfers, speaks the app-side checksum, has the device announce and sign them, broadcasts them, and adds contacts to the device.
 
 - **Browser:** Chrome or Edge for USB (Web Serial). The simulator works in any browser.
 - **Accessibility:** the app must be fully keyboard- and screen-reader-usable (labels, live regions for status). Accessibility is the product.
@@ -155,3 +155,5 @@ The log notes the rewrite for the audience. With `?debug=1`, the logged frame is
 3. HELLO must still report "Wallet unlocked". If it reports "locked", opening the port reset the chip or ended the session.
 
 Result (2026-11-18, Chrome on Windows, default signals): the device stays unlocked across 3 disconnect/reconnects and a page reload. Opening the port does not reset the chip, so `?signals=off` is not needed.
+
+This also means **closing the app or disconnecting does not lock the device**: it locks after a signature, 5 minutes after an unlock, on a reboot, or when the USB host really goes away (cable unplugged, laptop asleep). Every signature still needs the device's announcement and CONFIRM (SECURITY_MODEL I7).

@@ -253,7 +253,7 @@ typedef struct {
     uint8_t sig[TK_SIGNATURE_LEN];
 } flow_secrets_t;
 
-tk_status_t tk_dev_unlock(tk_device_t *d, uint8_t pin[TK_PIN_LEN]) {
+tk_status_t tk_dev_unlock(tk_device_t *d, uint8_t pin[TK_PIN_LEN], bool signing) {
     const tk_wallet_ops_t *w = d->wallet;
     while (!w->is_unlocked(w->ctx)) {
         send_event(d, TK_EVENT_AWAITING_PIN);
@@ -276,7 +276,7 @@ tk_status_t tk_dev_unlock(tk_device_t *d, uint8_t pin[TK_PIN_LEN]) {
         }
         if (ur == TK_UNLOCK_ERROR) { // the key store can't check a PIN: fail closed
             d->platform->haptic(d->platform->ctx, TK_HAPTIC_WARNING);
-            say(d, TK_CLIP_CANNOT_SIGN);
+            say(d, signing ? TK_CLIP_CANNOT_SIGN : TK_CLIP_CANCELLED); // UNLOCK, CONTACT_ADD sign nothing
             return TK_STATUS_DEVICE_ERROR;
         }
         if (ur == TK_UNLOCK_LOCKED_OUT) {
@@ -369,7 +369,7 @@ static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow
         return finish_cancelled(d);
     }
 
-    const tk_status_t us = tk_dev_unlock(d, s->pin);
+    const tk_status_t us = tk_dev_unlock(d, s->pin, true);
     if (us != TK_STATUS_OK) {
         return us;
     }
@@ -442,7 +442,7 @@ static tk_status_t run_unlock(tk_device_t *d) {
         return TK_STATUS_DEVICE_ERROR;
     }
     uint8_t pin[TK_PIN_LEN];
-    const tk_status_t st = tk_dev_unlock(d, pin); // wipes pin
+    const tk_status_t st = tk_dev_unlock(d, pin, false); // wipes pin
     memzero(pin, sizeof(pin));
     if (st != TK_STATUS_OK) {
         return st;
@@ -566,6 +566,11 @@ void tk_device_init(tk_device_t *d, const tk_platform_t *platform, const tk_wall
     d->ui.haptic = ui_haptic;
     d->ui.wait = ui_wait;
     d->ui.random_bytes = ui_random;
+    // Contacts without a wallet are left over from a lockout wipe that a power cut interrupted (the
+    // key store finished the wallet part at boot): wipe them too, so CONTACT_LIST_COUNT is right.
+    if (!wallet->has_wallet(wallet->ctx) && contacts->count > 0) {
+        lockout_wipe(d);
+    }
 }
 
 void tk_device_lock(tk_device_t *d) {

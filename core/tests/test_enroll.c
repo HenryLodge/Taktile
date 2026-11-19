@@ -259,6 +259,8 @@ static void test_locked_asks_pin_after_announcement(void) {
     script_correct_pin();
     run();
     TK_CHECK(reply_status() == TK_STATUS_DEVICE_ERROR && book.count == 0 && fake.set_count == 0);
+    // Nothing is being signed, so it says "cancelled", not "cannot sign this transaction".
+    TK_CHECK(clip_count(TK_CLIP_CANCELLED) == 1 && clip_count(TK_CLIP_CANNOT_SIGN) == 0);
 }
 
 // The real key store: ten wrong PINs wipe the wallet and the contact book; nothing is added.

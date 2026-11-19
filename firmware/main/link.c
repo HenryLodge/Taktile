@@ -29,7 +29,21 @@ bool tk_link_init(void) {
     return usb_serial_jtag_driver_install(&cfg) == ESP_OK;
 }
 
+// USB host loss, latched: sampled on every read too, which core does at least every 100 ms during a
+// flow, so a host that goes away and comes back mid-flow still locks the session after the flow.
+static bool host_seen;
+static bool host_lost;
+
+static void sample_connection(void) {
+    const bool connected = usb_serial_jtag_is_connected();
+    if (host_seen && !connected) {
+        host_lost = true;
+    }
+    host_seen = connected;
+}
+
 size_t tk_link_read(uint8_t *buf, size_t cap) {
+    sample_connection();
     if (cap == 0) {
         return 0;
     }
@@ -57,10 +71,9 @@ void tk_link_write(const uint8_t *buf, size_t len) {
 }
 
 bool tk_link_host_lost(void) {
-    static bool seen;
-    const bool connected = usb_serial_jtag_is_connected();
-    const bool lost = seen && !connected;
-    seen = connected;
+    sample_connection();
+    const bool lost = host_lost;
+    host_lost = false;
     return lost;
 }
 
