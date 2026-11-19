@@ -70,6 +70,7 @@ node tools/gen-clips.mjs                    # regenerates tools/clips.json, sim/
 node tools/gen-audio.mjs --dry-run          # then without --dry-run: ElevenLabs clips -> tools/out/ (needs server/.env; cached)
 node tools/pack-clips.mjs                   # tools/out/clips/*.pcm -> tools/out/clips.bin (the clip pack; flash: firmware/README.md); add --check to verify
 node tools/setup-devnet.mjs --device <addr> --contact Henry=<addr>   # devnet SOL + USDC accounts; --dry-run first; USDC itself via faucet.circle.com
+node --env-file=server/.env tools/setup-agent.mjs   # creates/updates the ElevenLabs disambiguation agent; --dry-run first; prints ELEVENLABS_AGENT_ID
 node tools/verify-ed25519.mjs out.txt       # checks the ED25519 lines printed by firmware bring-up step 0 (node:crypto)
 ```
 

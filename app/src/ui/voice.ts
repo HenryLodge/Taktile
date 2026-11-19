@@ -91,7 +91,7 @@ export function initVoice(book: ContactBook, speaker: Speaker, send: SendUi, set
     });
 
     talk.addEventListener('click', () => {
-        if (send.running) {
+        if (!send.acceptsVoice && ptt.state === 'idle') {
             alertUser('Wait for the current send to finish.');
             return;
         }
@@ -124,7 +124,7 @@ export function initVoice(book: ContactBook, speaker: Speaker, send: SendUi, set
             return;
         }
         e.preventDefault(); // no page scroll, no button click from Space
-        if (send.running && !info.repeat && ptt.state === 'idle') {
+        if (!send.acceptsVoice && !info.repeat && ptt.state === 'idle') {
             alertUser('Wait for the current send to finish.');
             return;
         }

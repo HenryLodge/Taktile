@@ -18,6 +18,7 @@ The server is untrusted like the rest of the laptop (`docs/SECURITY_MODEL.md`). 
 | --- | --- | --- |
 | `GET /api/health` | — | `{"mode":"live"\|"canned","stt":bool,"tts":bool}` (whether a key and voice are configured; never the key) |
 | `POST /api/stt` | The raw recording as the body, `Content-Type` `audio/webm` (MediaRecorder), `audio/ogg`, `audio/wav` or `audio/mpeg`, 1 KB–1 MB. Optional `?names=Henry,Max`: contact names (device name rules, up to 16) added to the recognizer's keyterms | `{"text":"..."}` |
+| `GET /api/agent/token` | — | `{"token":"..."}`: a one-conversation WebRTC token for the disambiguation agent (`ELEVENLABS_AGENT_ID`, from `tools/setup-agent.mjs`). `503 no_agent` / `503 canned` make the app fall back to asking with its own voice. Limit 6/min, 60/day |
 | `POST /api/tts` | JSON `{"text":"..."}`, 1–200 printable ASCII characters | `audio/mpeg` (`X-TK-Cache: hit\|miss`) |
 
 Errors are JSON `{"error": code, "message": text}`:

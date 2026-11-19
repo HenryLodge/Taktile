@@ -52,6 +52,22 @@ Nothing is broadcast unless the device answered OK with a signature that verifie
 
 **App contacts** are a name → address list kept in this browser's localStorage (`src/contacts.ts`). They are untrusted: the device checks every destination against its own contact book, and adding a contact here does not add it to the device.
 
+## Asking which contact ("Jack Miller or Jack Chen?")
+
+When the spoken name is the first word of two or more contacts ("send 1 USDC to Jack" with _Jack Miller_ and _Jack Chen_), the parser returns the candidates instead of guessing (`src/intent.ts`). The app then asks which one (`src/disambiguate.ts`):
+
+1. **ElevenLabs agent** (default; the "Use the ElevenLabs assistant for questions" checkbox):
+    - The app gets a one-conversation token from `server/` `/api/agent/token` and starts a short voice conversation. The agent is created by `tools/setup-agent.mjs`.
+    - The agent asks "Did you mean Jack Miller or Jack Chen?" and you answer naturally ("Chen", "the second one").
+    - Its only output is the client tool `choose_contact(name)`. The app accepts the name only if it is one of the candidates, so the agent can't add, change or invent anything.
+    - The session ends on a choice, on "cancel", after 30 s, or on **Esc**. The log shows what the assistant and you said.
+2. **Fallback** (agent switched off, not configured, server in canned mode, or it fails to start):
+    - The app voice asks "Did you mean Jack Miller or Jack Chen? Hold Space and say the name."
+    - Your next answer (spoken, or typed in the command box) is matched only against the candidates: the full name, or the word that tells them apart ("Chen"). "Cancel" stops.
+    - There is only one round.
+
+After a choice, the normal send runs with the original amount and token. The device announces the name it has stored, so a wrong pick is caught by ear. Typing the full name ("send 1 USDC to Jack Chen") never asks.
+
 ## Adding a contact
 
 Under **Contacts**, enter a name (the device's rules: 1–12 letters, digits, spaces, hyphens, apostrophes) and the contact's wallet address, then **Add contact**.

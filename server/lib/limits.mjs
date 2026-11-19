@@ -14,6 +14,10 @@ export const RULES = {
         { windowMs: MINUTE, max: 60 },
         { windowMs: DAY, max: 1500 },
     ],
+    agent: [
+        { windowMs: MINUTE, max: 6 },
+        { windowMs: DAY, max: 60 },
+    ],
 };
 
 export function createLimiter({ now = Date.now, rules = RULES } = {}) {
