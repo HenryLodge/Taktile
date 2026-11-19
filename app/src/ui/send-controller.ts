@@ -4,11 +4,13 @@
 // read the store below; focus moves through the `focus` hooks the components register.
 
 import { alertUser, lastSpoken, say, sayLines } from '../announce.ts';
-import { cancelOnDevice, getDevice, unlockStatus } from '../connection.ts';
+import { cancelOnDevice, describeError, getDevice, unlockStatus } from '../connection.ts';
 import type { ContactBook } from '../contacts.ts';
 import { chooseContact, startElevenLabsAgent } from '../disambiguate.ts';
 import { parseIntent, type Intent, type IntentKind } from '../intent.ts';
 import { HELP_LINES, activity, balance, staked } from '../queries.ts';
+import type { DeviceClient } from '../proto/client.ts';
+import { DEVICE_STATE, STATUS, eventText, statusText } from '../proto/codes.ts';
 import { createDevnetRpc, type Rpc } from '../rpc.ts';
 import { runSend, type Report, type SendPhase } from '../send.ts';
 import type { Speaker } from '../speech.ts';
@@ -23,9 +25,6 @@ const NOT_YET: Partial<Record<IntentKind, string>> = {
     requests: "Payment requests aren't available yet.",
     stake: "Staking isn't available yet.",
     unstake: "Staking isn't available yet.",
-    address: "That command isn't available yet.",
-    contacts: "That command isn't available yet.",
-    lock: "That command isn't available yet.",
 };
 
 export interface SendState {
@@ -163,6 +162,65 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
         }
     }
 
+    /**
+     * Commands the device answers itself (SPEAK_ADDRESS, SPEAK_CONTACTS, LOCK). The content is spoken
+     * by the device into the earpiece; the app only ever says what happened, never the words or names.
+     */
+    async function deviceCommand(
+        kind: 'address' | 'contacts' | 'lock',
+        client: DeviceClient,
+        source: 'typed' | 'voice',
+    ): Promise<void> {
+        const onEvent = (e: number) => {
+            log('device', eventText(e));
+            say(eventText(e));
+        };
+        let msg: string;
+        let ok = false;
+        try {
+            if (kind === 'lock') {
+                setConnection({ activity: 'Locking' });
+                const st = await client.lock();
+                ok = st === STATUS.OK;
+                msg = ok ? 'Wallet locked.' : statusText(st);
+                if (ok) {
+                    setConnection({ deviceState: DEVICE_STATE.LOCKED });
+                }
+            } else {
+                setConnection({ activity: 'Device speaking' });
+                say(
+                    kind === 'address'
+                        ? 'The device will say your address phrase in the earpiece.'
+                        : 'The device will spell your contacts in the earpiece.',
+                );
+                let st: number;
+                if (kind === 'address') {
+                    st = await client.speakAddress(onEvent);
+                    msg = 'The device said your address phrase.';
+                } else {
+                    const r = await client.speakContacts(onEvent);
+                    st = r.status;
+                    msg = `The device spelled ${r.count} contact name${r.count === 1 ? '' : 's'}.`;
+                }
+                ok = st === STATUS.OK;
+                if (ok) {
+                    setConnection({ deviceState: DEVICE_STATE.UNLOCKED }); // it asked for the PIN if it had to
+                } else {
+                    msg = statusText(st);
+                }
+            }
+        } catch (e) {
+            msg = `The device did not answer: ${describeError(e)}`;
+        }
+        if (ok) {
+            answer([msg], source);
+        } else {
+            log('error', msg);
+            chat('taktile', msg, { level: 'alert' });
+            alertUser(msg, { voice: source === 'voice' });
+        }
+    }
+
     async function runCommand(raw: string, source: 'typed' | 'voice'): Promise<void> {
         const text = raw.trim();
         if (pendingAnswer) {
@@ -262,6 +320,18 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
                       : await activity(q);
             finish();
             answer(lines, source);
+            focus.input();
+            return;
+        }
+        if (intent.kind === 'address' || intent.kind === 'contacts' || intent.kind === 'lock') {
+            const device = getDevice();
+            if (device === null) {
+                alertUser('Connect the device first.');
+                return;
+            }
+            store.set({ running: true });
+            await deviceCommand(intent.kind, device.client, source);
+            finish();
             focus.input();
             return;
         }

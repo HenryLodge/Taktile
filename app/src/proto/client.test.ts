@@ -228,3 +228,55 @@ test('CONTACT_ADD reply length is checked; BAD_PAYLOAD surfaces', async () => {
         (e: unknown) => e instanceof DeviceProtocolError && e.code === PROTO_ERROR.BAD_PAYLOAD,
     );
 });
+
+test('SPEAK_ADDRESS: empty request, events, then a 1-byte status', async () => {
+    const events: number[] = [];
+    const { t, c } = setup([
+        {
+            expect: { type: MSG.SPEAK_ADDRESS },
+            reply: (q) => [
+                reply(MSG.EVENT, [EVENT.AWAITING_PIN])(q),
+                reply(MSG.EVENT, [EVENT.ANNOUNCING])(q),
+                reply(MSG.SPEAK_ADDRESS | R, [STATUS.OK])(q),
+            ],
+        },
+    ]);
+    assert.equal(await c.speakAddress((e) => events.push(e)), STATUS.OK);
+    assert.deepEqual(events, [EVENT.AWAITING_PIN, EVENT.ANNOUNCING]);
+    assert.equal(t.written[0]?.payload.length, 0);
+});
+
+test('SPEAK_CONTACTS: exactly status and count; any other length is refused', async () => {
+    const { c } = setup([
+        { expect: { type: MSG.SPEAK_CONTACTS }, reply: (q) => [reply(MSG.SPEAK_CONTACTS | R, [STATUS.OK, 3])(q)] },
+        { expect: { type: MSG.SPEAK_CONTACTS }, reply: (q) => [reply(MSG.SPEAK_CONTACTS | R, [STATUS.OK])(q)] },
+        {
+            expect: { type: MSG.SPEAK_CONTACTS },
+            reply: (q) => [reply(MSG.SPEAK_CONTACTS | R, [STATUS.OK, 1, 0x41, 0x6c])(q)],
+        },
+    ]);
+    assert.deepEqual(await c.speakContacts(), { status: STATUS.OK, count: 3 });
+    await assert.rejects(c.speakContacts(), /2/);
+    await assert.rejects(c.speakContacts(), /2/);
+});
+
+test('LOCK: a flow with its own short timeout; status passes through', async () => {
+    const { c } = setup([
+        { expect: { type: MSG.LOCK }, reply: (q) => [reply(MSG.LOCK | R, [STATUS.OK])(q)] },
+        { expect: { type: MSG.LOCK }, reply: (q) => [reply(MSG.LOCK | R, [STATUS.DEVICE_ERROR])(q)] },
+    ]);
+    assert.equal(await c.lock(), STATUS.OK);
+    assert.equal(await c.lock(), STATUS.DEVICE_ERROR);
+});
+
+test('the voice-command flows are refused locally while another flow runs', async () => {
+    const t = new MockTransport([{ expect: { type: MSG.SIGN_REQUEST } }]);
+    const c = new DeviceClient(t);
+    void c.signRequest(Uint8Array.of(1)).catch(() => undefined);
+    await new Promise((r) => setTimeout(r, 0));
+    await assert.rejects(c.speakAddress(), FlowBusyError);
+    await assert.rejects(c.speakContacts(), FlowBusyError);
+    await assert.rejects(c.lock(), FlowBusyError);
+    assert.equal(t.written.length, 1);
+    await c.close();
+});

@@ -28,6 +28,9 @@ typedef enum {
     TK_MSG_CONTACT_ADD = 0x30,
     TK_MSG_CONTACT_LIST_COUNT = 0x31,
     TK_MSG_CONTACT_REMOVE = 0x32,
+    TK_MSG_SPEAK_ADDRESS = 0x41,  // the device speaks its own 8-word address phrase
+    TK_MSG_SPEAK_CONTACTS = 0x42, // the device spells its contact names; replies with the count only
+    TK_MSG_LOCK = 0x43,           // end the unlocked session now
     TK_MSG_CANCEL = 0x7E,
     TK_MSG_EVENT = 0xF0, // device -> host only
     TK_MSG_ERROR = 0xFF, // device -> host only

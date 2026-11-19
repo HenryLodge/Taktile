@@ -1825,5 +1825,25 @@
     "id": 358,
     "name": "TK_CLIP_UNLOCKED",
     "text": "wallet unlocked"
+  },
+  {
+    "id": 359,
+    "name": "TK_CLIP_YOUR_ADDRESS_PHRASE_IS",
+    "text": "your address phrase is"
+  },
+  {
+    "id": 360,
+    "name": "TK_CLIP_YOU_HAVE",
+    "text": "you have"
+  },
+  {
+    "id": 361,
+    "name": "TK_CLIP_CONTACTS",
+    "text": "contacts"
+  },
+  {
+    "id": 362,
+    "name": "TK_CLIP_WALLET_LOCKED",
+    "text": "wallet locked"
   }
 ]

@@ -54,7 +54,7 @@ Each command has a **source**, which decides how far to trust the answer. Anythi
 
 - [x] **V1 intent parser** (`app/src/intent.ts`, `app/src/intent.test.ts`). Extend the `Intent` union with every command above. Filler tolerance: "hey Taktile", "can you", "please", "could you". Still deterministic, no LLM. Tests for each phrasing and for near-misses that must **not** match (e.g. "send" with no amount, "request" with no name, "stake" with USDC → "Only SOL can be staked."). Request and stake intents parse now; their handlers say "not available yet" until Part 2 R / Part 3 S4 wire them
 - [x] **V2 read-only queries** (`app/src/rpc.ts` gains `recentSignatures`, `parsedTransaction`, stake-account lookup; a new `app/src/queries.ts`; the send controller routes the intents). Balance (SOL + USDC ATA), staked (check the 16 derived `tk-stake-<n>` addresses with `PublicKey.createWithSeed`, so it works before Part 3 lands and says "Nothing staked"), recent activity (last 3), help, repeat, cancel/stop. Speak through the existing app voice (`speech.ts`), amounts rounded to 2 decimals. Unit tests with a mock `Rpc`
-- [ ] **V3 device commands** (protocol change, approved by the spec):
+- [x] **V3 device commands** (protocol change, approved by the spec):
   - `core/include/tk_proto.h`: `0x41 SPEAK_ADDRESS` → `status u8`; `0x42 SPEAK_CONTACTS` → `status u8`, `count u8`; `0x43 LOCK` → `status u8`. Empty payloads (`BAD_PAYLOAD` otherwise). None return names, words or audio
   - `core/src/tk_flow.c`: handlers in `handle_idle`; locked → PIN entry per D2; `SPEAK_ADDRESS` reuses `tk_checksum`'s address phrase for the device's own key (public clips, Q-G); `SPEAK_CONTACTS` spells each stored name with the existing letter clips; `LOCK` calls the wallet's `lock` and is silent-safe when already locked. Same in-flow rules (`BUSY`, `CANCEL`) as the other flows
   - Clips (`core/include/tk_clips.h` → `node tools/gen-clips.mjs` → `node tools/gen-audio.mjs` → listen → `node tools/pack-clips.mjs`): "your address phrase is", "you have", "contacts", "wallet locked". Reuse number clips for the count
@@ -62,7 +62,7 @@ Each command has a **source**, which decides how far to trust the answer. Anythi
   - `sim/`: works without changes beyond the clip text (`sim/src/clip_text.c` is generated); add the three to `sim/tests/e2e.py`
   - `app/src/proto/codes.ts` + `client.ts`: the three requests; intents call them
   - Docs: `SERIAL_PROTOCOL.md` (three rows), `AUDIO.md` (clips; 359 → 363), `SECURITY_MODEL.md` (trusted vs. untrusted command sources)
-- [ ] **Verify:** each command end to end in the sim, then on the device; `SPEAK_CONTACTS` returns only a count (check the raw frames in the app's log); "lock" then "send" asks for the PIN; `cmake` ASan build + ctest clean (WSL, `/mnt/c/Taktile`); `npm test && npm run check` (Windows, `C:\Taktile\app`)
+- [x] **Verify:** each command end to end in the sim, then on the device; `SPEAK_CONTACTS` returns only a count (check the raw frames in the app's log); "lock" then "send" asks for the PIN; `cmake` ASan build + ctest clean (WSL, `/mnt/c/Taktile`); `npm test && npm run check` (Windows, `C:\Taktile\app`)
 
 ---
 

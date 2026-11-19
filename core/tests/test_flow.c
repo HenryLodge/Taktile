@@ -8,6 +8,7 @@
 #include "tk_fakes.h"
 #include "tk_keystore.h"
 #include "tk_parser_vectors.h"
+#include "tk_speech.h"
 #include "tk_test.h"
 
 #define SEQ 0x42
@@ -904,6 +905,300 @@ static void test_random_scripts(void) {
     TK_CHECK(signed_ok > 0); // some random scripts do reach a signature
 }
 
+// ---- Voice commands: SPEAK_ADDRESS, SPEAK_CONTACTS, LOCK ----
+
+#define VSEQ 0x31
+
+// The single reply of this type to VSEQ; NULL unless exactly one exists.
+static const out_frame_t *voice_reply(uint8_t type) {
+    const out_frame_t *found = NULL;
+    int count = 0;
+    for (size_t i = 0; i < nframes; i++) {
+        if (frames[i].type == (type | TK_MSG_RESPONSE_BIT) && frames[i].seq == VSEQ) {
+            found = &frames[i];
+            count++;
+        }
+    }
+    return count == 1 ? found : NULL;
+}
+
+static int voice_status(uint8_t type) {
+    const out_frame_t *r = voice_reply(type);
+    return r != NULL && r->len >= 1 ? r->payload[0] : -1;
+}
+
+static void voice_request(uint8_t type) {
+    fake_send_now(type, VSEQ, NULL, 0);
+}
+
+static size_t sign_ops(void) {
+    size_t n = 0;
+    for (size_t i = 0; i < fake_op_count; i++) {
+        n += fake_ops[i].kind == OP_SIGN;
+    }
+    return n;
+}
+
+// The clips played since the last PIN-entry clip (or from the start): the answer itself.
+static void answer_clips(uint16_t *out, size_t *n, size_t cap) {
+    uint16_t all[256];
+    size_t m = 0;
+    collect_clips(all, &m, 256);
+    size_t from = 0;
+    for (size_t i = 0; i < m; i++) {
+        if (all[i] == TK_CLIP_UNLOCKED || all[i] == TK_CLIP_PLEASE_WAIT) {
+            from = i + 1;
+        }
+    }
+    *n = 0;
+    for (size_t i = from; i < m && *n < cap; i++) {
+        out[(*n)++] = all[i];
+    }
+}
+
+static void test_speak_address(void) {
+    uint8_t words[TK_ADDR_PHRASE_WORDS];
+    uint16_t want[1 + TK_ADDR_PHRASE_WORDS];
+    uint16_t got[64];
+    size_t n = 0;
+
+    // Unlocked: "your address phrase is" + the 8 public words of the device's own key; status only.
+    setup(true, true, true);
+    tk_checksum_addr(fw.pk, words);
+    want[0] = TK_CLIP_YOUR_ADDRESS_PHRASE_IS;
+    for (size_t i = 0; i < TK_ADDR_PHRASE_WORDS; i++) {
+        want[1 + i] = (uint16_t)(TK_CLIP_WORD_0 + words[i]);
+    }
+    voice_request(TK_MSG_SPEAK_ADDRESS);
+    run();
+    const out_frame_t *r = voice_reply(TK_MSG_SPEAK_ADDRESS);
+    TK_CHECK(r != NULL && r->len == 1 && r->payload[0] == TK_STATUS_OK);
+    const uint8_t ev = TK_EVENT_ANNOUNCING;
+    TK_CHECK(has_frame(TK_MSG_EVENT, VSEQ, &ev, 1));
+    TK_CHECK(nframes == 2); // the event and the status: nothing else crosses the link
+    collect_clips(got, &n, 64);
+    TK_CHECK(n == 1 + TK_ADDR_PHRASE_WORDS && memcmp(got, want, sizeof(want)) == 0);
+    for (size_t i = 0; i < fake_op_count; i++) {
+        TK_CHECK(fake_ops[i].kind != OP_CLIP || !fake_ops[i].secret); // public clips only
+    }
+    TK_CHECK(fw.unlocked && fw.unlock_calls == 0 && sign_ops() == 0);
+
+    // Locked: PIN entry first (D2), then the same answer; the session stays open (nothing signed).
+    setup(true, false, true);
+    voice_request(TK_MSG_SPEAK_ADDRESS);
+    script_wrong_pin();
+    script_correct_pin();
+    run();
+    TK_CHECK(voice_status(TK_MSG_SPEAK_ADDRESS) == TK_STATUS_OK);
+    TK_CHECK(fw.unlocked && fw.unlock_calls == 2 && clip_count(TK_CLIP_WRONG_PIN) == 1);
+    answer_clips(got, &n, 64);
+    TK_CHECK(n == 1 + TK_ADDR_PHRASE_WORDS && memcmp(got, want, sizeof(want)) == 0);
+
+    // Locked, REJECT during PIN entry: nothing spoken, still locked.
+    setup(true, false, true);
+    voice_request(TK_MSG_SPEAK_ADDRESS);
+    fake_press(TK_BTN_REJECT);
+    run();
+    TK_CHECK(voice_status(TK_MSG_SPEAK_ADDRESS) == TK_STATUS_REJECTED_BY_USER);
+    TK_CHECK(!fw.unlocked && clip_count(TK_CLIP_YOUR_ADDRESS_PHRASE_IS) == 0);
+
+    // Cancel during the answer: the rest is not spoken.
+    setup(true, true, true);
+    voice_request(TK_MSG_SPEAK_ADDRESS);
+    fake_frame(TK_MSG_CANCEL, 40, NULL, 0);
+    run();
+    TK_CHECK(voice_status(TK_MSG_SPEAK_ADDRESS) == TK_STATUS_CANCELLED);
+    TK_CHECK(clip_count(TK_CLIP_CANCELLED) == 1 && all_clips() < 1 + TK_ADDR_PHRASE_WORDS);
+
+    // No wallet: silent. No audio: haptic only. A payload: ERROR, nothing played.
+    setup(false, false, false);
+    voice_request(TK_MSG_SPEAK_ADDRESS);
+    run();
+    TK_CHECK(nframes == 1 && voice_status(TK_MSG_SPEAK_ADDRESS) == TK_STATUS_NO_WALLET && all_clips() == 0);
+
+    setup(true, false, true);
+    fake.audio_bad = true;
+    voice_request(TK_MSG_SPEAK_ADDRESS);
+    script_correct_pin();
+    run();
+    TK_CHECK(voice_status(TK_MSG_SPEAK_ADDRESS) == TK_STATUS_DEVICE_ERROR);
+    TK_CHECK(all_clips() == 0 && fw.unlock_calls == 0);
+
+    const uint8_t bad_payload = TK_PROTO_ERR_BAD_PAYLOAD;
+    setup(true, true, true);
+    fake_send_now(TK_MSG_SPEAK_ADDRESS, VSEQ, (const uint8_t *)"x", 1);
+    run();
+    TK_CHECK(nframes == 1 && has_frame(TK_MSG_ERROR, VSEQ, &bad_payload, 1) && all_clips() == 0);
+}
+
+static void test_speak_contacts(void) {
+    uint16_t want[64];
+    uint16_t got[128];
+    size_t w = 0;
+    size_t n = 0;
+
+    // One contact: "you have one contacts, one <A l i c e>"; the reply is exactly {OK, 1}.
+    setup(true, true, true);
+    const tk_contact_t *alice = tk_contacts_get(&book, 0);
+    TK_CHECK(alice != NULL);
+    want[w++] = TK_CLIP_YOU_HAVE;
+    want[w++] = TK_CLIP_ZERO + 1;
+    want[w++] = TK_CLIP_CONTACTS;
+    want[w++] = TK_CLIP_ZERO + 1;
+    if (alice != NULL) {
+        w += tk_speech_spell(alice->name, alice->name_len, want + w, 64 - w);
+    }
+    voice_request(TK_MSG_SPEAK_CONTACTS);
+    run();
+    const out_frame_t *r = voice_reply(TK_MSG_SPEAK_CONTACTS);
+    TK_CHECK(r != NULL && r->len == 2 && r->payload[0] == TK_STATUS_OK && r->payload[1] == 1);
+    TK_CHECK(nframes == 2); // ANNOUNCING + the 2-byte reply: no names cross the link (I2)
+    collect_clips(got, &n, 128);
+    TK_CHECK(n == w && memcmp(got, want, w * sizeof(uint16_t)) == 0);
+    for (size_t i = 0; i < fake_op_count; i++) {
+        TK_CHECK(fake_ops[i].kind != OP_CLIP || !fake_ops[i].secret);
+    }
+
+    // Two contacts, each numbered.
+    setup(true, true, true);
+    const tk_contacts_book_entry_t *b = &tk_contacts_book[1];
+    TK_CHECK(tk_contacts_add(&book, (const uint8_t *)b->name, strlen(b->name), b->wallet) == TK_CONTACTS_OK);
+    voice_request(TK_MSG_SPEAK_CONTACTS);
+    run();
+    r = voice_reply(TK_MSG_SPEAK_CONTACTS);
+    TK_CHECK(r != NULL && r->len == 2 && r->payload[0] == TK_STATUS_OK && r->payload[1] == 2);
+    TK_CHECK(clip_count(TK_CLIP_ZERO + 2) >= 2); // "you have two", "two <name>"
+
+    // None: "you have zero contacts", {OK, 0}.
+    setup(true, true, false);
+    voice_request(TK_MSG_SPEAK_CONTACTS);
+    run();
+    r = voice_reply(TK_MSG_SPEAK_CONTACTS);
+    TK_CHECK(r != NULL && r->len == 2 && r->payload[0] == TK_STATUS_OK && r->payload[1] == 0);
+    collect_clips(got, &n, 128);
+    TK_CHECK(n == 3 && got[0] == TK_CLIP_YOU_HAVE && got[1] == TK_CLIP_ZERO && got[2] == TK_CLIP_CONTACTS);
+
+    // Locked: PIN first. Refusals keep the 2-byte reply with count 0.
+    setup(true, false, true);
+    voice_request(TK_MSG_SPEAK_CONTACTS);
+    script_correct_pin();
+    run();
+    r = voice_reply(TK_MSG_SPEAK_CONTACTS);
+    TK_CHECK(r != NULL && r->len == 2 && r->payload[0] == TK_STATUS_OK && r->payload[1] == 1 && fw.unlocked);
+
+    setup(true, false, true);
+    voice_request(TK_MSG_SPEAK_CONTACTS);
+    fake_press(TK_BTN_REJECT_LONG);
+    run();
+    r = voice_reply(TK_MSG_SPEAK_CONTACTS);
+    TK_CHECK(r != NULL && r->len == 2 && r->payload[0] == TK_STATUS_CANCELLED && r->payload[1] == 0);
+    TK_CHECK(clip_count(TK_CLIP_YOU_HAVE) == 0);
+
+    setup(false, false, false);
+    voice_request(TK_MSG_SPEAK_CONTACTS);
+    run();
+    r = voice_reply(TK_MSG_SPEAK_CONTACTS);
+    TK_CHECK(r != NULL && r->len == 2 && r->payload[0] == TK_STATUS_NO_WALLET && r->payload[1] == 0);
+
+    setup(true, true, true);
+    fake.audio_bad = true;
+    voice_request(TK_MSG_SPEAK_CONTACTS);
+    run();
+    r = voice_reply(TK_MSG_SPEAK_CONTACTS);
+    TK_CHECK(r != NULL && r->len == 2 && r->payload[0] == TK_STATUS_DEVICE_ERROR && all_clips() == 0);
+
+    // Cancel mid-answer.
+    setup(true, true, true);
+    voice_request(TK_MSG_SPEAK_CONTACTS);
+    fake_frame(TK_MSG_CANCEL, 41, NULL, 0);
+    run();
+    r = voice_reply(TK_MSG_SPEAK_CONTACTS);
+    TK_CHECK(r != NULL && r->len == 2 && r->payload[0] == TK_STATUS_CANCELLED && r->payload[1] == 0);
+}
+
+static void test_lock(void) {
+    const uint8_t locked_hello[4] = {1, 0, 1, TK_STATE_LOCKED};
+
+    // Unlocked -> locked, "wallet locked"; HELLO then reports locked.
+    setup(true, true, true);
+    voice_request(TK_MSG_LOCK);
+    fake_frame(TK_MSG_HELLO, 50, NULL, 0);
+    run();
+    TK_CHECK(voice_status(TK_MSG_LOCK) == TK_STATUS_OK && !fw.unlocked);
+    TK_CHECK(clip_count(TK_CLIP_WALLET_LOCKED) == 1);
+    TK_CHECK(has_frame(TK_MSG_HELLO | TK_MSG_RESPONSE_BIT, 50, locked_hello, 4));
+
+    // Already locked: OK, same clip. No PIN asked.
+    setup(true, false, true);
+    voice_request(TK_MSG_LOCK);
+    run();
+    TK_CHECK(voice_status(TK_MSG_LOCK) == TK_STATUS_OK && !fw.unlocked && fw.unlock_calls == 0);
+    TK_CHECK(clip_count(TK_CLIP_WALLET_LOCKED) == 1 && clip_count(TK_CLIP_ENTER_PIN) == 0);
+
+    // Then a sign request needs the PIN again.
+    const tk_parser_vector_t *v = vec("sol_ok");
+    setup(true, true, true);
+    voice_request(TK_MSG_LOCK);
+    run();
+    TK_CHECK(!fw.unlocked);
+    sign_request(v);
+    script_correct_pin();
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    check_signature(v);
+    TK_CHECK(fw.unlock_calls == 1);
+
+    // No wallet: silent.
+    setup(false, false, false);
+    voice_request(TK_MSG_LOCK);
+    run();
+    TK_CHECK(nframes == 1 && voice_status(TK_MSG_LOCK) == TK_STATUS_NO_WALLET && all_clips() == 0);
+
+    // A wallet without a lock hook: DEVICE_ERROR, never a false "locked".
+    setup(true, true, true);
+    tk_wallet_ops_t no_lock = FAKE_WALLET;
+    no_lock.lock = NULL;
+    tk_device_init(&dev, &FAKE_PLATFORM, &no_lock, &book);
+    voice_request(TK_MSG_LOCK);
+    run();
+    TK_CHECK(voice_status(TK_MSG_LOCK) == TK_STATUS_DEVICE_ERROR && fw.unlocked && all_clips() == 0);
+
+    // A payload: ERROR, still unlocked.
+    const uint8_t bad_payload = TK_PROTO_ERR_BAD_PAYLOAD;
+    setup(true, true, true);
+    fake_send_now(TK_MSG_LOCK, VSEQ, (const uint8_t *)"\x00", 1);
+    run();
+    TK_CHECK(nframes == 1 && has_frame(TK_MSG_ERROR, VSEQ, &bad_payload, 1) && fw.unlocked);
+}
+
+// The voice commands get BUSY during another flow, and other requests get BUSY during theirs.
+static void test_voice_busy(void) {
+    const uint8_t busy = TK_STATUS_BUSY;
+    const tk_parser_vector_t *v = vec("sol_ok");
+    setup(true, true, true);
+    sign_request(v);
+    fake_frame(TK_MSG_SPEAK_ADDRESS, 60, NULL, 0);
+    fake_frame(TK_MSG_SPEAK_CONTACTS, 61, NULL, 0);
+    fake_frame(TK_MSG_LOCK, 62, NULL, 0);
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    check_signature(v);
+    TK_CHECK(has_frame(TK_MSG_SPEAK_ADDRESS | TK_MSG_RESPONSE_BIT, 60, &busy, 1));
+    TK_CHECK(has_frame(TK_MSG_SPEAK_CONTACTS | TK_MSG_RESPONSE_BIT, 61, &busy, 1));
+    TK_CHECK(has_frame(TK_MSG_LOCK | TK_MSG_RESPONSE_BIT, 62, &busy, 1));
+
+    setup(true, true, true);
+    voice_request(TK_MSG_SPEAK_CONTACTS);
+    const uint8_t small[3] = {1, 2, 3}; // BUSY whatever the payload (fake steps hold 96 bytes)
+    fake_frame(TK_MSG_SIGN_REQUEST, 63, small, sizeof(small));
+    fake_frame(TK_MSG_LOCK, 64, NULL, 0);
+    run();
+    TK_CHECK(has_frame(TK_MSG_SIGN_REQUEST | TK_MSG_RESPONSE_BIT, 63, &busy, 1));
+    TK_CHECK(has_frame(TK_MSG_LOCK | TK_MSG_RESPONSE_BIT, 64, &busy, 1));
+    TK_CHECK(fw.unlocked && sign_ops() == 0);
+    TK_CHECK(nframes > 0 && frames[nframes - 1].seq == VSEQ); // the flow's own reply comes last
+}
+
 int main(void) {
     test_fake_wallet_is_vector_device();
     test_happy_sol_locked();
@@ -926,6 +1221,10 @@ int main(void) {
     test_init_orphan_contacts();
     test_unlock_then_sign();
     test_unlock_keystore();
+    test_speak_address();
+    test_speak_contacts();
+    test_lock();
+    test_voice_busy();
     test_random_scripts();
     return tk_test_result();
 }

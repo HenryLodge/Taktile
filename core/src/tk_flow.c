@@ -1,4 +1,5 @@
-// Request dispatch, the SIGN_REQUEST and UNLOCK flows (SETUP is in tk_setup.c, CONTACT_ADD in tk_enroll.c).
+// Request dispatch, the SIGN_REQUEST and UNLOCK flows, and the voice-command flows SPEAK_ADDRESS,
+// SPEAK_CONTACTS and LOCK (SETUP is in tk_setup.c, CONTACT_ADD in tk_enroll.c).
 // See tk_device.h.
 
 #include <string.h>
@@ -466,6 +467,120 @@ static void handle_unlock(tk_device_t *d, const tk_frame_t *f) {
     d->cancel = false;
 }
 
+// ---- Voice commands: SPEAK_ADDRESS, SPEAK_CONTACTS, LOCK ----
+//
+// The device answers these itself, in public clips (the address phrase is public, AUDIO.md; contact
+// names are spelled the same way the sign and enroll announcements spell them). The replies carry a
+// status, and SPEAK_CONTACTS the count (already public through CONTACT_LIST_COUNT): never names,
+// words or audio (I2). Locked: PIN entry first, which opens the normal session (I7); nothing is
+// signed, so the session stays open, as after CONTACT_ADD.
+
+static void begin_flow(tk_device_t *d, const tk_frame_t *f) {
+    d->in_flow = true;
+    d->flow_seq = f->seq;
+    d->cancel = false;
+}
+
+static void end_flow(tk_device_t *d) {
+    d->in_flow = false;
+    d->cancel = false;
+}
+
+// Refusals and PIN entry shared by the two SPEAK flows.
+static tk_status_t speak_prepare(tk_device_t *d) {
+    const tk_wallet_ops_t *w = d->wallet;
+    const tk_platform_t *p = d->platform;
+    if (!w->has_wallet(w->ctx) || !ensure_keys(d)) {
+        return TK_STATUS_NO_WALLET; // silent
+    }
+    if (!audio_ok(d)) {
+        p->haptic(p->ctx, TK_HAPTIC_WARNING); // the user can't hear the answer or the PIN digits (Q7)
+        return TK_STATUS_DEVICE_ERROR;
+    }
+    uint8_t pin[TK_PIN_LEN];
+    const tk_status_t st = tk_dev_unlock(d, pin, false); // OK at once if unlocked; wipes pin
+    memzero(pin, sizeof(pin));
+    return st;
+}
+
+static void say_number(tk_device_t *d, uint64_t n) {
+    uint16_t clips[TK_SPEECH_AMOUNT_MAX];
+    play_all(d, clips, tk_speech_number(n, clips, TK_SPEECH_AMOUNT_MAX));
+}
+
+// "your address phrase is <w1 ... w8>"
+static tk_status_t run_speak_address(tk_device_t *d) {
+    const tk_status_t st = speak_prepare(d);
+    if (st != TK_STATUS_OK) {
+        return st;
+    }
+    uint8_t words[TK_ADDR_PHRASE_WORDS];
+    tk_checksum_addr(d->pubkey, words);
+    send_event(d, TK_EVENT_ANNOUNCING);
+    say(d, TK_CLIP_YOUR_ADDRESS_PHRASE_IS);
+    for (size_t i = 0; i < TK_ADDR_PHRASE_WORDS && !d->cancel; i++) {
+        say(d, (uint16_t)(TK_CLIP_WORD_0 + words[i])); // public: from the device's public key
+    }
+    memzero(words, sizeof(words));
+    return d->cancel ? finish_cancelled(d) : TK_STATUS_OK;
+}
+
+// "you have <n> contacts", then "<i> <spelled name>" for each one
+static tk_status_t run_speak_contacts(tk_device_t *d) {
+    const tk_status_t st = speak_prepare(d);
+    if (st != TK_STATUS_OK) {
+        return st;
+    }
+    send_event(d, TK_EVENT_ANNOUNCING);
+    say(d, TK_CLIP_YOU_HAVE);
+    say_number(d, d->contacts->count);
+    say(d, TK_CLIP_CONTACTS);
+    uint16_t clips[TK_SPEECH_AMOUNT_MAX];
+    for (uint8_t i = 0; i < d->contacts->count && !d->cancel; i++) {
+        const tk_contact_t *c = tk_contacts_get(d->contacts, i);
+        if (c == NULL) {
+            break;
+        }
+        say_number(d, (uint64_t)i + 1u);
+        play_all(d, clips, tk_speech_spell(c->name, c->name_len, clips, TK_SPEECH_AMOUNT_MAX));
+    }
+    memzero(clips, sizeof(clips));
+    return d->cancel ? finish_cancelled(d) : TK_STATUS_OK;
+}
+
+static tk_status_t run_lock(tk_device_t *d) {
+    const tk_wallet_ops_t *w = d->wallet;
+    if (!w->has_wallet(w->ctx)) {
+        return TK_STATUS_NO_WALLET; // silent
+    }
+    if (w->lock == NULL) {
+        // Fail closed: never report a lock that didn't happen.
+        d->platform->haptic(d->platform->ctx, TK_HAPTIC_WARNING);
+        return TK_STATUS_DEVICE_ERROR;
+    }
+    w->lock(w->ctx);
+    say(d, TK_CLIP_WALLET_LOCKED); // also when it was already locked
+    return TK_STATUS_OK;
+}
+
+static void handle_voice_command(tk_device_t *d, const tk_frame_t *f) {
+    if (f->len != 0) {
+        send_error(d, f->seq, TK_PROTO_ERR_BAD_PAYLOAD);
+        return;
+    }
+    begin_flow(d, f);
+    if (f->type == TK_MSG_SPEAK_CONTACTS) {
+        const tk_status_t st = run_speak_contacts(d);
+        const uint8_t out[2] = {(uint8_t)st, st == TK_STATUS_OK ? d->contacts->count : 0u};
+        send(d, TK_MSG_SPEAK_CONTACTS | TK_MSG_RESPONSE_BIT, d->flow_seq, out, sizeof(out));
+    } else {
+        const uint8_t type = f->type;
+        const tk_status_t st = type == TK_MSG_SPEAK_ADDRESS ? run_speak_address(d) : run_lock(d);
+        send_status(d, type, d->flow_seq, st);
+    }
+    end_flow(d);
+}
+
 // ---- SETUP (the flow itself is tk_setup_run, tk_setup.c) ----
 
 static void handle_setup(tk_device_t *d, const tk_frame_t *f) {
@@ -520,6 +635,11 @@ static void handle_idle(tk_device_t *d, const tk_frame_t *f) {
         return;
     case TK_MSG_CONTACT_ADD:
         handle_contact_add(d, f);
+        return;
+    case TK_MSG_SPEAK_ADDRESS:
+    case TK_MSG_SPEAK_CONTACTS:
+    case TK_MSG_LOCK:
+        handle_voice_command(d, f);
         return;
     case TK_MSG_HELLO:
     case TK_MSG_GET_PUBKEY:

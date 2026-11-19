@@ -75,6 +75,10 @@ export const TEXT = {
     TK_CLIP_PRESS_CONFIRM_ADD: 'press confirm to add or reject to cancel',
     TK_CLIP_CONTACT_ADDED: 'contact added',
     TK_CLIP_UNLOCKED: 'wallet unlocked',
+    TK_CLIP_YOUR_ADDRESS_PHRASE_IS: 'your address phrase is',
+    TK_CLIP_YOU_HAVE: 'you have',
+    TK_CLIP_CONTACTS: 'contacts',
+    TK_CLIP_WALLET_LOCKED: 'wallet locked',
 };
 
 // Pronunciation fixes, by clip name (see the header comment). Empty until listening says otherwise.
