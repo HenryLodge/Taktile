@@ -15,6 +15,7 @@ import { initContacts } from './ui/contacts.ts';
 import { initDevice } from './ui/device.ts';
 import { el } from './ui/dom.ts';
 import { initLog } from './ui/log.ts';
+import { initPhrase } from './ui/phrase.ts';
 import { initSend } from './ui/send.ts';
 import { initServer } from './ui/server.ts';
 import { initVoice, loadVoiceEnabled } from './ui/voice.ts';
@@ -47,6 +48,7 @@ const book = new ContactBook(storage);
 initContacts(book, () => undefined);
 const send = initSend(book, speaker);
 initVoice(book, speaker, send, (on) => (voiceOn = on));
+initPhrase(speaker);
 log('app', 'Ready. Connect the device over USB, or use the simulator.');
 
 // DEMO ONLY: npm run demo sets VITE_TK_DEMO_MALWARE=1. In every other build this branch is dead code and

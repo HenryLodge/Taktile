@@ -68,3 +68,14 @@ test('storage that throws: works in memory', () => {
     assert.equal(book.list().length, 1);
     assert.equal(new ContactBook(null).list().length, 0);
 });
+
+test('onDevice: false for new and old entries, persisted once marked', () => {
+    const s = memStorage({ [STORAGE_KEY]: JSON.stringify([{ name: 'Henry', address: A }]) });
+    const book = new ContactBook(s);
+    assert.equal(book.find('Henry')?.onDevice, false);
+    assert.equal(book.add('Max', B), null);
+    assert.equal(book.find('Max')?.onDevice, false);
+    book.markOnDevice('henry');
+    assert.equal(new ContactBook(s).find('Henry')?.onDevice, true);
+    assert.equal(new ContactBook(s).find('Max')?.onDevice, false);
+});

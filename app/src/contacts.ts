@@ -1,12 +1,15 @@
 // The app's own contact list: name -> address, for turning "Henry" into an address. UNTRUSTED: it
 // lives on the laptop, and the device checks every destination against its own contact book (I3).
-// Adding a contact here does not add it to the device (CONTACT_ADD does that, on the device).
+// The app asks the device to add each new contact (CONTACT_ADD, src/enroll.ts); `onDevice` only
+// records that the device answered OK or "already a contact". It is a display hint, never a check.
 
 import { PublicKey } from '@solana/web3.js';
 
 export interface AppContact {
     name: string;
     address: string; // base58
+    /** The device confirmed it holds this contact (OK or CONTACT_EXISTS). Display only. */
+    onDevice?: boolean;
 }
 
 export const STORAGE_KEY = 'tk.contacts.v1';
@@ -36,13 +39,15 @@ export class ContactBook {
             const raw = storage?.getItem(STORAGE_KEY);
             const parsed: unknown = raw ? JSON.parse(raw) : [];
             if (Array.isArray(parsed)) {
-                this.contacts = parsed.filter(
-                    (c): c is AppContact =>
-                        typeof c?.name === 'string' &&
-                        typeof c?.address === 'string' &&
-                        validContactName(c.name) &&
-                        validAddress(c.address),
-                );
+                this.contacts = parsed
+                    .filter(
+                        (c): c is AppContact =>
+                            typeof c?.name === 'string' &&
+                            typeof c?.address === 'string' &&
+                            validContactName(c.name) &&
+                            validAddress(c.address),
+                    )
+                    .map((c) => ({ name: c.name, address: c.address, onDevice: c.onDevice === true }));
             }
         } catch {
             this.contacts = []; // unreadable storage: start empty, keep working in memory
@@ -74,9 +79,16 @@ export class ContactBook {
         if (this.contacts.some((c) => c.address === a)) {
             return 'That address is already in the list.';
         }
-        this.contacts = [...this.contacts, { name: n, address: a }];
+        this.contacts = [...this.contacts, { name: n, address: a, onDevice: false }];
         this.save();
         return null;
+    }
+
+    /** Records the device's answer for this contact (OK or CONTACT_EXISTS). */
+    markOnDevice(name: string, onDevice = true): void {
+        const n = name.toLowerCase();
+        this.contacts = this.contacts.map((c) => (c.name.toLowerCase() === n ? { ...c, onDevice } : c));
+        this.save();
     }
 
     remove(name: string): void {
