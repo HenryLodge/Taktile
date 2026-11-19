@@ -161,6 +161,16 @@ export class DeviceClient {
         return this.status(await this.request(MSG.UNLOCK, undefined, { onEvent }), 'UNLOCK', 1);
     }
 
+    /** SIGN_REQUEST with the legacy message bytes. OK carries the 64-byte Ed25519 signature. */
+    async signRequest(
+        message: Uint8Array,
+        onEvent?: (event: number) => void,
+    ): Promise<{ status: number; signature: Uint8Array | null }> {
+        const p = await this.request(MSG.SIGN_REQUEST, message, { onEvent });
+        const status = this.status(p, 'SIGN_REQUEST', p[0] === STATUS.OK ? 65 : 1);
+        return { status, signature: status === STATUS.OK ? p.slice(1, 65) : null };
+    }
+
     async contactCount(): Promise<number> {
         const p = await this.request(MSG.CONTACT_LIST_COUNT);
         if (p.length !== 1) {

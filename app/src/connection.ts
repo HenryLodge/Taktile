@@ -34,6 +34,7 @@ const params = new URLSearchParams(globalThis.location?.search ?? '');
 export const DEBUG = params.get('debug') === '1';
 
 let client: DeviceClient | null = null;
+let devicePubkey: Uint8Array | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 export const STATE_TEXT: Record<DeviceState, string> = {
@@ -51,7 +52,12 @@ function logFrame(r: LogRecord): void {
     log('debug', `${arrow} ${msgName(r.type)} seq ${r.seq} [${r.payload.length}] ${hex(r.payload).slice(0, 120)}`);
 }
 
-function describeError(e: unknown): string {
+/** The live client and the wallet key it reported, for the send flow; null when not connected. */
+export function getDevice(): { client: DeviceClient; pubkey: Uint8Array | null } | null {
+    return client === null ? null : { client, pubkey: devicePubkey };
+}
+
+export function describeError(e: unknown): string {
     if (e instanceof DeviceProtocolError) {
         if (e.code === PROTO_ERROR.UNKNOWN_TYPE) {
             return 'The device firmware does not know this request. Reflash the firmware.';
@@ -103,6 +109,7 @@ export async function connect(kind: 'usb' | 'sim'): Promise<boolean> {
         let address: string | null = null;
         if (h.state !== DEVICE_STATE.NO_WALLET) {
             const pk = await c.getPubkey();
+            devicePubkey = pk.pubkey;
             address = pk.pubkey ? base58(pk.pubkey) : null;
         }
         const contacts = await c.contactCount();
@@ -136,6 +143,7 @@ function lost(kind: TransportKind, reason: string): void {
         return; // we closed it ourselves
     }
     client = null;
+    devicePubkey = null;
     stopPolling();
     resetConnection();
     const msg = `${kind === 'sim' ? 'Simulator' : 'Device'} disconnected: ${reason}.`;
@@ -148,6 +156,7 @@ export async function disconnect(quiet = false): Promise<void> {
     const c = client;
     const kind = getState().connection.kind;
     client = null;
+    devicePubkey = null;
     stopPolling();
     if (c !== null) {
         await c.close();
@@ -183,17 +192,25 @@ export async function refresh(): Promise<void> {
 }
 
 export async function unlock(): Promise<void> {
-    const c = client;
-    if (c === null) {
-        return;
-    }
     if (getState().connection.deviceState === DEVICE_STATE.UNLOCKED) {
         say('The wallet is already unlocked.');
         return;
     }
+    await unlockStatus();
+}
+
+/**
+ * UNLOCK on the device (the PIN is entered there), announcing each event. Returns the status, or null
+ * when the request failed (already reported). Shared by the Unlock button and the send flow.
+ */
+export async function unlockStatus(): Promise<number | null> {
+    const c = client;
+    if (c === null) {
+        return null;
+    }
     setConnection({ activity: 'Unlocking' });
     log('app', 'Asked the device to unlock. Enter your PIN on the device.');
-    say('Unlocking. Listen to the device.');
+    say('Unlocking. Enter your PIN on the device.');
     try {
         const status = await c.unlock((e) => {
             log('device', eventText(e));
@@ -207,10 +224,12 @@ export async function unlock(): Promise<void> {
             log(status === STATUS.CANCELLED ? 'device' : 'error', `Unlock: ${statusName(status)}. ${msg}`);
             alertUser(msg);
         }
+        return status;
     } catch (e) {
         const msg = `Unlock failed: ${describeError(e)}`;
         log('error', msg);
         alertUser(msg);
+        return null;
     } finally {
         if (client !== null) {
             setConnection({ activity: null });

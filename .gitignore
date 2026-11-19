@@ -10,6 +10,7 @@ id.json
 # build output
 build/
 dist/
+app/.vite/
 node_modules/
 firmware/build/
 firmware/build-*/
