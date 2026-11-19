@@ -14,7 +14,15 @@ import type { DeviceClient } from './proto/client.ts';
 import { DEVICE_STATE, STATUS, eventText, statusText } from './proto/codes.ts';
 import { base58 } from './proto/base58.ts';
 import type { Rpc } from './rpc.ts';
-import { EXPLORER_TX, FEE_LAMPORTS, signedTransaction, solTransferMessage, verifySignature } from './tx.ts';
+import {
+    EXPLORER_TX,
+    FEE_LAMPORTS,
+    signedTransaction,
+    solTransferMessage,
+    usdcAta,
+    usdcTransferMessage,
+    verifySignature,
+} from './tx.ts';
 import { PublicKey } from '@solana/web3.js';
 
 export type SendIntent = Extract<Intent, { kind: 'send' }>;
@@ -54,6 +62,7 @@ export type SendOutcome =
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const sol = (lamports: bigint) => `${formatAmount(lamports, DECIMALS.SOL)} SOL`;
+const usdcText = (units: bigint) => `${formatAmount(units, DECIMALS.USDC)} USDC`;
 
 export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutcome> {
     const sleep = d.sleep ?? defaultSleep;
@@ -63,9 +72,6 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
     };
     const info = (phase: SendPhase, text: string) => d.report({ phase, text, level: 'info' });
 
-    if (intent.token !== 'SOL') {
-        return fail('USDC sending is not ready yet. Send SOL for now.');
-    }
     if (d.client.flowRunning) {
         return fail('Wait for the current request on the device to finish.');
     }
@@ -73,18 +79,34 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
     if (base58(to) === base58(d.pubkey)) {
         return fail('That address is the device itself.');
     }
-    const lamports = intent.amount;
-    const what = `${formatAmount(lamports, DECIMALS.SOL)} SOL to ${intent.contact.name}`;
+    const usdc = intent.token === 'USDC';
+    const amount = intent.amount;
+    const what = `${formatAmount(amount, DECIMALS[intent.token])} ${intent.token} to ${intent.contact.name}`;
 
     let sent: { sig: string; appPhrase: string[] } | null = null;
     try {
         // 1. Will it fail on-chain anyway? (Not a limit: the device would sign, devnet would refuse.)
         info('checking', `Sending ${what}.`);
         const have = await d.rpc.balance(d.pubkey);
-        if (have < lamports + FEE_LAMPORTS) {
-            return fail(
-                `Not enough SOL on the device: it has ${sol(have)}, this send needs ${sol(lamports + FEE_LAMPORTS)}.`,
-            );
+        const needSol = usdc ? FEE_LAMPORTS : amount + FEE_LAMPORTS;
+        if (have < needSol) {
+            return fail(`Not enough SOL on the device: it has ${sol(have)}, this send needs ${sol(needSol)}.`);
+        }
+        if (usdc) {
+            const mine = await d.rpc.tokenBalance(usdcAta(d.pubkey));
+            if (mine === null || mine < amount) {
+                const has = mine === null ? 'no USDC account yet' : `${usdcText(mine)}`;
+                return fail(
+                    `Not enough USDC on the device: it has ${has}, this send needs ${usdcText(amount)}.${
+                        mine === null ? ' Run tools/setup-devnet.mjs and the Circle faucet.' : ''
+                    }`,
+                );
+            }
+            if ((await d.rpc.tokenBalance(usdcAta(to))) === null) {
+                return fail(
+                    `${intent.contact.name} has no USDC account yet, so this would fail on devnet. Run tools/setup-devnet.mjs for ${intent.contact.name}.`,
+                );
+            }
         }
 
         // 2. PIN first, so the blockhash below is fresh when the device signs.
@@ -103,7 +125,9 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
         // 3. Build.
         info('building', 'Getting a fresh blockhash from devnet.');
         const bh = await d.rpc.latestBlockhash();
-        const message = solTransferMessage(d.pubkey, to, lamports, bh.blockhash);
+        const message = usdc
+            ? usdcTransferMessage(d.pubkey, to, amount, bh.blockhash)
+            : solTransferMessage(d.pubkey, to, amount, bh.blockhash);
         const appPhrase = await txPhrase(message);
         info('checksum', `App checksum: ${appPhrase.join(' ')}. The device should say the same three words.`);
 

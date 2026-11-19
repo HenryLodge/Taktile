@@ -12,11 +12,13 @@ import { base58 } from './proto/base58.ts';
 import type { Rpc, SigStatus } from './rpc.ts';
 import { MockTransport, reply, type MockStep } from './transport/mock.ts';
 import type { Frame } from './proto/frame.ts';
+import { DEVNET_USDC_MINT, TOKEN_PROGRAM, usdcAta } from './tx.ts';
 
 const R = 0x80;
 const { publicKey, privateKey } = generateKeyPairSync('ed25519');
 const DEVICE = new Uint8Array(publicKey.export({ format: 'der', type: 'spki' }).subarray(-32));
 const HENRY = new PublicKey(new Uint8Array(32).fill(3)).toBase58();
+const HENRY_BYTES = new PublicKey(HENRY).toBytes();
 const BLOCKHASH = new PublicKey(new Uint8Array(32).fill(9)).toBase58();
 
 const intent = (over: Partial<SendIntent> = {}): SendIntent => ({
@@ -28,11 +30,24 @@ const intent = (over: Partial<SendIntent> = {}): SendIntent => ({
     ...over,
 });
 
-function fakeRpc(trace: string[], over: Partial<{ balance: bigint; height: number; statuses: SigStatus[] }> = {}) {
+function fakeRpc(
+    trace: string[],
+    over: Partial<{ balance: bigint; height: number; statuses: SigStatus[]; tokens: Map<string, bigint> }> = {},
+) {
     const statuses = [...(over.statuses ?? [{ state: 'pending' }, { state: 'confirmed' }])];
     const sent: Uint8Array[] = [];
     const rpc: Rpc = {
         balance: async () => (trace.push('rpc:balance'), over.balance ?? 1_000_000_000n),
+        tokenBalance: async (ata) => {
+            trace.push('rpc:token');
+            const tokens =
+                over.tokens ??
+                new Map([
+                    [base58(usdcAta(DEVICE)), 20_000_000n],
+                    [base58(usdcAta(HENRY_BYTES)), 0n],
+                ]);
+            return tokens.get(base58(ata)) ?? null;
+        },
         latestBlockhash: async () => (
             trace.push('rpc:blockhash'), { blockhash: BLOCKHASH, lastValidBlockHeight: 1000 }
         ),
@@ -189,11 +204,73 @@ test('exactly enough SOL (amount + fee) is allowed', async () => {
     assert.equal((await runSend(intent(), h.deps)).ok, true);
 });
 
-test('USDC is refused for now, with no traffic', async () => {
-    const h = harness([]);
-    const out = await runSend(intent({ token: 'USDC', amount: 1_000_000n, amountText: '1' }), h.deps);
+const usdc1 = (over: Partial<SendIntent> = {}) =>
+    intent({ token: 'USDC', amount: 1_000_000n, amountText: '1', ...over });
+
+test("USDC: checks both token accounts, then UNLOCK, blockhash, TransferChecked to Henry's ATA", async () => {
+    const h = harness([hello(1), unlockOk(), signs()]);
+    const out = await runSend(usdc1(), h.deps);
+    assert.equal(out.ok, true, JSON.stringify(h.reports.map((r) => r.text)));
+    assert.deepEqual(h.trace.slice(0, 6), [
+        'rpc:balance',
+        'rpc:token',
+        'rpc:token',
+        'dev:0x1',
+        'dev:0x4',
+        'rpc:blockhash',
+    ]);
+    const msg = h.t.written.find((f) => f.type === MSG.SIGN_REQUEST)?.payload;
+    assert.ok(msg);
+    const keys = Array.from({ length: msg[3] ?? 0 }, (_, i) => base58(msg.subarray(4 + 32 * i, 36 + 32 * i)));
+    assert.equal(keys[0], base58(DEVICE)); // fee payer (I5)
+    for (const k of [
+        base58(usdcAta(DEVICE)),
+        base58(usdcAta(HENRY_BYTES)),
+        DEVNET_USDC_MINT.toBase58(),
+        TOKEN_PROGRAM.toBase58(),
+    ]) {
+        assert.ok(keys.includes(k), k);
+    }
+    assert.ok(!keys.includes(HENRY), 'USDC goes to the token account, not the wallet');
+    assert.equal(h.sent.length, 1);
+});
+
+test('USDC: not enough on the device: no device traffic', async () => {
+    const h = harness([], {
+        tokens: new Map([
+            [base58(usdcAta(DEVICE)), 999_999n],
+            [base58(usdcAta(HENRY_BYTES)), 0n],
+        ]),
+    });
+    const out = await runSend(usdc1(), h.deps);
+    assert.match(out.ok ? '' : out.reason, /Not enough USDC on the device: it has 0.999999 USDC/);
+    assert.ok(!h.trace.some((t) => t.startsWith('dev:')));
+});
+
+test('USDC: the device has no USDC account', async () => {
+    const h = harness([], { tokens: new Map() });
+    const out = await runSend(usdc1(), h.deps);
+    assert.match(out.ok ? '' : out.reason, /no USDC account yet/);
+    assert.ok(!h.trace.some((t) => t.startsWith('dev:')));
+});
+
+test("USDC: Henry's token account missing: refused before the device", async () => {
+    const h = harness([], { tokens: new Map([[base58(usdcAta(DEVICE)), 20_000_000n]]) });
+    const out = await runSend(usdc1(), h.deps);
+    assert.match(out.ok ? '' : out.reason, /Henry has no USDC account yet/);
+    assert.ok(!h.trace.some((t) => t.startsWith('dev:')));
+});
+
+test('USDC: only the fee is needed in SOL', async () => {
+    const h = harness([hello(2), signs()], { balance: 5_000n });
+    assert.equal((await runSend(usdc1(), h.deps)).ok, true);
+});
+
+test('USDC: the device refuses an unknown recipient: nothing broadcast', async () => {
+    const h = harness([hello(2), refuses(STATUS.UNKNOWN_RECIPIENT)]);
+    const out = await runSend(usdc1(), h.deps);
     assert.equal(out.ok, false);
-    assert.deepEqual(h.trace, []);
+    assert.equal(h.sent.length, 0);
 });
 
 test('sending to the device itself is refused before anything', async () => {

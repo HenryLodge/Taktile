@@ -27,7 +27,7 @@ npm run build      # production bundle in dist/
 | `src/state.ts`, `src/announce.ts`, `src/ui/` | Store, live regions (polite status + assertive alerts), page sections                                                                                                                           |
 | `src/checksum.ts`                            | App-side checksum phrases (`tests/vectors/checksum.json`)                                                                                                                                       |
 
-## Sending (SOL; USDC follows)
+## Sending (SOL and USDC)
 
 Type a command such as `send 0.01 SOL to Henry` under **Send**. The flow (`src/send.ts`) runs in the order `firmware/tools/sign_devnet.py` proved on devnet:
 
@@ -39,6 +39,8 @@ Type a command such as `send 0.01 SOL to Henry` under **Send**. The flow (`src/s
 6. Verify the Ed25519 signature over exactly the bytes built (WebCrypto). Check the blockhash is still valid, then broadcast to devnet, wait for confirmation, and show the explorer link.
 
 Nothing is broadcast unless the device answered OK with a signature that verifies. RPC is devnet only: the endpoint is a constant, and the app checks its genesis hash before the first call (`src/rpc.ts`).
+
+**USDC** (Shape B): a `TransferChecked` of devnet USDC from the device's token account to the contact's. Both accounts are derived here exactly as the device derives them, and the instruction is built by hand (no spl-token in the browser), byte-equal to the `usdc_ok` vector. Before the device is involved, the app checks that the device has the USDC and 0.000005 SOL for the fee, and that the contact's USDC account exists (`tools/setup-devnet.mjs` creates it).
 
 **Commands** (`src/intent.ts`, deterministic):
 

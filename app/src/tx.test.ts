@@ -6,7 +6,17 @@ import { test } from 'node:test';
 import { PublicKey } from '@solana/web3.js';
 
 import { txPhrase } from './checksum.ts';
-import { signedTransaction, solTransferMessage, verifySignature } from './tx.ts';
+import {
+    ATA_PROGRAM,
+    DEVNET_USDC_MINT,
+    TOKEN_PROGRAM,
+    signedTransaction,
+    solTransferMessage,
+    usdcAta,
+    usdcTransferMessage,
+    usdcTransferMessageToAta,
+    verifySignature,
+} from './tx.ts';
 
 interface ParserVector {
     name: string;
@@ -75,4 +85,80 @@ test('signature verification', async () => {
     assert.equal(await verifySignature(raw, Uint8Array.from(Buffer.from('another message')), sig), false);
     assert.equal(await verifySignature(new Uint8Array(32), msg, sig), false);
     assert.equal(await verifySignature(raw, msg, new Uint8Array(10)), false);
+});
+
+interface AtaVector {
+    name: string;
+    wallet: string;
+    mint: string;
+    ata: string;
+}
+const ataVectors = JSON.parse(
+    readFileSync(new URL('../../tests/vectors/ata.json', import.meta.url), 'utf8'),
+) as AtaVector[];
+
+test('Shape B message is byte-identical to the usdc_ok parser vector', async () => {
+    const v = parser.find((x) => x.name === 'usdc_ok') as (ParserVector & { device_usdc_ata: string }) | undefined;
+    assert.ok(v && v.expect.kind === 'usdc' && v.expect.destination && v.expect.amount);
+    const msg = usdcTransferMessageToAta(
+        hex(v.device_pubkey),
+        hex(v.device_usdc_ata),
+        hex(v.expect.destination),
+        BigInt(v.expect.amount),
+        BLOCKHASH,
+    );
+    assert.equal(Buffer.from(msg).toString('hex'), v.message_hex);
+    const c = checksum.tx.find((x) => x.name === 'usdc_ok');
+    assert.ok(c);
+    assert.equal(c.message_hex, v.message_hex);
+    assert.deepEqual(await txPhrase(msg), c.words);
+});
+
+test('every OK USDC vector rebuilds identically', () => {
+    const oks = parser.filter((x) => x.expect.status === 'OK' && x.expect.kind === 'usdc') as (ParserVector & {
+        device_usdc_ata: string;
+    })[];
+    assert.ok(oks.length >= 1);
+    for (const v of oks) {
+        const msg = usdcTransferMessageToAta(
+            hex(v.device_pubkey),
+            hex(v.device_usdc_ata),
+            hex(v.expect.destination ?? ''),
+            BigInt(v.expect.amount ?? '0'),
+            BLOCKHASH,
+        );
+        assert.equal(Buffer.from(msg).toString('hex'), v.message_hex, v.name);
+    }
+});
+
+test('usdcAta matches every devnet-USDC ATA vector', () => {
+    const usdc = ataVectors.filter((v) => Buffer.from(hex(v.mint)).equals(DEVNET_USDC_MINT.toBuffer()));
+    assert.ok(usdc.length >= 6);
+    for (const v of usdc) {
+        assert.equal(Buffer.from(usdcAta(hex(v.wallet))).toString('hex'), v.ata, v.name);
+    }
+});
+
+test('usdcTransferMessage derives both token accounts', () => {
+    const v = parser.find((x) => x.name === 'usdc_ok') as (ParserVector & { device_usdc_ata: string }) | undefined;
+    assert.ok(v);
+    assert.equal(Buffer.from(usdcAta(hex(v.device_pubkey))).toString('hex'), v.device_usdc_ata);
+    const to = new Uint8Array(32).fill(5);
+    const msg = usdcTransferMessage(hex(v.device_pubkey), to, 1n, BLOCKHASH);
+    assert.ok(Buffer.from(msg).includes(Buffer.from(usdcAta(to))));
+    assert.ok(!Buffer.from(msg).includes(Buffer.from(to)), 'the wallet itself is not in the message');
+});
+
+test('pinned constants agree with tools/gen-consts.mjs', () => {
+    const src = readFileSync(new URL('../../tools/gen-consts.mjs', import.meta.url), 'utf8');
+    const pinned = (name: string) => new RegExp(`name: '${name}', base58: '([1-9A-HJ-NP-Za-km-z]+)'`).exec(src)?.[1];
+    assert.equal(pinned('TK_TOKEN_PROGRAM_ID'), TOKEN_PROGRAM.toBase58());
+    assert.equal(pinned('TK_ATA_PROGRAM_ID'), ATA_PROGRAM.toBase58());
+    assert.equal(pinned('TK_DEVNET_USDC_MINT'), DEVNET_USDC_MINT.toBase58());
+});
+
+test('USDC amount range and self-send', () => {
+    const d = new Uint8Array(32).fill(7);
+    assert.throws(() => usdcTransferMessage(d, d, 1n, BLOCKHASH), /device itself/);
+    assert.throws(() => usdcTransferMessage(d, new Uint8Array(32).fill(1), 1n << 64n, BLOCKHASH), /range/);
 });
