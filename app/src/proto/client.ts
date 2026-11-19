@@ -23,6 +23,7 @@ export class RequestTimeoutError extends Error {}
 export class FlowBusyError extends Error {}
 export class BadReplyError extends Error {}
 export class ProtoVersionError extends Error {}
+export class BadNameError extends Error {}
 
 export interface LogRecord {
     dir: 'tx' | 'rx';
@@ -169,6 +170,26 @@ export class DeviceClient {
         const p = await this.request(MSG.SIGN_REQUEST, message, { onEvent });
         const status = this.status(p, 'SIGN_REQUEST', p[0] === STATUS.OK ? 65 : 1);
         return { status, signature: status === STATUS.OK ? p.slice(1, 65) : null };
+    }
+
+    /**
+     * CONTACT_ADD: name_len u8 | name (ASCII) | wallet[32] (SERIAL_PROTOCOL.md). The device spells the
+     * name and reads the 8-word address phrase itself, then asks for PIN (if locked) and CONFIRM.
+     */
+    async contactAdd(name: string, wallet: Uint8Array, onEvent?: (event: number) => void): Promise<number> {
+        if (!/^[A-Za-z0-9 '-]{1,12}$/.test(name) || name.startsWith(' ') || name.endsWith(' ') || name.includes('  ')) {
+            throw new BadNameError(`not a device contact name: ${JSON.stringify(name)}`);
+        }
+        if (wallet.length !== 32) {
+            throw new BadNameError('wallet must be 32 bytes');
+        }
+        const payload = new Uint8Array(1 + name.length + 32);
+        payload[0] = name.length;
+        for (let i = 0; i < name.length; i++) {
+            payload[1 + i] = name.charCodeAt(i);
+        }
+        payload.set(wallet, 1 + name.length);
+        return this.status(await this.request(MSG.CONTACT_ADD, payload, { onEvent }), 'CONTACT_ADD', 1);
     }
 
     async contactCount(): Promise<number> {

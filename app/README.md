@@ -52,6 +52,36 @@ Nothing is broadcast unless the device answered OK with a signature that verifie
 
 **App contacts** are a name → address list kept in this browser's localStorage (`src/contacts.ts`). They are untrusted: the device checks every destination against its own contact book, and adding a contact here does not add it to the device.
 
+## Adding a contact
+
+Under **Contacts**, enter a name (the device's rules: 1–12 letters, digits, spaces, hyphens, apostrophes) and the contact's wallet address, then **Add contact**.
+
+1. The app saves the contact in its own list (untrusted, this browser only).
+2. If the device is connected, the app immediately sends **CONTACT_ADD** (`src/enroll.ts`).
+3. The device does the trusted part. It says "adding contact", spells the name, then says "address phrase" and **8 words computed from the address it received**.
+4. **The phone-call check:** call the contact and have them read their phrase from **My address phrase**. The words must match word for word. Hold OK on the device to hear it again.
+5. **Approve on the device:** enter the PIN if the device is locked, then CONFIRM to add or REJECT to cancel.
+
+The app shows the device's progress on screen and in the live region. It never shows the words during enrollment, and the app voice says only the result:
+
+| Device answer                       | App                                                                                                  |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| OK                                  | "{name} is now a contact on the device." The row shows _on the device_ and the contact count updates |
+| CONTACT_EXISTS                      | "{name} or that address is already on the device." Marked _on the device_; nothing is played         |
+| REJECTED_BY_USER / CANCELLED        | Not added; the row keeps an **Add {name} to device** button to try again                             |
+| CONTACTS_FULL                       | The book holds 16                                                                                    |
+| LOCKED_OUT, NO_WALLET, DEVICE_ERROR | The status text                                                                                      |
+
+When the device isn't connected, the contact is saved in the app and its row offers **Add to device** later.
+
+_On the device_ is only a display hint. The device checks every recipient itself when signing, and contacts can't be removed from the device yet (CONTACT_REMOVE is deferred).
+
+## My address phrase
+
+This is for the person _being_ added. Paste your wallet address (or press **Use this device's address**), then **Show my phrase**. The app shows the 8 words in large type, and **Read aloud** speaks them with the app voice. They are the same words the adding device reads (`addressPhrase` in `src/checksum.ts`, held to the same `tests/vectors/checksum.json` as the device).
+
+The phrase is public: it comes from a public address and is meant to be read over the phone (SECURITY_MODEL).
+
 ## Voice
 
 **Push-to-talk** (`src/voice.ts`, `src/ui/voice.ts`):

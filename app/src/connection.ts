@@ -175,6 +175,16 @@ export async function disconnect(quiet = false): Promise<void> {
     }
 }
 
+/** CONTACT_LIST_COUNT, after a contact was added. */
+export async function refreshContactCount(): Promise<void> {
+    const c = client;
+    if (c === null) {
+        return;
+    }
+    const contacts = await c.contactCount();
+    setConnection({ contacts });
+}
+
 /** HELLO: keeps the lock state current (the device locks itself after 5 minutes, a signature, ...). */
 export async function refresh(): Promise<void> {
     const c = client;

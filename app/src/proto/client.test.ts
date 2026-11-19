@@ -191,3 +191,40 @@ test('seq wraps 255 -> 1 and is never 0', async () => {
     assert.equal(seqs[255], 1);
     assert.ok(!seqs.includes(0));
 });
+
+test('CONTACT_ADD payload: name_len | name | wallet', async () => {
+    const wallet = Uint8Array.from({ length: 32 }, (_, i) => 200 - i);
+    for (const name of ['Henry', "O'Brien", 'Mary Jo', 'Jean-Luc', 'A', 'abcdefghijkl']) {
+        const want = Uint8Array.from([name.length, ...Buffer.from(name, 'ascii'), ...wallet]);
+        const { t, c } = setup([
+            {
+                expect: { type: MSG.CONTACT_ADD, payload: want },
+                reply: (q) => [reply(MSG.EVENT, [EVENT.ANNOUNCING])(q), reply(MSG.CONTACT_ADD | R, [STATUS.OK])(q)],
+            },
+        ]);
+        assert.equal(await c.contactAdd(name, wallet), STATUS.OK, name);
+        assert.deepEqual(t.errors, []);
+        assert.equal(t.written[0]?.payload.length, 1 + name.length + 32);
+    }
+});
+
+test('CONTACT_ADD refuses bad names and wallets locally, sending nothing', async () => {
+    const { t, c } = setup([]);
+    for (const bad of ['', ' Henry', 'Henry ', 'Mary  Jo', 'abcdefghijklm', 'Al!ce', 'Zoë']) {
+        await assert.rejects(c.contactAdd(bad, new Uint8Array(32)), /contact name/, bad);
+    }
+    await assert.rejects(c.contactAdd('Henry', new Uint8Array(31)), /32 bytes/);
+    assert.equal(t.written.length, 0);
+});
+
+test('CONTACT_ADD reply length is checked; BAD_PAYLOAD surfaces', async () => {
+    const { c } = setup([
+        { expect: { type: MSG.CONTACT_ADD }, reply: (q) => [reply(MSG.CONTACT_ADD | R, [STATUS.OK, 0])(q)] },
+        { expect: { type: MSG.CONTACT_ADD }, reply: (q) => [reply(MSG.ERROR, [PROTO_ERROR.BAD_PAYLOAD])(q)] },
+    ]);
+    await assert.rejects(c.contactAdd('Henry', new Uint8Array(32)), /not 1/);
+    await assert.rejects(
+        c.contactAdd('Henry', new Uint8Array(32)),
+        (e: unknown) => e instanceof DeviceProtocolError && e.code === PROTO_ERROR.BAD_PAYLOAD,
+    );
+});

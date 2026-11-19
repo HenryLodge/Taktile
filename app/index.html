@@ -76,16 +76,19 @@
             </section>
 
             <section aria-labelledby="h-contacts">
-                <h2 id="h-contacts">App contacts (this laptop only, untrusted)</h2>
+                <h2 id="h-contacts">Contacts</h2>
                 <p class="note">
-                    The device checks every recipient against its own contact book. Adding a contact here does not add
-                    it to the device.
+                    Adding a contact here asks the device to add it: the device spells the name and reads an 8-word
+                    address phrase. Check the words with the contact over the phone (they read theirs under My address
+                    phrase), then confirm on the device. The list on this laptop is untrusted; the device checks every
+                    recipient against its own contact book.
                 </p>
+                <p id="contact-status" class="status-sub" tabindex="-1"></p>
                 <p id="contact-empty">No app contacts yet.</p>
                 <ul id="contact-list" class="contacts"></ul>
                 <form id="contact-form" novalidate>
                     <fieldset>
-                        <legend>Add an app contact</legend>
+                        <legend>Add a contact</legend>
                         <label for="contact-name">Name</label>
                         <input
                             id="contact-name"
@@ -103,9 +106,38 @@
                             aria-describedby="contact-error"
                         />
                         <p id="contact-error" class="error"></p>
-                        <button type="submit">Add contact</button>
+                        <button id="btn-contact-add" type="submit">Add contact</button>
                     </fieldset>
                 </form>
+            </section>
+
+            <section aria-labelledby="h-phrase">
+                <h2 id="h-phrase">My address phrase (for the person adding you)</h2>
+                <p class="note">
+                    When someone adds you as a contact, their device reads 8 words made from your address. Read these
+                    words to them over the phone; they must match word for word.
+                </p>
+                <form id="phrase-form" novalidate>
+                    <label for="phrase-address">Your wallet address</label>
+                    <div class="row">
+                        <input
+                            id="phrase-address"
+                            type="text"
+                            autocomplete="off"
+                            spellcheck="false"
+                            aria-describedby="phrase-error"
+                        />
+                        <button id="btn-phrase-device" type="button" aria-disabled="true">
+                            Use this device's address
+                        </button>
+                    </div>
+                    <p id="phrase-error" class="error"></p>
+                    <div class="row">
+                        <button type="submit">Show my phrase</button>
+                        <button id="btn-phrase-read" type="button" aria-disabled="true">Read aloud</button>
+                    </div>
+                </form>
+                <ol id="phrase-words" class="phrase" aria-label="Address phrase"></ol>
             </section>
 
             <section aria-labelledby="h-device">
