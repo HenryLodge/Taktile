@@ -22,7 +22,14 @@ async function phraseIndices(tag: string, data: Uint8Array, n: number): Promise<
     return Array.from(h.subarray(0, n));
 }
 
-const toWords = (indices: number[]): string[] => indices.map((i) => PGP_EVEN_WORDS[i]);
+const toWords = (indices: number[]): string[] =>
+    indices.map((i) => {
+        const w = PGP_EVEN_WORDS[i];
+        if (w === undefined) {
+            throw new Error(`no checksum word at index ${i}`);
+        }
+        return w;
+    });
 
 export async function txPhraseIndices(message: Uint8Array): Promise<number[]> {
     return phraseIndices(TX_TAG, message, TX_PHRASE_WORDS);
