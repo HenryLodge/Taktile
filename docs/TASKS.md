@@ -44,7 +44,7 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 - [x] P0 App-side checksum spoken via TTS: "Sending 1 USDC to Henry. Checksum: …" in the app voice (a separate ElevenLabs voice), finished before SIGN_REQUEST so it comes before the device's own announcement. The app voice says only that, the final result and voice problems, never while the device is speaking; the browser voice takes over if `server/` can't speak
 - [x] P0 Malware-mode toggle (swaps destination to an attacker ATA) for the demo: `cd app && npm run demo` only (Ctrl+Shift+M). It rewrites the recipient inside SIGN_REQUEST on the wire after the app built and spoke the honest request; the device says "unknown recipient, do not sign". `npm run check` proves normal builds contain none of it (`app/scripts/check-no-malware.mjs`)
 - [x] P0 `tools/setup-devnet.mjs`: airdrop SOL, get devnet USDC to the device wallet (Circle faucet is manual; document the steps), create contacts' ATAs. Also the demo attacker's USDC account (`tools/README.md`)
-- [ ] P1 ElevenLabs Agents conversational disambiguation ("Jack Miller or Jack Chen?")
+- [x] P1 ElevenLabs Agents conversational disambiguation ("Jack Miller or Jack Chen?"): only when a spoken name matches several contacts; the agent's only output is the client tool `choose_contact`, checked against the parsed candidates (`app/src/disambiguate.ts`, `tools/setup-agent.mjs`, `server/` `/api/agent/token`). App-voice fallback when the agent can't run
 - [x] P1 "My address phrase" page for the contact's side of enrollment. Also: adding a contact in the app now runs CONTACT_ADD on the device right away (the device spells the name, reads the 8 words, PIN + CONFIRM; `app/src/enroll.ts`)
 
 ## Day 8 (Nov 19): hardening, docs

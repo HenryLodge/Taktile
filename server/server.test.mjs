@@ -77,13 +77,13 @@ test('health reports mode and availability, never the key', async () => {
     const s = await start();
     const r = await s.request();
     assert.equal(r.status, 200);
-    assert.deepEqual(r.json, { mode: 'live', stt: true, tts: true });
+    assert.deepEqual(r.json, { mode: 'live', stt: true, tts: true, agent: false });
     assert.equal(r.headers['cache-control'], 'no-store');
     assertNoKey(s, [r]);
     await s.close();
 
     const n = await start({ env: { ELEVENLABS_API_KEY: '' } });
-    assert.deepEqual((await n.request()).json, { mode: 'live', stt: false, tts: false });
+    assert.deepEqual((await n.request()).json, { mode: 'live', stt: false, tts: false, agent: false });
     await n.close();
 });
 
@@ -307,7 +307,7 @@ test('no key in live mode: 503 no_key, nothing called', async () => {
 test('canned mode never calls ElevenLabs and needs no key', async () => {
     for (const how of [{ argv: ['--canned'] }, { env: { TK_SERVER_MODE: 'canned' } }]) {
         const s = await start({ ...how, env: { ELEVENLABS_API_KEY: '', ELEVENLABS_VOICE_ID: '', ...how.env } });
-        assert.deepEqual((await s.request()).json, { mode: 'canned', stt: true, tts: true });
+        assert.deepEqual((await s.request()).json, { mode: 'canned', stt: true, tts: true, agent: false });
         const a = await stt(s);
         assert.equal(a.status, 200);
         assert.deepEqual(a.json, { text: 'send 0.01 SOL to Henry' });
@@ -331,4 +331,59 @@ test('loadConfig refuses bad mode and port', () => {
     assert.throws(() => loadConfig({ TK_SERVER_PORT: 'abc' }), /TK_SERVER_PORT/);
     assert.equal(loadConfig({}).port, 8787);
     assert.equal(loadConfig({ ELEVENLABS_VOICE_ID: 'a', ELEVENLABS_APP_VOICE_ID: 'b' }).voiceId, 'b');
+});
+
+test('agent token: request shape, reply is the token only, key never leaked', async () => {
+    const s = await start({
+        env: { ELEVENLABS_AGENT_ID: 'agent_abc' },
+        fetchImpl: fetchSpy(() => okJson({ token: 'tok_123', conversation_id: 'conv_9' })),
+    });
+    assert.equal((await s.request()).json.agent, true);
+    const r = await s.request({ path: '/api/agent/token' });
+    assert.equal(r.status, 200);
+    assert.deepEqual(r.json, { token: 'tok_123' });
+    const [call] = s.fetchImpl.calls;
+    assert.equal(call.url, 'https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=agent_abc');
+    assert.equal(call.init.method, 'GET');
+    assert.equal(call.init.headers['xi-api-key'], KEY);
+    assertNoKey(s, [r]);
+    assert.equal((await s.request({ method: 'POST', path: '/api/agent/token' })).status, 404);
+    assert.equal((await s.request({ path: '/api/agent/token', headers: { Origin: 'https://evil.example' } })).status, 403);
+    await s.close();
+});
+
+test('agent token: no agent ID, canned mode, missing permission, bad reply, rate limit', async () => {
+    const none = await start();
+    assert.equal((await none.request({ path: '/api/agent/token' })).json.error, 'no_agent');
+    assert.equal(none.fetchImpl.calls.length, 0);
+    await none.close();
+
+    const canned = await start({ argv: ['--canned'], env: { ELEVENLABS_AGENT_ID: 'agent_abc' } });
+    assert.equal((await canned.request({ path: '/api/agent/token' })).json.error, 'canned');
+    assert.equal(canned.fetchImpl.calls.length, 0);
+    await canned.close();
+
+    const denied = await start({
+        env: { ELEVENLABS_AGENT_ID: 'agent_abc' },
+        fetchImpl: fetchSpy(() => new Response(JSON.stringify({ detail: { message: `no convai ${KEY}` } }), { status: 401 })),
+    });
+    const d = await denied.request({ path: '/api/agent/token' });
+    assert.equal(d.status, 502);
+    assert.match(d.json.message, /Agents permission/);
+    assertNoKey(denied, [d]);
+    await denied.close();
+
+    const bad = await start({ env: { ELEVENLABS_AGENT_ID: 'agent_abc' }, fetchImpl: fetchSpy(() => okJson({})) });
+    assert.equal((await bad.request({ path: '/api/agent/token' })).json.error, 'upstream_bad_reply');
+    await bad.close();
+
+    let t = 9_000_000;
+    const lim = await start({ env: { ELEVENLABS_AGENT_ID: 'agent_abc' }, now: () => t, fetchImpl: fetchSpy(() => okJson({ token: 'x' })) });
+    for (let i = 0; i < 6; i++) {
+        assert.equal((await lim.request({ path: '/api/agent/token' })).status, 200);
+    }
+    assert.equal((await lim.request({ path: '/api/agent/token' })).status, 429);
+    t += 61_000;
+    assert.equal((await lim.request({ path: '/api/agent/token' })).status, 200);
+    await lim.close();
 });

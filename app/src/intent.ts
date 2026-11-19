@@ -22,7 +22,10 @@ export type IntentErrorCode =
 
 export type Intent =
     | { kind: 'send'; token: Token; amount: bigint; amountText: string; contact: AppContact }
-    | { kind: 'error'; code: IntentErrorCode; message: string; suggestion?: AppContact };
+    | { kind: 'error'; code: IntentErrorCode; message: string; suggestion?: AppContact }
+    /** The name is the first word(s) of two or more contacts ("Jack" -> Jack Miller, Jack Chen). The
+     *  app asks which one (src/disambiguate.ts); nothing is sent until the user picks one of these. */
+    | { kind: 'ambiguous'; token: Token; amount: bigint; amountText: string; spoken: string; candidates: AppContact[] };
 
 const VERBS = new Set(['send', 'pay', 'transfer', 'give']);
 const FILLER = new Set(['um', 'uh', 'umm', 'uhh', 'er', 'please', 'okay', 'ok']);
@@ -188,6 +191,14 @@ export function parseIntent(text: string, contacts: readonly AppContact[]): Inte
     const exact = contacts.find((c) => c.name.toLowerCase() === name);
     if (exact) {
         return { kind: 'send', token, amount, amountText, contact: exact };
+    }
+    // Whole-word prefix: "jack" matches "Jack Miller" and "Jack Chen", never "Jackson".
+    const byFirstWords = contacts.filter((c) => c.name.toLowerCase().startsWith(`${name} `));
+    if (byFirstWords.length >= 2) {
+        return { kind: 'ambiguous', token, amount, amountText, spoken: name, candidates: byFirstWords };
+    }
+    if (byFirstWords.length === 1 && byFirstWords[0]) {
+        return err('did_you_mean', `Did you mean ${byFirstWords[0].name}?`, byFirstWords[0]);
     }
     const near = contacts.filter((c) => editDistance(c.name.toLowerCase(), name) <= 1);
     if (near.length === 1 && near[0]) {

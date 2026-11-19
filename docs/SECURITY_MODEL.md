@@ -43,6 +43,7 @@ Be precise about this in the README and pitch.
 | Laptop malware swaps destination | I1, I3: "unknown recipient" | P0, demoed (`cd app && npm run demo`: `app/src/malware.ts` rewrites the recipient on the wire; demo builds only) |
 | Malware changes amount | I1: device speaks real amount | P0 |
 | Speech-to-text mishears | Device speaks contact name from its store | P0 |
+| The disambiguation agent (ElevenLabs Agents) picks the wrong contact | The agent runs only when a spoken name matches several app contacts, and its only output is one of those names (client tool `choose_contact`, checked by the app). It never sees or sets an amount, token or address, and the device still announces the name it has stored (I3) | P1 |
 | Injected audio / bystander commands | PIN session + physical CONFIRM | P0 |
 | Shoulder surfing the PIN | Rotary PIN entry with private random start digit (`AUDIO.md`) | P0 |
 | Device theft without PIN | I7 (online guessing) | P0 |

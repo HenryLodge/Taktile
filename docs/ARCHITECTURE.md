@@ -13,8 +13,8 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 │ LAPTOP (untrusted)                                                           │
 │  app/ (browser)                          server/ (Node, localhost)           │
 │   ├─ Voice UI: push-to-talk, intent      ├─ /api/stt   → ElevenLabs STT      │
-│   ├─ Tx builder (@solana/web3.js)        └─ /api/tts   → ElevenLabs TTS      │
-│   ├─ App-side checksum phrase (TTS)                                          │
+│   ├─ Tx builder (@solana/web3.js)        ├─ /api/tts   → ElevenLabs TTS      │
+│   ├─ App-side checksum phrase (TTS)      └─ /api/agent/token → EL Agents     │
 │   ├─ Malware-mode toggle (demo)                                              │
 │   └─ Transport: WebSerial | WebSocket(sim)                                   │
 └────────────────────────────┬─────────────────────────────────────────────────┘
@@ -31,7 +31,7 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 ## Send flow (happy path)
 
 1. User holds push-to-talk and says "send 5 USDC to Jack."
-2. `app` sends audio to `server /api/stt`, gets text, parses intent `{amount, token, contactName}`.
+2. `app` sends audio to `server /api/stt`, gets text, parses intent `{amount, token, contactName}`. If the name matches several contacts ("Jack"), an ElevenLabs agent asks "Jack Miller or Jack Chen?" and may only pick one of those names (`app/src/disambiguate.ts`); without the agent, the app voice asks and the next spoken answer picks.
 3. `app` looks up Jack's wallet in its own (untrusted) contact cache, builds a devnet `TransferChecked` transaction to Jack's USDC associated token account, serializes the **message bytes**.
 4. `app` computes its checksum phrase from the message bytes and speaks it via `/api/tts`.
 5. `app` sends `SIGN_REQUEST{message}` to the device. (If the device is locked, the app first sends `UNLOCK` and the user enters the PIN, then the app fetches the blockhash and builds the message: a blockhash lasts about 60 s.)

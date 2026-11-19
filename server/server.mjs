@@ -5,6 +5,7 @@
 //   GET  /api/health  -> { mode, stt, tts }
 //   POST /api/stt     raw audio body (audio/webm|ogg|wav|mpeg, <= 1 MB), ?names=A,B -> { text }
 //   POST /api/tts     { "text": "..." } (1-200 printable ASCII) -> audio/mpeg
+//   GET  /api/agent/token  -> { token } for the ElevenLabs disambiguation agent (WebRTC session)
 //
 // Run: npm run dev (live) or npm run dev:canned (no ElevenLabs calls). Config: server/.env, see
 // .env.example and README.md. The key is never logged, returned, or included in an error.
@@ -16,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { createCache } from './lib/cache.mjs';
 import { HttpError, hostAllowed, makeRedactor, originAllowed, sendJson } from './lib/http.mjs';
 import { createLimiter } from './lib/limits.mjs';
+import { handleAgentToken } from './lib/agent.mjs';
 import { handleStt } from './lib/stt.mjs';
 import { handleTts } from './lib/tts.mjs';
 import { TIMEOUT_MS } from './lib/upstream.mjs';
@@ -42,6 +44,7 @@ export function loadConfig(env, argv = []) {
         ttsModel: env.TK_TTS_MODEL || 'eleven_flash_v2_5',
         keytermsMode: env.TK_STT_KEYTERMS_MODE === 'json' ? 'json' : 'repeat',
         cannedTranscript: env.TK_CANNED_TRANSCRIPT || 'send 0.01 SOL to Henry',
+        agentId: env.ELEVENLABS_AGENT_ID || '',
     };
 }
 
@@ -51,12 +54,14 @@ export function health(config) {
         mode: config.mode,
         stt: canned || Boolean(config.apiKey),
         tts: canned || Boolean(config.apiKey && config.voiceId),
+        agent: !canned && Boolean(config.apiKey && config.agentId),
     };
 }
 
 const ROUTES = {
     'POST /api/stt': handleStt,
     'POST /api/tts': handleTts,
+    'GET /api/agent/token': handleAgentToken,
 };
 
 export function createServer({
