@@ -1,21 +1,37 @@
 // Taktile companion app. The app is untrusted by design (docs/SECURITY_MODEL.md): the device parses
-// every transaction itself and speaks the truth into its own earpiece. This shell connects to the
-// device or the simulator and shows what they report.
+// every transaction itself and speaks the truth into its own earpiece. This app connects to the
+// device or the simulator, turns typed or spoken commands into transactions, and speaks its own
+// checksum of the bytes it built through the app voice (server/ text-to-speech).
 
 import './style.css';
 
-import { initAnnounce } from './announce.ts';
+import { initAnnounce, setVoice } from './announce.ts';
 import { ContactBook } from './contacts.ts';
+import { BrowserPlayer, Speaker, browserFallback } from './speech.ts';
+import { getDevice } from './connection.ts';
 import { log } from './state.ts';
 import { initConnect } from './ui/connect.ts';
+import { initContacts } from './ui/contacts.ts';
 import { initDevice } from './ui/device.ts';
 import { el } from './ui/dom.ts';
 import { initLog } from './ui/log.ts';
-import { initContacts } from './ui/contacts.ts';
 import { initSend } from './ui/send.ts';
 import { initServer } from './ui/server.ts';
+import { initVoice, loadVoiceEnabled } from './ui/voice.ts';
+
+let voiceOn = loadVoiceEnabled();
+const speaker = new Speaker({
+    fetch: (input, init) => fetch(input, init),
+    player: new BrowserPlayer(),
+    fallback: browserFallback(),
+    enabled: () => voiceOn,
+    // the device speaks during every flow (PIN entry, announcement): wait until it is done
+    mayStart: () => !(getDevice()?.client.flowRunning ?? false),
+    onFallback: (reason) => log('app', `App voice unavailable (${reason}); using the browser voice.`),
+});
 
 initAnnounce(el('live-status'), el('live-alert'), el('status-line'));
+setVoice((text, interrupt) => void speaker.speak(text, interrupt ? 'interrupt' : 'normal'));
 initLog();
 initConnect();
 initDevice();
@@ -29,5 +45,6 @@ try {
 }
 const book = new ContactBook(storage);
 initContacts(book, () => undefined);
-initSend(book);
+const send = initSend(book, speaker);
+initVoice(book, speaker, send, (on) => (voiceOn = on));
 log('app', 'Ready. Connect the device over USB, or use the simulator.');

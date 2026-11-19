@@ -106,7 +106,7 @@ function harness(steps: MockStep[], rpcOver = {}) {
         pubkey: DEVICE,
         rpc,
         unlock: () => client.unlock(),
-        report: (r: Report) => void reports.push(r),
+        report: (r: Report): void | Promise<void> => void reports.push(r),
         sleep: async () => undefined,
     };
     return { t, trace, sent, reports, deps };
@@ -138,7 +138,9 @@ test('locked: balance, HELLO, UNLOCK, then a fresh blockhash, sign, verify, broa
         assert.match(out.explorer, /^https:\/\/explorer\.solana\.com\/tx\/[1-9A-HJ-NP-Za-km-z]+\?cluster=devnet$/);
         assert.equal(out.appPhrase.length, 3);
     }
-    assert.ok(h.reports.some((r) => r.phase === 'checksum' && r.text.includes(out.ok ? out.appPhrase.join(' ') : '?')));
+    assert.ok(
+        h.reports.some((r) => r.phase === 'checksum' && r.text.includes(out.ok ? out.appPhrase.join(', ') : '?')),
+    );
     assert.ok(h.reports.some((r) => r.text === 'Press Confirm or Reject on the device.'));
 });
 
@@ -306,4 +308,40 @@ test('an RPC error after broadcast never says nothing was sent', async () => {
     const out = await runSend(intent(), h.deps);
     assert.equal(out.ok, true);
     assert.match(h.reports.at(-1)?.text ?? '', /^Sent, but/);
+});
+
+test('the checksum line is spoken, and finishes, before SIGN_REQUEST', async () => {
+    const h = harness([hello(2), signs()]);
+    let spokenAt = -1;
+    const report = h.deps.report;
+    h.deps.report = (r: Report) => {
+        report(r);
+        if (r.phase === 'checksum') {
+            assert.match(r.text, /^Sending 0\.01 SOL to Henry\. Checksum: \w+, \w+, \w+\.$/);
+            return new Promise<void>((res) =>
+                setTimeout(() => {
+                    h.trace.push('speech:done');
+                    spokenAt = h.trace.length;
+                    res();
+                }, 20),
+            );
+        }
+    };
+    assert.equal((await runSend(intent(), h.deps)).ok, true);
+    assert.ok(spokenAt > 0);
+    assert.ok(h.trace.indexOf('speech:done') < h.trace.indexOf('dev:0x10'), h.trace.join(' '));
+});
+
+test('a stuck or failing app voice never blocks the send', async () => {
+    const makers = [() => new Promise<void>(() => undefined), () => Promise.reject(new Error('tts down'))];
+    for (const make of makers) {
+        const h = harness([hello(2), signs()]);
+        const report = h.deps.report;
+        h.deps.report = (r: Report) => {
+            report(r);
+            return r.phase === 'checksum' ? make() : undefined;
+        };
+        const out = await runSend(intent(), { ...h.deps, checksumWaitMs: 30 });
+        assert.equal(out.ok, true);
+    }
 });

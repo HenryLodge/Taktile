@@ -29,6 +29,27 @@
 
             <section aria-labelledby="h-send">
                 <h2 id="h-send">Send</h2>
+                <div class="talk">
+                    <button
+                        id="btn-talk"
+                        type="button"
+                        class="talk-button"
+                        aria-pressed="false"
+                        aria-describedby="talk-help"
+                    >
+                        Hold Space to talk
+                    </button>
+                    <p id="talk-help" class="note">
+                        Hold Space anywhere except in a text field, say a command, release. Or press Enter on this
+                        button to start, and again to stop.
+                    </p>
+                    <div class="row">
+                        <button id="btn-mic" type="button">Enable microphone</button>
+                        <label class="check"
+                            ><input id="voice-toggle" type="checkbox" checked /> Speak with app voice</label
+                        >
+                    </div>
+                </div>
                 <form id="send-form" novalidate>
                     <label for="send-command">Command</label>
                     <p id="send-hint" class="note">For example: send 0.01 SOL to Henry</p>
@@ -120,7 +141,12 @@
 
         <footer>
             <h2>Keyboard</h2>
-            <p>Tab and Shift+Tab move between controls. Enter or Space presses a button.</p>
+            <ul>
+                <li>Space (hold): talk. Works everywhere except in text fields and checkboxes.</li>
+                <li>Enter on the talk button: start listening; Enter again: stop.</li>
+                <li>Esc: stop the app voice.</li>
+                <li>Tab and Shift+Tab move between controls. Enter presses a button.</li>
+            </ul>
         </footer>
 
         <div id="live-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
