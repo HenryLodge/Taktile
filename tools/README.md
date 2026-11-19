@@ -19,6 +19,6 @@ npm --prefix tools run check             # both generators' --check
 | `gen-audio.mjs` | Generate clips from `clips.json` with ElevenLabs → `tools/out/clips/<id>.pcm` + `tools/out/preview/*.wav` (gitignored; needs `server/.env`; cached, `--dry-run`, `--only`). See `docs/AUDIO.md` |
 | `verify-ed25519.mjs` | Verifies the `ED25519 pub=… msg=… sig=…` lines printed by firmware bring-up step 0 with `node:crypto`; exits 1 on any bad signature or none found |
 | `pack-clips.mjs` | `tools/out/clips/<id>.pcm` → `tools/out/clips.bin`, the clip pack for the device's `clips` partition (gitignored; `--check` to verify; flashing in `firmware/README.md`). Refuses clips generated from older text. Format in `docs/AUDIO.md` |
-| `setup-devnet.mjs` | Airdrop SOL, fund devnet USDC, create contacts' ATAs |
+| `setup-devnet.mjs` | Devnet demo setup, safe to rerun: `node tools/setup-devnet.mjs --device <addr> --contact Henry=<addr> [--dry-run]`. Creates a setup payer (`tools/out/setup-payer.keypair.json`, gitignored), airdrops SOL to it and the device when under 0.05 SOL, and creates the devnet-USDC token accounts of the device, each contact and the demo attacker (malware mode). Prints balances. Devnet USDC comes from Circle's faucet by hand: https://faucet.circle.com → Solana Devnet → the device address (20 USDC every 2 hours) |
 
 Clip IDs come from `core/include/tk_clips.h`. Listen to every generated clip before packing it: what the device says is trusted output.

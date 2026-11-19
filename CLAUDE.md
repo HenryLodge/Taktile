@@ -69,6 +69,7 @@ node --experimental-strip-types --test app/src/*.test.ts   # app checksum tests 
 node tools/gen-clips.mjs                    # regenerates tools/clips.json, sim/src/clip_text.c, core/include/tk_clips_fp.h from tk_clips.h; add --check to verify
 node tools/gen-audio.mjs --dry-run          # then without --dry-run: ElevenLabs clips -> tools/out/ (needs server/.env; cached)
 node tools/pack-clips.mjs                   # tools/out/clips/*.pcm -> tools/out/clips.bin (the clip pack; flash: firmware/README.md); add --check to verify
+node tools/setup-devnet.mjs --device <addr> --contact Henry=<addr>   # devnet SOL + USDC accounts; --dry-run first; USDC itself via faucet.circle.com
 node tools/verify-ed25519.mjs out.txt       # checks the ED25519 lines printed by firmware bring-up step 0 (node:crypto)
 ```
 

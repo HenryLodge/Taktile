@@ -40,10 +40,10 @@ Work top-down. P0 = must ship for the demo. P1 = ship if time allows. P2 = READM
 
 - [x] P0 `server/`: `/api/stt`, `/api/tts` ElevenLabs proxy; key from `.env`. No dependencies, localhost only, loop limits, TTS cache, canned mode (`server/README.md`). Live probe 2026-11-18: STT `scribe_v2` with keyterms as repeated fields ("Send one USDC to Henry", language `eng`); TTS `eleven_flash_v2_5` with a separate app voice. The key needs only TTS and STT permissions (`models_read` is optional)
 - [ ] P0 `app/`: accessible UI, Web Serial + WebSocket transports, push-to-talk, intent parsing ("send N USDC/SOL to NAME")
-- [ ] P0 Tx builder with web3.js on devnet; broadcast; explorer link announced
+- [x] P0 Tx builder with web3.js on devnet; broadcast; explorer link announced. `app/src/tx.ts` (Shape A and B, byte-equal to the parser vectors), `send.ts`; SOL sent from the app on the device 2026-11-18. The link is announced in the live region; it will also be spoken with TTS (M5)
 - [ ] P0 App-side checksum spoken via TTS
 - [ ] P0 Malware-mode toggle (swaps destination to an attacker ATA) for the demo
-- [ ] P0 `tools/setup-devnet.mjs`: airdrop SOL, get devnet USDC to the device wallet (Circle faucet is manual; document the steps), create contacts' ATAs
+- [x] P0 `tools/setup-devnet.mjs`: airdrop SOL, get devnet USDC to the device wallet (Circle faucet is manual; document the steps), create contacts' ATAs. Also the demo attacker's USDC account (`tools/README.md`)
 - [ ] P1 ElevenLabs Agents conversational disambiguation ("Jack Miller or Jack Chen?")
 - [ ] P1 "My address phrase" page for the contact's side of enrollment
 

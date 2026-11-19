@@ -10,6 +10,8 @@ export type SigStatus = { state: 'pending' } | { state: 'confirmed' } | { state:
 
 export interface Rpc {
     balance(pubkey: Uint8Array): Promise<bigint>;
+    /** Token amount in base units, or null when the token account does not exist. */
+    tokenBalance(tokenAccount: Uint8Array): Promise<bigint | null>;
     latestBlockhash(): Promise<{ blockhash: string; lastValidBlockHeight: number }>;
     blockHeight(): Promise<number>;
     sendRaw(tx: Uint8Array): Promise<string>;
@@ -51,6 +53,14 @@ export function createDevnetRpc(): Rpc {
     };
     return {
         balance: (pk) => call(async () => BigInt(await conn.getBalance(new PublicKey(pk), 'confirmed'))),
+        tokenBalance: (ata) =>
+            call(async () => {
+                const key = new PublicKey(ata);
+                if ((await conn.getAccountInfo(key, 'confirmed')) === null) {
+                    return null;
+                }
+                return BigInt((await conn.getTokenAccountBalance(key, 'confirmed')).value.amount);
+            }),
         latestBlockhash: () => call(() => conn.getLatestBlockhash('confirmed')),
         blockHeight: () => call(() => conn.getBlockHeight('confirmed')),
         sendRaw: (tx) => call(() => conn.sendRawTransaction(tx, { preflightCommitment: 'confirmed' })),
