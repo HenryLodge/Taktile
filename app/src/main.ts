@@ -48,3 +48,9 @@ initContacts(book, () => undefined);
 const send = initSend(book, speaker);
 initVoice(book, speaker, send, (on) => (voiceOn = on));
 log('app', 'Ready. Connect the device over USB, or use the simulator.');
+
+// DEMO ONLY: npm run demo sets VITE_TK_DEMO_MALWARE=1. In every other build this branch is dead code and
+// the malware module is not bundled (scripts/check-no-malware.mjs, part of npm run check, proves it).
+if (import.meta.env.VITE_TK_DEMO_MALWARE === '1') {
+    void import('./ui/malware.ts').then((m) => m.initMalware());
+}

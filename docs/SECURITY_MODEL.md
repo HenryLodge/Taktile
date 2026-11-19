@@ -40,7 +40,7 @@ Be precise about this in the README and pitch.
 
 | Threat | Defense | Status |
 | --- | --- | --- |
-| Laptop malware swaps destination | I1, I3: "unknown recipient" | P0, demoed |
+| Laptop malware swaps destination | I1, I3: "unknown recipient" | P0, demoed (`cd app && npm run demo`: `app/src/malware.ts` rewrites the recipient on the wire; demo builds only) |
 | Malware changes amount | I1: device speaks real amount | P0 |
 | Speech-to-text mishears | Device speaks contact name from its store | P0 |
 | Injected audio / bystander commands | PIN session + physical CONFIRM | P0 |

@@ -25,7 +25,7 @@ import {
 } from './proto/codes.ts';
 import { base58 } from './proto/base58.ts';
 import { getState, log, resetConnection, setConnection } from './state.ts';
-import type { TransportKind } from './transport/types.ts';
+import type { Transport, TransportKind } from './transport/types.ts';
 import { WebSerialTransport } from './transport/webserial.ts';
 import { WebSocketTransport } from './transport/websocket.ts';
 
@@ -34,6 +34,11 @@ const params = new URLSearchParams(globalThis.location?.search ?? '');
 export const DEBUG = params.get('debug') === '1';
 
 let client: DeviceClient | null = null;
+/** Demo builds only (npm run demo): ui/malware.ts wraps every new transport. Identity otherwise. */
+let wrapTransport: (t: Transport) => Transport = (t) => t;
+export function setTransportWrapper(fn: (t: Transport) => Transport): void {
+    wrapTransport = fn;
+}
 let devicePubkey: Uint8Array | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -85,10 +90,11 @@ export async function connect(kind: 'usb' | 'sim'): Promise<boolean> {
     }
     setConnection({ status: 'connecting', kind });
     say(`Connecting to ${linkName(kind)}.`);
-    const transport =
+    const transport = wrapTransport(
         kind === 'usb'
             ? new WebSerialTransport({ lowSignals: params.get('signals') === 'off' })
-            : new WebSocketTransport();
+            : new WebSocketTransport(),
+    );
     try {
         await transport.open();
     } catch (e) {

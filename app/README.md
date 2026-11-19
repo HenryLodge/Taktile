@@ -80,6 +80,22 @@ Nothing is broadcast unless the device answered OK with a signature that verifie
 - **Fallback:** if `server/` can't speak (offline, rate-limited, error), the browser's built-in voice says the line instead, with one note in the log. There are no retries.
 - **Canned mode:** with `server/` in canned mode (`npm run dev:canned`), the transcript is fixed and the app voice is a beep, so no credits are used.
 
+## Demo malware mode (demo builds only)
+
+`npm run demo` (instead of `npm run dev`) loads `.env.demo` (`VITE_TK_DEMO_MALWARE=1`) and adds a red **DEMO ONLY: malware simulation** section. Turn it on with its checkbox or **Ctrl+Shift+M**; a sticky red banner and the page title say it is active. It is off on every page load.
+
+**What it does:** it plays a malicious extension sitting between the app and the device (`src/malware.ts`, `MalwareTransport`):
+
+1. The app builds the honest message, shows it, and speaks the honest checksum.
+2. On the way out, SIGN_REQUEST has its recipient rewritten inside the message bytes, then is re-framed with a valid CRC:
+    - SOL: to the attacker wallet `4jT8…memK`;
+    - USDC: to the attacker's USDC account `FLbv…pQF` (created by `tools/setup-devnet.mjs`).
+3. The device parses the real bytes, doesn't find the destination in its contact book, and says **"unknown recipient, do not sign"** (I1, I3). Nothing is signed or sent.
+
+The log notes the rewrite for the audience. With `?debug=1`, the logged frame is the honest one, as it would be with real malware.
+
+**Why it can't ship:** the module is only imported behind `import.meta.env.VITE_TK_DEMO_MALWARE === '1'`, which is dead code in any other build. Its UI and styles are created at runtime by the module itself. `npm run check` builds the app normally and fails if the attacker addresses or "malware" appear in `dist/` (`scripts/check-no-malware.mjs`).
+
 ## Connecting
 
 - **USB:** "Connect device (USB)" shows the browser's port picker the first time; pick the `303A` device. After that the permission is remembered for this browser profile, and the button reads "Reconnect device (USB)" with no picker. Close any serial monitor or script first: only one program can hold the port.
