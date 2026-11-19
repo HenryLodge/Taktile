@@ -27,6 +27,29 @@ npm run build      # production bundle in dist/
 | `src/state.ts`, `src/announce.ts`, `src/ui/` | Store, live regions (polite status + assertive alerts), page sections                                                                                                                           |
 | `src/checksum.ts`                            | App-side checksum phrases (`tests/vectors/checksum.json`)                                                                                                                                       |
 
+## Sending (SOL; USDC follows)
+
+Type a command such as `send 0.01 SOL to Henry` under **Send**. The flow (`src/send.ts`) runs in the order `firmware/tools/sign_devnet.py` proved on devnet:
+
+1. Check the device's balance covers the amount plus the 0.000005 SOL fee. This is not a limit: a send that would fail on-chain is refused before the device is involved.
+2. HELLO, then **UNLOCK** if the device is locked: you enter the PIN on the device.
+3. Fetch the blockhash _after_ the PIN (it lasts about 60 s), then build the legacy message (`src/tx.ts`, the same web3.js calls as `tools/gen-vectors.mjs`) with the device as fee payer (I5).
+4. Show the **app checksum** (3 words). The device says its own 3 words from the bytes it received; they must match.
+5. **SIGN_REQUEST**: the device announces the amount, the recipient's name from _its_ contact book (or "unknown recipient") and its checksum, then waits for CONFIRM.
+6. Verify the Ed25519 signature over exactly the bytes built (WebCrypto). Check the blockhash is still valid, then broadcast to devnet, wait for confirmation, and show the explorer link.
+
+Nothing is broadcast unless the device answered OK with a signature that verifies. RPC is devnet only: the endpoint is a constant, and the app checks its genesis hash before the first call (`src/rpc.ts`).
+
+**Commands** (`src/intent.ts`, deterministic):
+
+- **Grammar:** `send|pay|transfer|give <amount> <SOL|USDC> to <name>`.
+- **Amounts:** digits (`0.01`, `.5`, `1,000`) or words (`two point five`, `one hundred twenty`).
+- **Dollars:** `$5` and `5 dollars` mean USDC.
+- **No token:** refused ("Say SOL or USDC").
+- **Near-miss names** (one letter off): the app offers "Did you mean Henry?" and you press Enter to accept. It never guesses on its own.
+
+**App contacts** are a name → address list kept in this browser's localStorage (`src/contacts.ts`). They are untrusted: the device checks every destination against its own contact book, and adding a contact here does not add it to the device.
+
 ## Connecting
 
 - **USB:** "Connect device (USB)" shows the browser's port picker the first time; pick the `303A` device. After that the permission is remembered for this browser profile, and the button reads "Reconnect device (USB)" with no picker. Close any serial monitor or script first: only one program can hold the port.
