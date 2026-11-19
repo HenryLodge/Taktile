@@ -52,6 +52,34 @@ Nothing is broadcast unless the device answered OK with a signature that verifie
 
 **App contacts** are a name → address list kept in this browser's localStorage (`src/contacts.ts`). They are untrusted: the device checks every destination against its own contact book, and adding a contact here does not add it to the device.
 
+## Voice
+
+**Push-to-talk** (`src/voice.ts`, `src/ui/voice.ts`):
+
+- **Talking:** hold **Space** anywhere except in a text field or checkbox, say a command, release. On the talk button, **Enter** starts listening and Enter again stops: screen readers in browse mode turn Space into a click, so the toggle is the screen-reader path.
+- **Feedback:** a high beep when recording starts and a low beep when it stops.
+- **Length:** a recording under 0.4 s is refused ("Hold Space while you speak"), and recording stops by itself at 15 s.
+- **Transcription:** the recording (`audio/webm` opus) goes to `server/` `/api/stt`, along with the app contact names as recognition hints. The transcript runs through the same intent parser and send flow as a typed command and **starts at once**: the device's announcement, PIN and CONFIRM are the real approval. A near-miss name still asks for Enter.
+- **Microphone:** permission is asked once (or via "Enable microphone"), and the stream is kept open so the first word isn't clipped.
+- **Errors:** each one is spoken and announced, and focus moves to the command box so you can type instead:
+    - microphone blocked or missing;
+    - nothing heard;
+    - speech service busy or unavailable.
+
+**App voice** (`src/speech.ts`): ElevenLabs text-to-speech through `server/` `/api/tts`, in a separate app voice (`ELEVENLABS_APP_VOICE_ID`). Only the important lines are spoken (decided 2026-11-18); progress stays on screen and in the screen-reader live regions:
+
+1. **The checksum:** "Sending 1 USDC to Henry. Checksum: solo, aardvark, ruffled." It is spoken in full before SIGN_REQUEST, so it comes before the device's own announcement. Two independent channels say the same three words: the laptop from the bytes it built, and the earpiece from the bytes the device received. The flow waits at most 8 s for it.
+2. **The final result:** "Sent and confirmed…" or the refusal.
+3. **Voice problems:** microphone blocked or missing, nothing heard, speech service down, and command problems after speaking ("Say SOL or USDC", "Did you mean Henry?").
+
+**When and how it speaks:**
+
+- **Never over the device:** it never starts while the device is running a flow (PIN entry, announcement, CONFIRM). A line that comes up then waits until the device is done.
+- **Queue:** one line at a time; errors interrupt.
+- **Stopping:** **Esc** stops it, and the "Speak with app voice" checkbox turns it off (remembered in this browser).
+- **Fallback:** if `server/` can't speak (offline, rate-limited, error), the browser's built-in voice says the line instead, with one note in the log. There are no retries.
+- **Canned mode:** with `server/` in canned mode (`npm run dev:canned`), the transcript is fixed and the app voice is a beep, so no credits are used.
+
 ## Connecting
 
 - **USB:** "Connect device (USB)" shows the browser's port picker the first time; pick the `303A` device. After that the permission is remembered for this browser profile, and the button reads "Reconnect device (USB)" with no picker. Close any serial monitor or script first: only one program can hold the port.

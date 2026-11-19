@@ -124,3 +124,27 @@ test('amount: exact parse and format', () => {
     assert.equal(formatAmount(0n, 6), '0');
     assert.equal(formatAmount(U64_MAX, 9), '18446744073.709551615');
 });
+
+// Transcripts shaped like ElevenLabs scribe output (the probe's actual output first).
+const STT: [string, 'SOL' | 'USDC', bigint][] = [
+    ['Send one USDC to Henry', 'USDC', USDC], // real device run 2026-11-18
+    ['Send 0.01 SOL to Henry', 'SOL', LAMPORTS / 100n], // real device run 2026-11-18
+    ['Send one USDC to Henry.', 'USDC', USDC],
+    ['Send 1 USDC to Henry.', 'USDC', USDC],
+    ['Send $1 to Henry.', 'USDC', USDC],
+    ['Send one U.S.D.C. to Henry.', 'USDC', USDC],
+    ['Send 0.01 SOL to Henry.', 'SOL', LAMPORTS / 100n],
+    ['Send 0.01 sol to Henry.', 'SOL', LAMPORTS / 100n],
+    ['Um, send one USDC to Henry, please.', 'USDC', USDC],
+];
+for (const [text, token, amount] of STT) {
+    test(`stt transcript: ${JSON.stringify(text)}`, () => {
+        const r = parseIntent(text, BOOK);
+        assert.equal(r.kind, 'send', r.kind === 'error' ? r.message : '');
+        if (r.kind === 'send') {
+            assert.equal(r.token, token);
+            assert.equal(r.amount, amount);
+            assert.equal(r.contact.name, 'Henry');
+        }
+    });
+}

@@ -50,7 +50,10 @@ export interface SendDeps {
     rpc: Rpc;
     /** UNLOCK on the device; resolves with the status, or null if the request failed. */
     unlock: () => Promise<number | null>;
-    report: (r: Report) => void;
+    /** Shows, announces and speaks a step. For the checksum it may return a promise: the flow waits
+     * for it (the app voice finishing the three words), at most checksumWaitMs, before SIGN_REQUEST. */
+    report: (r: Report) => void | Promise<void>;
+    checksumWaitMs?: number;
     sleep?: (ms: number) => Promise<void>;
     confirmTimeoutMs?: number;
     pollMs?: number;
@@ -67,10 +70,10 @@ const usdcText = (units: bigint) => `${formatAmount(units, DECIMALS.USDC)} USDC`
 export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutcome> {
     const sleep = d.sleep ?? defaultSleep;
     const fail = (text: string, level: ReportLevel = 'alert'): SendOutcome => {
-        d.report({ phase: 'failed', text, level });
+        void d.report({ phase: 'failed', text, level });
         return { ok: false, reason: text };
     };
-    const info = (phase: SendPhase, text: string) => d.report({ phase, text, level: 'info' });
+    const info = (phase: SendPhase, text: string) => void d.report({ phase, text, level: 'info' });
 
     if (d.client.flowRunning) {
         return fail('Wait for the current request on the device to finish.');
@@ -86,7 +89,7 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
     let sent: { sig: string; appPhrase: string[] } | null = null;
     try {
         // 1. Will it fail on-chain anyway? (Not a limit: the device would sign, devnet would refuse.)
-        info('checking', `Sending ${what}.`);
+        info('checking', 'Checking balances on devnet.');
         const have = await d.rpc.balance(d.pubkey);
         const needSol = usdc ? FEE_LAMPORTS : amount + FEE_LAMPORTS;
         if (have < needSol) {
@@ -129,7 +132,20 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
             ? usdcTransferMessage(d.pubkey, to, amount, bh.blockhash)
             : solTransferMessage(d.pubkey, to, amount, bh.blockhash);
         const appPhrase = await txPhrase(message);
-        info('checksum', `App checksum: ${appPhrase.join(' ')}. The device should say the same three words.`);
+        // The app voice says the three words before the device starts its own announcement.
+        const spoken = d.report({
+            phase: 'checksum',
+            text: `Sending ${what}. Checksum: ${appPhrase.join(', ')}.`,
+            level: 'info',
+        });
+        if (spoken instanceof Promise) {
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            await Promise.race([
+                spoken.catch(() => undefined),
+                new Promise<void>((r) => (timer = setTimeout(r, d.checksumWaitMs ?? 8000))),
+            ]);
+            clearTimeout(timer);
+        }
 
         // 4. The device announces, the user confirms there.
         const { status, signature } = await d.client.signRequest(message, (e) => info('device', eventText(e)));
@@ -160,7 +176,11 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
         for (let i = 0; i < deadline; i++) {
             const st = await d.rpc.signatureStatus(sig);
             if (st.state === 'confirmed') {
-                d.report({ phase: 'done', text: `Confirmed: sent ${what}.`, level: 'info' });
+                void d.report({
+                    phase: 'done',
+                    text: `Sent and confirmed: ${what}. The explorer link is on screen.`,
+                    level: 'info',
+                });
                 return { ok: true, signature: sig, explorer: EXPLORER_TX(sig), confirmed: true, appPhrase };
             }
             if (st.state === 'failed') {
@@ -168,13 +188,13 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
             }
             await sleep(d.pollMs ?? 1500);
         }
-        d.report({ phase: 'done', text: 'Sent, but not confirmed yet. Check the explorer link.', level: 'info' });
+        void d.report({ phase: 'done', text: 'Sent, but not confirmed yet. Check the explorer link.', level: 'info' });
         return { ok: true, signature: sig, explorer: EXPLORER_TX(sig), confirmed: false, appPhrase };
     } catch (e) {
         const m = e instanceof Error ? e.message : String(e);
         if (sent !== null) {
             // Broadcast already happened: never claim nothing was sent.
-            d.report({
+            void d.report({
                 phase: 'done',
                 text: `Sent, but checking confirmation failed (${m}). Check the explorer link.`,
                 level: 'info',

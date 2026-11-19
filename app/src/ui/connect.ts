@@ -10,7 +10,7 @@ export function initConnect(): void {
     const sim = el<HTMLButtonElement>('btn-sim');
     const off = el<HTMLButtonElement>('btn-disconnect');
     const note = el('usb-note');
-    const deviceHeading = el('h-device');
+    const talk = el('btn-talk');
     const supported = webSerialSupported();
 
     if (!supported) {
@@ -27,7 +27,7 @@ export function initConnect(): void {
 
     const go = async (kind: 'usb' | 'sim') => {
         if (await connect(kind)) {
-            deviceHeading.focus();
+            talk.focus(); // voice is the main action once connected
         }
     };
     onPress(usb, () => go('usb'));
