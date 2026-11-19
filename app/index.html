@@ -3,191 +3,22 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="color-scheme" content="light dark" />
+        <meta name="color-scheme" content="light" />
+        <meta name="theme-color" content="#ffffff" />
         <title>Taktile</title>
+        <link
+            rel="icon"
+            href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='8' fill='%230b0d0c'/%3E%3Ccircle cx='10' cy='8' r='2.4' fill='%2322a06b'/%3E%3Ccircle cx='10' cy='14' r='2.4' fill='%23fff'/%3E%3Ccircle cx='18' cy='14' r='2.4' fill='%23fff'/%3E%3C/svg%3E"
+        />
     </head>
     <body>
-        <a class="skip" href="#main">Skip to main content</a>
-        <header>
-            <h1>Taktile</h1>
-            <p>Companion app for the Taktile hardware wallet. Solana devnet only.</p>
-        </header>
+        <div id="root"></div>
+        <noscript>Taktile needs JavaScript.</noscript>
 
-        <main id="main">
-            <p id="status-line" class="status-line">Not connected.</p>
-
-            <section aria-labelledby="h-conn">
-                <h2 id="h-conn">Connection</h2>
-                <div class="buttons">
-                    <button id="btn-usb" type="button">Connect device (USB)</button>
-                    <button id="btn-sim" type="button">Use simulator</button>
-                    <button id="btn-disconnect" type="button" aria-disabled="true">Disconnect</button>
-                </div>
-                <p id="usb-note" class="note" hidden></p>
-                <p id="server-line">Speech service: checking…</p>
-            </section>
-
-            <section aria-labelledby="h-send">
-                <h2 id="h-send">Send</h2>
-                <div class="talk">
-                    <button
-                        id="btn-talk"
-                        type="button"
-                        class="talk-button"
-                        aria-pressed="false"
-                        aria-describedby="talk-help"
-                    >
-                        Hold Space to talk
-                    </button>
-                    <p id="talk-help" class="note">
-                        Hold Space anywhere except in a text field, say a command, release. Or press Enter on this
-                        button to start, and again to stop.
-                    </p>
-                    <div class="row">
-                        <button id="btn-mic" type="button">Enable microphone</button>
-                        <label class="check"
-                            ><input id="voice-toggle" type="checkbox" checked /> Speak with app voice</label
-                        >
-                        <label class="check"
-                            ><input id="agent-toggle" type="checkbox" checked /> Use the ElevenLabs assistant for
-                            questions</label
-                        >
-                    </div>
-                </div>
-                <form id="send-form" novalidate>
-                    <label for="send-command">Command</label>
-                    <p id="send-hint" class="note">For example: send 0.01 SOL to Henry</p>
-                    <div class="row">
-                        <input
-                            id="send-command"
-                            type="text"
-                            autocomplete="off"
-                            spellcheck="false"
-                            aria-describedby="send-hint"
-                        />
-                        <button id="btn-send" type="submit" aria-disabled="true">Send</button>
-                        <button id="btn-send-cancel" type="button" aria-disabled="true">Cancel on device</button>
-                    </div>
-                </form>
-                <p id="send-summary"></p>
-                <p id="send-checksum" class="checksum"></p>
-                <p id="send-phase"></p>
-                <p>
-                    <a id="send-link" href="#" target="_blank" rel="noopener" hidden
-                        >View on Solana Explorer (devnet)</a
-                    >
-                </p>
-            </section>
-
-            <section aria-labelledby="h-contacts">
-                <h2 id="h-contacts">Contacts</h2>
-                <p class="note">
-                    Adding a contact here asks the device to add it: the device spells the name and reads an 8-word
-                    address phrase. Check the words with the contact over the phone (they read theirs under My address
-                    phrase), then confirm on the device. The list on this laptop is untrusted; the device checks every
-                    recipient against its own contact book.
-                </p>
-                <p id="contact-status" class="status-sub" tabindex="-1"></p>
-                <p id="contact-empty">No app contacts yet.</p>
-                <ul id="contact-list" class="contacts"></ul>
-                <form id="contact-form" novalidate>
-                    <fieldset>
-                        <legend>Add a contact</legend>
-                        <label for="contact-name">Name</label>
-                        <input
-                            id="contact-name"
-                            type="text"
-                            autocomplete="off"
-                            maxlength="12"
-                            aria-describedby="contact-error"
-                        />
-                        <label for="contact-address">Wallet address</label>
-                        <input
-                            id="contact-address"
-                            type="text"
-                            autocomplete="off"
-                            spellcheck="false"
-                            aria-describedby="contact-error"
-                        />
-                        <p id="contact-error" class="error"></p>
-                        <button id="btn-contact-add" type="submit">Add contact</button>
-                    </fieldset>
-                </form>
-            </section>
-
-            <section aria-labelledby="h-phrase">
-                <h2 id="h-phrase">My address phrase (for the person adding you)</h2>
-                <p class="note">
-                    When someone adds you as a contact, their device reads 8 words made from your address. Read these
-                    words to them over the phone; they must match word for word.
-                </p>
-                <form id="phrase-form" novalidate>
-                    <label for="phrase-address">Your wallet address</label>
-                    <div class="row">
-                        <input
-                            id="phrase-address"
-                            type="text"
-                            autocomplete="off"
-                            spellcheck="false"
-                            aria-describedby="phrase-error"
-                        />
-                        <button id="btn-phrase-device" type="button" aria-disabled="true">
-                            Use this device's address
-                        </button>
-                    </div>
-                    <p id="phrase-error" class="error"></p>
-                    <div class="row">
-                        <button type="submit">Show my phrase</button>
-                        <button id="btn-phrase-read" type="button" aria-disabled="true">Read aloud</button>
-                    </div>
-                </form>
-                <ol id="phrase-words" class="phrase" aria-label="Address phrase"></ol>
-            </section>
-
-            <section aria-labelledby="h-device">
-                <h2 id="h-device" tabindex="-1">Device</h2>
-                <dl>
-                    <dt>State</dt>
-                    <dd id="dev-state">Not connected</dd>
-                    <dt>Wallet address</dt>
-                    <dd>
-                        <code id="dev-address">—</code>
-                        <button id="btn-copy" type="button" aria-disabled="true">Copy address</button>
-                    </dd>
-                    <dt>Firmware</dt>
-                    <dd id="dev-fw">—</dd>
-                    <dt>Contacts on the device</dt>
-                    <dd id="dev-contacts">—</dd>
-                </dl>
-                <div class="buttons">
-                    <button id="btn-unlock" type="button" aria-disabled="true">Unlock on device</button>
-                    <button id="btn-cancel" type="button" aria-disabled="true">Cancel on device</button>
-                </div>
-            </section>
-
-            <section aria-labelledby="h-log">
-                <h2 id="h-log">What the app heard (untrusted)</h2>
-                <p class="note">
-                    This laptop can be compromised. Only the device's own voice in your earpiece tells you what you are
-                    signing.
-                </p>
-                <ol id="log" class="log"></ol>
-            </section>
-        </main>
-
-        <footer>
-            <h2>Keyboard</h2>
-            <ul>
-                <li>Space (hold): talk. Works everywhere except in text fields and checkboxes.</li>
-                <li>Enter on the talk button: start listening; Enter again: stop.</li>
-                <li>Esc: stop the app voice.</li>
-                <li>Tab and Shift+Tab move between controls. Enter presses a button.</li>
-            </ul>
-        </footer>
-
+        <!-- Screen-reader announcements (announce.ts). Outside React so they exist before anything is said. -->
         <div id="live-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
         <div id="live-alert" class="sr-only" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
-        <script type="module" src="/src/main.ts"></script>
+        <script type="module" src="/src/main.tsx"></script>
     </body>
 </html>

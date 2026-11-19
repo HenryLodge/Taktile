@@ -211,6 +211,11 @@ export class BrowserRecorder implements Recorder {
         return this.stream !== null;
     }
 
+    /** The open microphone stream (for the talk orb's level meter), or null before the first use. */
+    get micStream(): MediaStream | null {
+        return this.stream;
+    }
+
     async openMic(): Promise<void> {
         if (this.stream) {
             return;

@@ -1,6 +1,6 @@
 # app/
 
-Companion web app (Vite + TypeScript, strict mode, no UI framework). It connects to the device over Web Serial or to `sim/` over WebSocket. It turns typed or spoken commands (push-to-talk through `server/`) into devnet SOL and USDC transfers, speaks the app-side checksum, has the device announce and sign them, broadcasts them, and adds contacts to the device.
+Companion web app (Vite + TypeScript, strict mode, React for the UI). It connects to the device over Web Serial or to `sim/` over WebSocket. It turns typed or spoken commands (push-to-talk through `server/`) into devnet SOL and USDC transfers, speaks the app-side checksum, has the device announce and sign them, broadcasts them, and adds contacts to the device.
 
 - **Browser:** Chrome or Edge for USB (Web Serial). The simulator works in any browser.
 - **Accessibility:** the app must be fully keyboard- and screen-reader-usable (labels, live regions for status). Accessibility is the product.
@@ -15,6 +15,15 @@ npm run check      # tsc (app + tests), eslint, prettier
 npm run build      # production bundle in dist/
 ```
 
+## Pages
+
+- **`/` (home):** the talk orb and the conversation. Hold Space (or press Enter on the orb) to talk. The orb turns dark green and follows your voice level. Your words appear on the right, and Taktile's key replies (checksum, questions, result with the explorer link, errors) on the left. On load, the app reconnects without a picker to a USB device this browser was already allowed to use.
+- **`/data`:** everything else: connect (USB or simulator), typed commands and toggles, contacts, my address phrase, device details, the full log, and keyboard help.
+
+Both are views of one page (`src/ui/route.ts`, both stay mounted), so switching keeps the connection open. Space works on both.
+
+**UI code:** `src/main.tsx` creates the controllers and renders `src/ui/App.tsx`. The logic modules (`send.ts`, `connection.ts`, `voice.ts`, `disambiguate.ts`, `enroll.ts`, …) have no React in them. `src/ui/send-controller.ts` and `voice-controller.ts` hold the UI state in small stores that components read with `useSyncExternalStore`. Components are in `src/ui/components/`. The demo-only module is `src/ui/demo-malware.tsx`, and normal builds never import it.
+
 ## Layout
 
 | Path                                         | What                                                                                                                                                                                            |
@@ -24,7 +33,7 @@ npm run build      # production bundle in dist/
 | `src/proto/codes.ts`                         | Message types, statuses, events, errors, and the sentence the app says for each                                                                                                                 |
 | `src/transport/`                             | `Transport` interface; `webserial.ts` (vendor `0x303A`), `websocket.ts` (`ws://localhost:8765`), `mock.ts` (scripted replies, for tests)                                                        |
 | `src/connection.ts`                          | Connect, HELLO refresh every 15 s, unlock, cancel                                                                                                                                               |
-| `src/state.ts`, `src/announce.ts`, `src/ui/` | Store, live regions (polite status + assertive alerts), page sections                                                                                                                           |
+| `src/state.ts`, `src/announce.ts`, `src/ui/` | Store, live regions (polite status + assertive alerts), React UI                                                                                                                                |
 | `src/checksum.ts`                            | App-side checksum phrases (`tests/vectors/checksum.json`)                                                                                                                                       |
 
 ## Sending (SOL and USDC)

@@ -1,13 +1,13 @@
-// Push-to-talk UI: the talk button, Space anywhere outside text fields, Esc to stop the app voice,
-// the "Enable microphone" button and the "Speak with app voice" toggle.
+// Push-to-talk: Space held anywhere outside text fields, the talk orb (press to start, again to stop),
+// Esc to stop the app voice, "Enable microphone", and the "Speak with app voice" setting.
 
 import { alertUser, say } from '../announce.ts';
 import type { ContactBook } from '../contacts.ts';
 import type { Speaker } from '../speech.ts';
-import { log } from '../state.ts';
+import { chat, log } from '../state.ts';
 import { BrowserRecorder, PttController, VoiceError, earcon, transcribe, type PttState } from '../voice.ts';
-import { el } from './dom.ts';
-import type { SendUi } from './send.ts';
+import type { SendController } from './send-controller.ts';
+import { createStore, type Store } from './store.ts';
 
 const VOICE_KEY = 'tk.appVoice.v1';
 
@@ -17,6 +17,28 @@ export function loadVoiceEnabled(): boolean {
     } catch {
         return true;
     }
+}
+
+export const PTT_LABEL: Record<PttState, string> = {
+    idle: 'Hold Space to talk',
+    arming: 'Opening the microphone…',
+    recording: 'Listening… release Space to send',
+    uploading: 'Transcribing…',
+};
+
+export interface VoiceState {
+    ptt: PttState;
+    hasMic: boolean;
+    voiceOn: boolean;
+}
+
+export interface VoiceController {
+    store: Store<VoiceState>;
+    /** The open microphone stream, for the orb's level meter. */
+    micStream(): MediaStream | null;
+    toggle(): void;
+    enableMic(): Promise<boolean>;
+    setVoiceOn(on: boolean): void;
 }
 
 function inField(t: EventTarget | null): boolean {
@@ -29,32 +51,14 @@ function inField(t: EventTarget | null): boolean {
     return t instanceof HTMLInputElement; // text fields and checkboxes keep their own Space
 }
 
-const STATE_LABEL: Record<PttState, string> = {
-    idle: 'Hold Space to talk',
-    arming: 'Opening the microphone…',
-    recording: 'Listening… release Space to send',
-    uploading: 'Transcribing…',
-};
-
-export function initVoice(book: ContactBook, speaker: Speaker, send: SendUi, setVoiceOn: (on: boolean) => void): void {
-    const talk = el<HTMLButtonElement>('btn-talk');
-    const enableMic = el<HTMLButtonElement>('btn-mic');
-    const voiceToggle = el<HTMLInputElement>('voice-toggle');
+export function createVoiceController(
+    book: ContactBook,
+    speaker: Speaker,
+    send: SendController,
+    onVoiceOn: (on: boolean) => void,
+): VoiceController {
     const recorder = new BrowserRecorder();
-
-    voiceToggle.checked = loadVoiceEnabled();
-    voiceToggle.addEventListener('change', () => {
-        setVoiceOn(voiceToggle.checked);
-        try {
-            localStorage.setItem(VOICE_KEY, voiceToggle.checked ? 'on' : 'off');
-        } catch {
-            // remembered for this page only
-        }
-        if (!voiceToggle.checked) {
-            speaker.stop();
-        }
-        say(voiceToggle.checked ? 'App voice on.' : 'App voice off.');
-    });
+    const store = createStore<VoiceState>({ ptt: 'idle', hasMic: false, voiceOn: loadVoiceEnabled() });
 
     const ptt = new PttController({
         recorder,
@@ -65,15 +69,13 @@ export function initVoice(book: ContactBook, speaker: Speaker, send: SendUi, set
             ),
         earcon,
         onState: (s) => {
-            talk.textContent = STATE_LABEL[s];
-            talk.setAttribute('aria-pressed', String(s === 'recording' || s === 'arming'));
+            store.set({ ptt: s, hasMic: recorder.hasMic });
             if (s === 'recording') {
                 speaker.stop(); // don't record the laptop's own voice
                 say('Listening.');
             } else if (s === 'uploading') {
                 say('Transcribing.');
             }
-            enableMic.hidden = recorder.hasMic;
         },
         onTranscript: (text, canned) => {
             if (canned) {
@@ -83,33 +85,15 @@ export function initVoice(book: ContactBook, speaker: Speaker, send: SendUi, set
         },
         onError: (e: VoiceError) => {
             log('error', e.message);
+            chat('taktile', e.message, { level: 'alert' });
             alertUser(e.message, { voice: true });
             if (e.code !== 'too_short') {
-                send.focusInput();
+                send.focus.input();
             }
         },
     });
 
-    talk.addEventListener('click', () => {
-        if (!send.acceptsVoice && ptt.state === 'idle') {
-            alertUser('Wait for the current send to finish.');
-            return;
-        }
-        void ptt.toggle();
-    });
-
-    enableMic.addEventListener('click', async () => {
-        try {
-            await recorder.openMic();
-            enableMic.hidden = true;
-            say('Microphone ready. Hold Space to talk.');
-            talk.focus();
-        } catch (e) {
-            const msg = e instanceof VoiceError ? e.message : String(e);
-            log('error', msg);
-            alertUser(msg);
-        }
-    });
+    const busy = () => !send.acceptsVoice && ptt.state === 'idle';
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -124,7 +108,7 @@ export function initVoice(book: ContactBook, speaker: Speaker, send: SendUi, set
             return;
         }
         e.preventDefault(); // no page scroll, no button click from Space
-        if (!send.acceptsVoice && !info.repeat && ptt.state === 'idle') {
+        if (busy() && !info.repeat) {
             alertUser('Wait for the current send to finish.');
             return;
         }
@@ -140,4 +124,42 @@ export function initVoice(book: ContactBook, speaker: Speaker, send: SendUi, set
             ptt.keyup(info);
         }
     });
+
+    return {
+        store,
+        micStream: () => recorder.micStream,
+        toggle() {
+            if (busy()) {
+                alertUser('Wait for the current send to finish.');
+                return;
+            }
+            void ptt.toggle();
+        },
+        async enableMic() {
+            try {
+                await recorder.openMic();
+                store.set({ hasMic: true });
+                say('Microphone ready. Hold Space to talk.');
+                return true;
+            } catch (e) {
+                const msg = e instanceof VoiceError ? e.message : String(e);
+                log('error', msg);
+                alertUser(msg);
+                return false;
+            }
+        },
+        setVoiceOn(on) {
+            store.set({ voiceOn: on });
+            onVoiceOn(on);
+            try {
+                localStorage.setItem(VOICE_KEY, on ? 'on' : 'off');
+            } catch {
+                // remembered for this page only
+            }
+            if (!on) {
+                speaker.stop();
+            }
+            say(on ? 'App voice on.' : 'App voice off.');
+        },
+    };
 }

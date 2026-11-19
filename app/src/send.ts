@@ -32,6 +32,8 @@ export interface Report {
     phase: SendPhase;
     text: string;
     level: ReportLevel;
+    /** The app checksum words (phase 'checksum' only), for showing them on their own. */
+    words?: string[];
 }
 export type SendPhase =
     | 'checking'
@@ -137,6 +139,7 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
             phase: 'checksum',
             text: `Sending ${what}. Checksum: ${appPhrase.join(', ')}.`,
             level: 'info',
+            words: appPhrase,
         });
         if (spoken instanceof Promise) {
             let timer: ReturnType<typeof setTimeout> | undefined;
