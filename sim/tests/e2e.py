@@ -529,7 +529,7 @@ def unlock_tests(data, pubkey):
         enter_pin(sim, [1, 2, 3, 4, 5, 6])
         f, _ = ws.until(UNLOCK | RESP, 23)
         check(f[2] == bytes([OK]), f"UNLOCK {f[2].hex()}")
-        check("wallet unlocked" in sim.all, "no 'wallet unlocked'")
+        check("[EARPIECE] wallet unlocked" in sim.all, "no 'wallet unlocked'")
         ws.send(frame(UNLOCK, 24))
         f, _ = ws.until(UNLOCK | RESP, 24)
         check(f[2] == bytes([OK]), "UNLOCK while unlocked is not OK at once")
