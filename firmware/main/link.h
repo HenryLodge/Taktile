@@ -22,8 +22,10 @@ void tk_link_write(const uint8_t *buf, size_t len);
 // after bytes arrived, or the USB host going away.
 bool tk_link_should_reset(uint32_t now_ms);
 
-// True once each time the USB host goes away (it was connected and now is not). The main loop then
-// ends any unlocked session (tk_device_lock).
+// True once after the USB host went away (it was connected and then was not), including a loss seen
+// only during a flow (tk_link_read samples it too). The main loop then ends any unlocked session
+// (tk_device_lock). Closing the serial port on the laptop is not a host loss: the cable and USB
+// connection stay up.
 bool tk_link_host_lost(void);
 
 #endif
