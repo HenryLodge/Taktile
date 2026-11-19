@@ -177,6 +177,14 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
             focus.input();
             return;
         }
+        if (intent.kind !== 'send' && intent.kind !== 'ambiguous') {
+            // Parsed, but routed in later milestones (docs/EXTRATASKS.md Part 1 V2/V3, Parts 2-3).
+            const msg = "That command isn't available yet.";
+            chat('taktile', msg);
+            say(msg, { voice: source === 'voice' });
+            focus.input();
+            return;
+        }
         const device = getDevice();
         if (device === null || device.pubkey === null) {
             alertUser('Connect a device that has a wallet first.');
