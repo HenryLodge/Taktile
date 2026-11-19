@@ -102,7 +102,7 @@ tk_status_t tk_enroll_run(tk_device_t *d, uint8_t name_len, const uint8_t *name,
     }
     uint8_t pin[TK_PIN_LEN];
     if (st == TK_STATUS_OK) {
-        st = tk_dev_unlock(d, pin); // wipes pin
+        st = tk_dev_unlock(d, pin, false); // wipes pin
     }
     if (st == TK_STATUS_OK) {
         st = tk_dev_confirm_window(d, TK_CLIP_PRESS_CONFIRM_ADD, announce, &e);
