@@ -98,7 +98,7 @@ The host sends `SETUP`; everything else happens on the device. Refused at once a
 2. "please wait" while the words are generated (about 0.5 s).
 3. "write down your recovery words", then each of the 24 words: "recovery word *n*, *letters*" (positions 21–24 are single "twenty one"… clips). After word one: "press OK for the next word, hold OK to repeat". **OK** = next word (tick), **long OK** = repeat this word, **BACK** = previous word, **REJECT** = stop (`REJECTED_BY_USER`), **long REJECT** = cancel. Up to 5 minutes per word, then it cancels.
 4. After word 24: "hold OK to hear all words again, or press OK to finish". Long OK starts again at word one; BACK returns to word 24.
-5. OK: "please wait" (the PIN key derivation, about 2.6 s), then "wallet created" and a double pulse. The device stays unlocked until it reboots.
+5. OK: "please wait" (the PIN key derivation, about 2.6 s), then "wallet created" and a double pulse. The device is unlocked as after a PIN: until the next signature, 5 minutes, the USB host going away, or a reboot (SECURITY_MODEL I7).
 
 Nothing is stored until step 5, so cancelling, a timeout or unplugging at any earlier point leaves no wallet. The P0 flow only asks the user to acknowledge each word; it does not quiz them on the words.
 

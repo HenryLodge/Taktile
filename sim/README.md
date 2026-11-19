@@ -40,7 +40,7 @@ Keys pressed while a clip is "playing" are discarded, like the device (I6: CONFI
 
 ## Wallet
 
-By default the sim uses core's key store (`core/src/tk_keystore.c`), exactly as the device does: the key lives PIN-encrypted in `DIR/wallet`, created by `SETUP` on the device side of the link (keys as below; AUDIO.md "SETUP"). Before that the banner says `wallet: none (key store; run SETUP)`. The PIN's start digits are private audio, so to script a SETUP (as `sim/tests/e2e.py` does) build with `-DTK_SIM_INSECURE_AUDIO=ON`. Like the device, it counts PIN attempts before checking them, wipes the wallet and contacts after 10 wrong PINs, and locks again after every signature, 5 minutes after an unlock, and when the app disconnects.
+By default the sim uses core's key store (`core/src/tk_keystore.c`), exactly as the device does: the key lives PIN-encrypted in `DIR/wallet`, created by `SETUP` on the device side of the link (keys as below; AUDIO.md "SETUP"). Before that the banner says `wallet: none (key store; run SETUP)`. The PIN's start digits are private audio, so to script a SETUP (as `sim/tests/e2e.py` does) build with `-DTK_SIM_INSECURE_AUDIO=ON`. Like the device, it counts PIN attempts before checking them, wipes the wallet and contacts after 10 wrong PINs, and locks again after every signature, 5 minutes after an unlock, and when the app disconnects (stricter than the device, which keeps the session when the app just closes the port). Like the device, contacts loaded without a wallet are wiped at start (they can only be left over from an interrupted lockout wipe), so `--contact` needs a wallet: run SETUP first, or use `--dev-wallet`.
 
 ## Development wallet: INSECURE
 
