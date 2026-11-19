@@ -9,6 +9,9 @@ export const MSG = {
     CONTACT_ADD: 0x30,
     CONTACT_LIST_COUNT: 0x31,
     CONTACT_REMOVE: 0x32,
+    SPEAK_ADDRESS: 0x41,
+    SPEAK_CONTACTS: 0x42,
+    LOCK: 0x43,
     CANCEL: 0x7e,
     EVENT: 0xf0,
     ERROR: 0xff,
@@ -117,4 +120,7 @@ export const FLOW_TYPES: ReadonlySet<number> = new Set([
     MSG.SIGN_REQUEST,
     MSG.CONTACT_ADD,
     MSG.CONTACT_REMOVE,
+    MSG.SPEAK_ADDRESS, // may run PIN entry first
+    MSG.SPEAK_CONTACTS,
+    MSG.LOCK, // plays "wallet locked"
 ]);

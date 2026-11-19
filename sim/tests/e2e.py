@@ -28,6 +28,8 @@ CLIP_MS = 60
 HELLO, GET_PUBKEY, SETUP, SIGN_REQUEST, CONTACT_LIST_COUNT, CANCEL = 0x01, 0x02, 0x03, 0x10, 0x31, 0x7E
 CONTACT_ADD = 0x30
 UNLOCK = 0x04
+SPEAK_ADDRESS, SPEAK_CONTACTS, LOCK = 0x41, 0x42, 0x43
+DEVICE_ERROR = 0x0C
 EVENT, RESP, ERROR = 0xF0, 0x80, 0xFF
 BAD_PAYLOAD = 3
 CONTACT_EXISTS = 0x0A
@@ -265,6 +267,38 @@ def main():
             check(all(l == "[EARPIECE] (private)" for l in private), "secret clip text printed")
             for w in SECRET_WORDS:
                 check(not any(re.search(r"\b%s\b" % re.escape(w), l) for l in sim.all), f"checksum word {w} printed")
+
+        # Voice commands on the dev wallet (unlocked), after the I2 scan above (the public address
+        # phrase can share a word with a private checksum phrase). The answers are public earpiece
+        # audio; the replies carry only a status (and the contact count). A fresh connection: the
+        # refused one above closed the last.
+        ws = Ws(sim.port)
+        start = len(sim.all)
+        ws.send(frame(SPEAK_ADDRESS, 10))
+        f, _ = ws.until(SPEAK_ADDRESS | RESP, 10)
+        check(f[2] == bytes([OK]), f"SPEAK_ADDRESS {f[2].hex()}")
+        sim.settle()
+        said = announced(sim, start)
+        check(said == ["your address phrase is"] + addr_phrase(DEVICE_PUBKEY.hex()),
+              f"SPEAK_ADDRESS said {said}")
+
+        start = len(sim.all)
+        ws.send(frame(SPEAK_CONTACTS, 11))
+        f, _ = ws.until(SPEAK_CONTACTS | RESP, 11)
+        check(f[2] == bytes([OK, 1]), f"SPEAK_CONTACTS reply {f[2].hex()} (must be exactly status, count)")
+        sim.settle()
+        said = announced(sim, start)
+        check(said[:4] == ["you have", "one", "contacts", "one"] and len(said) == 4 + len(alice["name"]),
+              f"SPEAK_CONTACTS said {said}")
+
+        ws.send(frame(SPEAK_CONTACTS, 12, b"x"))
+        f = ws.frame()
+        check(f == (ERROR, 12, bytes([BAD_PAYLOAD])), f"SPEAK_CONTACTS with a payload: {f}")
+
+        # The dev wallet has no lock hook: LOCK must fail closed, never claim a lock.
+        ws.send(frame(LOCK, 13))
+        f, _ = ws.until(LOCK | RESP, 13)
+        check(f[2] == bytes([DEVICE_ERROR]), f"LOCK on the dev wallet {f[2].hex()}")
     finally:
         sim.stop()
 
@@ -522,6 +556,25 @@ def unlock_tests(data, pubkey):
         ws.send(frame(HELLO, 22))
         f, _ = ws.until(HELLO | RESP, 22)
         check(f[2] == bytes([1, 0, 1, 1]), "not locked after the app disconnected")
+
+        # Voice commands on the locked key store: SPEAK_ADDRESS asks for the PIN first, then speaks;
+        # LOCK ends the session ("wallet locked").
+        ws.send(frame(SPEAK_ADDRESS, 30))
+        sim.wait_line(lambda l: l == "[EARPIECE] enter pin")
+        enter_pin(sim, [1, 2, 3, 4, 5, 6])
+        f, _ = ws.until(SPEAK_ADDRESS | RESP, 30)
+        check(f[2] == bytes([OK]), f"SPEAK_ADDRESS while locked {f[2].hex()}")
+        check("[EARPIECE] your address phrase is" in sim.all, "no address phrase after the PIN")
+        ws.send(frame(HELLO, 31))
+        f, _ = ws.until(HELLO | RESP, 31)
+        check(f[2] == bytes([1, 0, 1, 2]), "SPEAK_ADDRESS did not leave the session unlocked")
+        ws.send(frame(LOCK, 32))
+        f, _ = ws.until(LOCK | RESP, 32)
+        check(f[2] == bytes([OK]), f"LOCK {f[2].hex()}")
+        check("[EARPIECE] wallet locked" in sim.all, "no 'wallet locked'")
+        ws.send(frame(HELLO, 33))
+        f, _ = ws.until(HELLO | RESP, 33)
+        check(f[2] == bytes([1, 0, 1, 1]), "still unlocked after LOCK")
 
         # UNLOCK first (the PIN, "wallet unlocked"), then SIGN_REQUEST: no PIN, still CONFIRM (I5).
         ws.send(frame(UNLOCK, 23))

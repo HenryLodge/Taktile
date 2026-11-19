@@ -6,7 +6,10 @@
 let politeEl: HTMLElement | null = null;
 let assertiveEl: HTMLElement | null = null;
 let onLine: ((text: string, level: 'info' | 'alert') => void) | null = null;
-let voice: ((text: string, interrupt: boolean) => void) | null = null;
+export type VoicePriority = 'normal' | 'interrupt' | 'keep';
+let voice: ((text: string, priority: VoicePriority) => void) | null = null;
+/** The last lines given to the app voice, for "repeat that". */
+let lastVoiced: string[] = [];
 
 /** The two live regions (static in index.html, outside React) and the visible status line's setter. */
 export function initAnnounce(
@@ -20,7 +23,7 @@ export function initAnnounce(
 }
 
 /** The app voice; set by main.ts once the speaker exists. */
-export function setVoice(fn: (text: string, interrupt: boolean) => void): void {
+export function setVoice(fn: (text: string, priority: VoicePriority) => void): void {
     voice = fn;
 }
 
@@ -45,7 +48,8 @@ export interface AnnounceOptions {
 export function say(text: string, opts: AnnounceOptions = {}): void {
     put(politeEl, text);
     if (opts.voice === true) {
-        voice?.(text, false);
+        lastVoiced = [text];
+        voice?.(text, 'normal');
     }
 }
 
@@ -53,6 +57,27 @@ export function say(text: string, opts: AnnounceOptions = {}): void {
 export function alertUser(text: string, opts: AnnounceOptions = {}): void {
     put(assertiveEl, text);
     if (opts.voice === true) {
-        voice?.(text, true);
+        lastVoiced = [text];
+        voice?.(text, 'interrupt');
     }
 }
+
+/**
+ * A spoken answer of several lines (a voice query): one polite announcement on screen, and each line
+ * queued for the app voice so none is dropped (`say` replaces a waiting line with the next one).
+ */
+export function sayLines(lines: readonly string[], opts: AnnounceOptions = {}): void {
+    if (lines.length === 0) {
+        return;
+    }
+    put(politeEl, lines.join(' '));
+    if (opts.voice === true) {
+        lastVoiced = [...lines];
+        for (const l of lines) {
+            voice?.(l, 'keep');
+        }
+    }
+}
+
+/** "Repeat that": the last spoken lines, or an empty list. */
+export const lastSpoken = (): readonly string[] => lastVoiced;

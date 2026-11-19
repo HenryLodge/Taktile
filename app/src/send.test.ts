@@ -58,6 +58,10 @@ function fakeRpc(
             return base58(tx.subarray(1, 65));
         },
         signatureStatus: async () => (trace.push('rpc:status'), statuses.shift() ?? { state: 'pending' }),
+        signaturesFor: async () => [],
+        transactions: async () => [],
+        stakeAccounts: async (a) => a.map(() => null),
+        epoch: async () => 0n,
     };
     return { rpc, sent };
 }
@@ -344,4 +348,30 @@ test('a stuck or failing app voice never blocks the send', async () => {
         const out = await runSend(intent(), { ...h.deps, checksumWaitMs: 30 });
         assert.equal(out.ok, true);
     }
+});
+
+test('cancel before the device is asked: nothing reaches the device, nothing is sent', async () => {
+    const h = harness([]);
+    const out = await runSend(intent(), { ...h.deps, cancelled: () => true });
+    assert.equal(out.ok, false);
+    assert.deepEqual(h.trace, ['rpc:balance']);
+    assert.equal(h.reports.at(-1)?.text, 'Cancelled. Nothing was sent.');
+    assert.equal(h.reports.at(-1)?.level, 'info');
+});
+
+test('cancel during PIN entry: no blockhash, no SIGN_REQUEST', async () => {
+    let cancelled = false;
+    const h = harness([hello(1), unlockOk()]);
+    const out = await runSend(intent(), {
+        ...h.deps,
+        unlock: async () => {
+            const st = await h.deps.unlock();
+            cancelled = true; // the user said "cancel" while the PIN was being entered
+            return st;
+        },
+        cancelled: () => cancelled,
+    });
+    assert.equal(out.ok, false);
+    assert.deepEqual(h.trace, ['rpc:balance', 'dev:0x1', 'dev:0x4']);
+    assert.equal(h.sent.length, 0);
 });

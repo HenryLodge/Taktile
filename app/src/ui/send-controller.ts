@@ -3,11 +3,14 @@
 // real approval is the device's announcement, PIN and CONFIRM (decided 2026-11-18). React components
 // read the store below; focus moves through the `focus` hooks the components register.
 
-import { alertUser, say } from '../announce.ts';
-import { getDevice, unlockStatus } from '../connection.ts';
+import { alertUser, lastSpoken, say, sayLines } from '../announce.ts';
+import { cancelOnDevice, describeError, getDevice, unlockStatus } from '../connection.ts';
 import type { ContactBook } from '../contacts.ts';
 import { chooseContact, startElevenLabsAgent } from '../disambiguate.ts';
-import { parseIntent, type Intent } from '../intent.ts';
+import { parseIntent, type Intent, type IntentKind } from '../intent.ts';
+import { HELP_LINES, activity, balance, staked } from '../queries.ts';
+import type { DeviceClient } from '../proto/client.ts';
+import { DEVICE_STATE, STATUS, eventText, statusText } from '../proto/codes.ts';
 import { createDevnetRpc, type Rpc } from '../rpc.ts';
 import { runSend, type Report, type SendPhase } from '../send.ts';
 import type { Speaker } from '../speech.ts';
@@ -15,6 +18,14 @@ import { chat, getState, log, setConnection } from '../state.ts';
 import { createStore, type Store } from './store.ts';
 
 const AGENT_KEY = 'tk.agent.v1';
+
+/** Commands that parse but are wired in later milestones (docs/EXTRATASKS.md). */
+const NOT_YET: Partial<Record<IntentKind, string>> = {
+    request: "Payment requests aren't available yet.",
+    requests: "Payment requests aren't available yet.",
+    stake: "Staking isn't available yet.",
+    unstake: "Staking isn't available yet.",
+};
 
 export interface SendState {
     /** The command field on /data (voice transcripts and "did you mean" fill it too). */
@@ -72,6 +83,7 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
     let lastDone = '';
     let pendingAnswer: ((text: string | null) => void) | null = null;
     let abortAsk: AbortController | null = null;
+    let cancelRequested = false;
     const focus = { input: () => undefined, result: () => undefined } as SendController['focus'];
 
     document.addEventListener('keydown', (e) => {
@@ -126,6 +138,89 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
         }
     };
 
+    /** A spoken answer: conversation, log, live region, and the app voice for spoken commands. */
+    const answer = (lines: readonly string[], source: 'typed' | 'voice') => {
+        const all = lines.join(' ');
+        chat('taktile', all);
+        log('app', all);
+        sayLines(lines, { voice: source === 'voice' });
+    };
+
+    /** "cancel" / "stop": silence the app voice; stop a running send, on the device too. */
+    async function cancelAll(): Promise<void> {
+        speaker.stop();
+        const running = store.get().running;
+        if (running) {
+            cancelRequested = true; // runSend checks it before each device step
+        }
+        if (getDevice()?.client.flowRunning === true) {
+            await cancelOnDevice();
+        } else {
+            const msg = running ? 'Cancelling.' : 'Stopped.';
+            log('app', msg);
+            say(msg);
+        }
+    }
+
+    /**
+     * Commands the device answers itself (SPEAK_ADDRESS, SPEAK_CONTACTS, LOCK). The content is spoken
+     * by the device into the earpiece; the app only ever says what happened, never the words or names.
+     */
+    async function deviceCommand(
+        kind: 'address' | 'contacts' | 'lock',
+        client: DeviceClient,
+        source: 'typed' | 'voice',
+    ): Promise<void> {
+        const onEvent = (e: number) => {
+            log('device', eventText(e));
+            say(eventText(e));
+        };
+        let msg: string;
+        let ok = false;
+        try {
+            if (kind === 'lock') {
+                setConnection({ activity: 'Locking' });
+                const st = await client.lock();
+                ok = st === STATUS.OK;
+                msg = ok ? 'Wallet locked.' : statusText(st);
+                if (ok) {
+                    setConnection({ deviceState: DEVICE_STATE.LOCKED });
+                }
+            } else {
+                setConnection({ activity: 'Device speaking' });
+                say(
+                    kind === 'address'
+                        ? 'The device will say your address phrase in the earpiece.'
+                        : 'The device will spell your contacts in the earpiece.',
+                );
+                let st: number;
+                if (kind === 'address') {
+                    st = await client.speakAddress(onEvent);
+                    msg = 'The device said your address phrase.';
+                } else {
+                    const r = await client.speakContacts(onEvent);
+                    st = r.status;
+                    msg = `The device spelled ${r.count} contact name${r.count === 1 ? '' : 's'}.`;
+                }
+                ok = st === STATUS.OK;
+                if (ok) {
+                    setConnection({ deviceState: DEVICE_STATE.UNLOCKED }); // it asked for the PIN if it had to
+                } else {
+                    msg = statusText(st);
+                }
+            }
+        } catch (e) {
+            msg = `The device did not answer: ${describeError(e)}`;
+        }
+        if (ok) {
+            answer([msg], source);
+        } else {
+            log('error', msg);
+            chat('taktile', msg, { level: 'alert' });
+            alertUser(msg, { voice: source === 'voice' });
+        }
+    }
+
     async function runCommand(raw: string, source: 'typed' | 'voice'): Promise<void> {
         const text = raw.trim();
         if (pendingAnswer) {
@@ -135,8 +230,33 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
             pendingAnswer(text);
             return;
         }
+        const heard = () => {
+            log('app', source === 'voice' ? `Heard: "${text}"` : `Command: "${text}"`);
+            chat('user', text);
+        };
+        const parsed: Intent | null = text === '' ? null : parseIntent(text, book.list());
         if (store.get().running) {
+            // During a flow only "cancel" / "stop" is acted on.
+            if (parsed?.kind === 'cancel') {
+                heard();
+                await cancelAll();
+                return;
+            }
             alertUser('Wait for the current send to finish.');
+            return;
+        }
+        // Help, repeat and cancel need no device.
+        if (parsed !== null && (parsed.kind === 'help' || parsed.kind === 'repeat' || parsed.kind === 'cancel')) {
+            heard();
+            if (parsed.kind === 'help') {
+                answer(HELP_LINES, source);
+            } else if (parsed.kind === 'repeat') {
+                const last = lastSpoken();
+                answer(last.length > 0 ? last : ['Nothing to repeat yet.'], 'voice');
+            } else {
+                await cancelAll();
+            }
+            focus.input();
             return;
         }
         if (!ready()) {
@@ -150,14 +270,13 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
         if (source === 'voice') {
             store.set({ command: text });
         }
-        if (text === '') {
+        if (parsed === null) {
             alertUser('Say or type a command, for example: send 0.01 SOL to Henry.');
             focus.input();
             return;
         }
-        log('app', source === 'voice' ? `Heard: "${text}"` : `Command: "${text}"`);
-        chat('user', text);
-        let intent: Intent = parseIntent(text, book.list());
+        heard();
+        let intent: Intent = parsed;
         if (intent.kind === 'error') {
             if (intent.code === 'did_you_mean' && intent.suggestion) {
                 store.set({ command: text.replace(/to\s+.*$/i, `to ${intent.suggestion.name}`) });
@@ -174,6 +293,49 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
                     alertUser(intent.message);
                 }
             }
+            focus.input();
+            return;
+        }
+        const notYet = NOT_YET[intent.kind];
+        if (notYet !== undefined) {
+            answer([notYet], source);
+            focus.input();
+            return;
+        }
+        if (intent.kind === 'balance' || intent.kind === 'staked' || intent.kind === 'activity') {
+            const device = getDevice();
+            if (device === null || device.pubkey === null) {
+                alertUser('Connect a device that has a wallet first.');
+                return;
+            }
+            store.set({ running: true });
+            setConnection({ activity: 'Asking devnet' });
+            rpc ??= createDevnetRpc();
+            const q = { rpc, pubkey: device.pubkey, contacts: book.list() };
+            const lines =
+                intent.kind === 'balance'
+                    ? await balance(q, intent.token)
+                    : intent.kind === 'staked'
+                      ? await staked(q)
+                      : await activity(q);
+            finish();
+            answer(lines, source);
+            focus.input();
+            return;
+        }
+        if (intent.kind === 'address' || intent.kind === 'contacts' || intent.kind === 'lock') {
+            const device = getDevice();
+            if (device === null) {
+                alertUser('Connect the device first.');
+                return;
+            }
+            store.set({ running: true });
+            await deviceCommand(intent.kind, device.client, source);
+            finish();
+            focus.input();
+            return;
+        }
+        if (intent.kind !== 'send' && intent.kind !== 'ambiguous') {
             focus.input();
             return;
         }
@@ -232,6 +394,7 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
             return;
         }
         lastDone = '';
+        cancelRequested = false;
         store.set({
             explorer: null,
             checksum: null,
@@ -252,6 +415,7 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
                 return st;
             },
             report,
+            cancelled: () => cancelRequested,
         });
         finish();
         if (result.ok) {
@@ -277,7 +441,8 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
             }
         },
         get acceptsVoice() {
-            return !store.get().running || pendingAnswer !== null;
+            // Always: during a flow, a spoken "cancel" / "stop" is acted on (runCommand refuses the rest).
+            return true;
         },
         focus,
         setFocusTargets(t) {

@@ -364,6 +364,10 @@ static const char *const TEXT[] = {
     "press confirm to add or reject to cancel", // 356 TK_CLIP_PRESS_CONFIRM_ADD
     "contact added", // 357 TK_CLIP_CONTACT_ADDED
     "wallet unlocked", // 358 TK_CLIP_UNLOCKED
+    "your address phrase is", // 359 TK_CLIP_YOUR_ADDRESS_PHRASE_IS
+    "you have", // 360 TK_CLIP_YOU_HAVE
+    "contacts", // 361 TK_CLIP_CONTACTS
+    "wallet locked", // 362 TK_CLIP_WALLET_LOCKED
 };
 
 _Static_assert(sizeof(TEXT) / sizeof(TEXT[0]) == TK_CLIP_COUNT, "rerun tools/gen-clips.mjs");

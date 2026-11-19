@@ -1,7 +1,8 @@
 // Request/response client for the serial protocol (docs/SERIAL_PROTOCOL.md) over any Transport.
 //
 // - seq 1..255, wrapping; replies and EVENTs are paired with their request by seq.
-// - At most one on-device flow (SETUP, UNLOCK, SIGN_REQUEST, CONTACT_ADD, CONTACT_REMOVE) at a time; a
+// - At most one on-device flow (SETUP, UNLOCK, SIGN_REQUEST, CONTACT_ADD, CONTACT_REMOVE, SPEAK_ADDRESS,
+//   SPEAK_CONTACTS, LOCK) at a time; a
 //   second one is refused here and nothing is sent. Quick requests (HELLO, CANCEL, ...) may go
 //   alongside: the device answers HELLO during a flow, acts on CANCEL, and replies BUSY to the rest.
 // - A flow that outlives its timeout is cancelled on the device.
@@ -190,6 +191,25 @@ export class DeviceClient {
         }
         payload.set(wallet, 1 + name.length);
         return this.status(await this.request(MSG.CONTACT_ADD, payload, { onEvent }), 'CONTACT_ADD', 1);
+    }
+
+    /** SPEAK_ADDRESS: the device speaks its own 8-word address phrase (PIN first if locked). Status only. */
+    async speakAddress(onEvent?: (event: number) => void): Promise<number> {
+        return this.status(await this.request(MSG.SPEAK_ADDRESS, undefined, { onEvent }), 'SPEAK_ADDRESS', 1);
+    }
+
+    /** SPEAK_CONTACTS: the device spells its contact names. The reply is the status and the count, never names. */
+    async speakContacts(onEvent?: (event: number) => void): Promise<{ status: number; count: number }> {
+        const p = await this.request(MSG.SPEAK_CONTACTS, undefined, { onEvent });
+        if (p.length !== 2) {
+            throw new BadReplyError(`SPEAK_CONTACTS reply is ${p.length} bytes, not 2`);
+        }
+        return { status: p[0] ?? 0, count: p[1] ?? 0 };
+    }
+
+    /** LOCK: end the unlocked session now. Answered within a second ("wallet locked"). */
+    async lock(): Promise<number> {
+        return this.status(await this.request(MSG.LOCK, undefined, { timeoutMs: 10_000 }), 'LOCK', 1);
     }
 
     async contactCount(): Promise<number> {

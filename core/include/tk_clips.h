@@ -74,6 +74,12 @@ typedef enum {
     // UNLOCK (core/src/tk_flow.c)
     TK_CLIP_UNLOCKED, // "wallet unlocked"
 
+    // Voice commands: SPEAK_ADDRESS, SPEAK_CONTACTS, LOCK (core/src/tk_flow.c)
+    TK_CLIP_YOUR_ADDRESS_PHRASE_IS, // "your address phrase is"
+    TK_CLIP_YOU_HAVE,               // "you have" (then a number and "contacts")
+    TK_CLIP_CONTACTS,               // "contacts"
+    TK_CLIP_WALLET_LOCKED,          // "wallet locked"
+
     TK_CLIP_COUNT
 } tk_clip_t;
 
