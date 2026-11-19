@@ -15,7 +15,8 @@
         "erasableSyntaxOnly": true,
         "isolatedModules": true,
         "noEmit": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "jsx": "react-jsx"
     },
     "include": ["src", "vite.config.ts"],
     "exclude": ["src/**/*.test.ts"]

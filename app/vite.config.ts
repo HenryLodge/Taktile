@@ -1,8 +1,10 @@
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 // localhost only: the simulator (ws://localhost:8765) and server/ (127.0.0.1:8787) accept only
 // http://localhost / 127.0.0.1 pages, and Web Serial needs a secure context (localhost counts).
 export default defineConfig({
+    plugins: [react()],
     server: {
         host: 'localhost',
         port: 5173,

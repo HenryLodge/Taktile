@@ -5,13 +5,18 @@
 
 let politeEl: HTMLElement | null = null;
 let assertiveEl: HTMLElement | null = null;
-let lineEl: HTMLElement | null = null;
+let onLine: ((text: string, level: 'info' | 'alert') => void) | null = null;
 let voice: ((text: string, interrupt: boolean) => void) | null = null;
 
-export function initAnnounce(polite: HTMLElement, assertive: HTMLElement, line: HTMLElement): void {
+/** The two live regions (static in index.html, outside React) and the visible status line's setter. */
+export function initAnnounce(
+    polite: HTMLElement,
+    assertive: HTMLElement,
+    line: (text: string, level: 'info' | 'alert') => void,
+): void {
     politeEl = polite;
     assertiveEl = assertive;
-    lineEl = line;
+    onLine = line;
 }
 
 /** The app voice; set by main.ts once the speaker exists. */
@@ -20,9 +25,7 @@ export function setVoice(fn: (text: string, interrupt: boolean) => void): void {
 }
 
 function put(el: HTMLElement | null, text: string): void {
-    if (lineEl) {
-        lineEl.textContent = text;
-    }
+    onLine?.(text, el === assertiveEl ? 'alert' : 'info');
     if (!el) {
         return;
     }

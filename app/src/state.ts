@@ -12,6 +12,18 @@ export interface LogEntry {
     text: string;
 }
 
+/** One bubble on the home page: what the user said, or one of the app's key replies. Untrusted text. */
+export interface ChatEntry {
+    id: number;
+    role: 'user' | 'taktile';
+    text: string;
+    level: 'info' | 'alert';
+    /** Explorer link for a finished send. */
+    link?: string;
+    /** The app checksum words, shown large next to the sentence. */
+    words?: string[];
+}
+
 export interface ConnectionState {
     status: 'disconnected' | 'connecting' | 'connected';
     kind: TransportKind | null;
@@ -29,9 +41,11 @@ export interface AppState {
     connection: ConnectionState;
     server: ServerHealth;
     log: LogEntry[];
+    chat: ChatEntry[];
 }
 
 export const LOG_MAX = 200;
+export const CHAT_MAX = 100;
 
 const DISCONNECTED: ConnectionState = {
     status: 'disconnected',
@@ -43,9 +57,10 @@ const DISCONNECTED: ConnectionState = {
     activity: null,
 };
 
-let state: AppState = { connection: DISCONNECTED, server: null, log: [] };
+let state: AppState = { connection: DISCONNECTED, server: null, log: [], chat: [] };
 const listeners = new Set<(s: AppState) => void>();
 let nextLogId = 1;
+let nextChatId = 1;
 
 export const getState = (): AppState => state;
 
@@ -79,5 +94,21 @@ export function setServer(server: ServerHealth): void {
 export function log(source: LogSource, text: string): void {
     const entry = { id: nextLogId++, time: new Date(), source, text };
     state = { ...state, log: [...state.log, entry].slice(-LOG_MAX) };
+    emit();
+}
+
+export function chat(
+    role: ChatEntry['role'],
+    text: string,
+    opts: { level?: ChatEntry['level']; link?: string; words?: string[] } = {},
+): void {
+    const entry: ChatEntry = { id: nextChatId++, role, text, level: opts.level ?? 'info' };
+    if (opts.link !== undefined) {
+        entry.link = opts.link;
+    }
+    if (opts.words !== undefined) {
+        entry.words = opts.words;
+    }
+    state = { ...state, chat: [...state.chat, entry].slice(-CHAT_MAX) };
     emit();
 }
