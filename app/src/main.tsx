@@ -45,7 +45,7 @@ const speaker = new Speaker({
 
 // The live regions are static in index.html, outside React, so they exist before anything is said.
 initAnnounce(byId('live-status'), byId('live-alert'), (text, level) => statusLine.set({ text, level }));
-setVoice((text, interrupt) => void speaker.speak(text, interrupt ? 'interrupt' : 'normal'));
+setVoice((text, priority) => void speaker.speak(text, priority));
 startHealthPolling();
 
 let storage: Storage | null = null;

@@ -56,6 +56,8 @@ export interface SendDeps {
      * for it (the app voice finishing the three words), at most checksumWaitMs, before SIGN_REQUEST. */
     report: (r: Report) => void | Promise<void>;
     checksumWaitMs?: number;
+    /** True once the user said "cancel": checked before each step that reaches the device. */
+    cancelled?: () => boolean;
     sleep?: (ms: number) => Promise<void>;
     confirmTimeoutMs?: number;
     pollMs?: number;
@@ -114,6 +116,11 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
             }
         }
 
+        const CANCELLED = 'Cancelled. Nothing was sent.';
+        if (d.cancelled?.()) {
+            return fail(CANCELLED, 'info');
+        }
+
         // 2. PIN first, so the blockhash below is fresh when the device signs.
         const h = await d.client.hello();
         if (h.state === DEVICE_STATE.NO_WALLET) {
@@ -125,6 +132,10 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
             if (st !== STATUS.OK) {
                 return fail(st === null ? 'Unlock failed. Nothing was sent.' : `${statusText(st)} Nothing was sent.`);
             }
+        }
+
+        if (d.cancelled?.()) {
+            return fail(CANCELLED, 'info');
         }
 
         // 3. Build.
@@ -148,6 +159,10 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
                 new Promise<void>((r) => (timer = setTimeout(r, d.checksumWaitMs ?? 8000))),
             ]);
             clearTimeout(timer);
+        }
+
+        if (d.cancelled?.()) {
+            return fail(CANCELLED, 'info');
         }
 
         // 4. The device announces, the user confirms there.
