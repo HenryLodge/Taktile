@@ -255,6 +255,7 @@ test('the speaker sends worded numbers, but keeps digits when words would pass 2
             return new Response(new Blob(['x']), { status: 200 });
         },
         player,
+        fallback: null,
         enabled: () => true,
     });
     await s.speak('Sending 0.06 SOL to Henry. Checksum: aardvark, adrift, bookshelf.');
