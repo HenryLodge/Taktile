@@ -69,11 +69,6 @@ static bool p_audio_ok(void *ctx) {
     return st.i2s_ok && st.pack == TK_CLIPPACK_OK; // else every clip would be silent
 }
 
-static bool p_private_audio_only(void *ctx) {
-    (void)ctx;
-    return !tk_audio_speaker_mode();
-}
-
 const tk_platform_t TK_FW_PLATFORM = {
     .ctx = NULL,
     .play_clip = p_play_clip,
@@ -86,5 +81,4 @@ const tk_platform_t TK_FW_PLATFORM = {
     .serial_read = p_serial_read,
     .serial_write = p_serial_write,
     .audio_ok = p_audio_ok,
-    .private_audio_only = p_private_audio_only,
 };

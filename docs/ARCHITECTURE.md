@@ -87,7 +87,6 @@ typedef struct {
     size_t (*serial_read)(void *ctx, uint8_t *buf, size_t cap); // non-blocking
     void (*serial_write)(void *ctx, const uint8_t *buf, size_t len);
     bool (*audio_ok)(void *ctx);           // clips really play; else flows refuse with DEVICE_ERROR
-    bool (*private_audio_only)(void *ctx); // false in speaker mode; SETUP's recovery words need true
 } tk_platform_t;
 
 // core/include/tk_wallet.h: the key store as flows see it (core/src/tk_keystore.c implements it)

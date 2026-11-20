@@ -13,7 +13,7 @@
 ## Invariants (never break these; changing one requires human sign-off and a doc update)
 
 1. **I1 — Device-side parsing.** The device derives amount, token, and destination from raw message bytes. The protocol carries no host-supplied labels.
-2. **I2 — No secret egress.** Seed, private key, PIN, PIN-entry state, checksum phrases, and recovery words never leave the device except as audio to the earpiece. No debug log prints them, including in `sim/` (sim may print *that* a phrase was played, and print the words only when built with `-DTK_SIM_INSECURE_AUDIO=1` for development).
+2. **I2 — No secret egress.** Seed, private key, PIN, PIN-entry state, checksum phrases, and recovery words never leave the device except as audio to the earpiece, or also to the speaker while the device-only speaker demo mode is on (AUDIO.md; changed 2026-11-20 for the demo: in that mode the room hears everything, PIN digits included). No debug log prints them, including in `sim/` (sim may print *that* a phrase was played, and print the words only when built with `-DTK_SIM_INSECURE_AUDIO=1` for development).
 3. **I3 — Reverse lookup only.** Destination → contact name. Never resolve a name sent by the host.
 4. **I4 — Allowlist parsing.** Only the transaction shapes in `SOLANA.md` are accepted: SOL transfer, USDC transfer, stake with the one pinned validator, and unstake of the device's own stake account (the last two added 2026-11-19). Everything else is rejected.
 5. **I5 — Fee payer is us.** The message's fee payer (account key 0) must equal the device's own public key, and the device must be the only required signer.

@@ -235,12 +235,12 @@ static void step_clips(void) {
     out("earpiece: \"enter pin\", then zero..nine, then \"aardvark\" (speaker silent)\n");
     tk_audio_play(TK_CLIP_ENTER_PIN, false);
     for (uint16_t d = 0; d < 10; d++) {
-        tk_audio_play((uint16_t)(TK_CLIP_ZERO + d), true); // secret: earpiece only
+        tk_audio_play((uint16_t)(TK_CLIP_ZERO + d), true); // secret: earpiece only (speaker mode is off here)
     }
     tk_audio_play(TK_CLIP_WORD_0, true);
     wait_ms(500);
     out("speaker mode on: \"speaker mode on\" (public) on the speaker, then \"seven\" (secret) on\n"
-        "the earpiece ONLY\n");
+        "the speaker too (speaker mode plays every clip)\n");
     tk_audio_set_speaker_mode(true);
     tk_audio_play(TK_CLIP_SPEAKER_MODE_ON, false);
     tk_audio_play((uint16_t)(TK_CLIP_ZERO + 7), true);

@@ -267,11 +267,6 @@ tk_status_t tk_setup_run(tk_device_t *d) {
         p->haptic(p->ctx, TK_HAPTIC_WARNING); // can't speak the words: refuse (Q7)
         return TK_STATUS_DEVICE_ERROR;
     }
-    if (p->private_audio_only == NULL || !p->private_audio_only(p->ctx)) {
-        p->haptic(p->ctx, TK_HAPTIC_WARNING); // speaker mode: recovery playback is refused (AUDIO.md)
-        p->play_clip(p->ctx, TK_CLIP_CANCELLED, false);
-        return TK_STATUS_DEVICE_ERROR;
-    }
     setup_secrets_t s;
     memset(&s, 0, sizeof(s));
     const tk_status_t st = setup(d, &s);
