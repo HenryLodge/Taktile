@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "sha2.h"
 #include "tk_parser.h"
 #include "tk_parser_vectors.h"
 #include "tk_test.h"
@@ -39,15 +40,19 @@ static void test_vectors(void) {
         TK_CHECK(tk_parse_status(r) == v->status);
         if (v->status == TK_STATUS_OK) {
             ok++;
-            const tk_tx_kind_t want = v->kind == TK_VEC_KIND_SOL ? TK_TX_SOL : TK_TX_USDC;
+            const tk_tx_kind_t want = v->kind == TK_VEC_KIND_SOL     ? TK_TX_SOL
+                                      : v->kind == TK_VEC_KIND_USDC    ? TK_TX_USDC
+                                      : v->kind == TK_VEC_KIND_STAKE   ? TK_TX_STAKE
+                                                                       : TK_TX_UNSTAKE;
             TK_CHECK(tx.kind == want);
             TK_CHECK(tx.amount == v->amount);
             TK_CHECK_MEM(tx.destination, v->destination, TK_PUBKEY_LEN);
+            TK_CHECK(tx.stake_index == v->stake_index);
         } else {
             check_out_zero(&tx);
         }
     }
-    TK_CHECK(ok >= 6);
+    TK_CHECK(ok >= 11);
     TK_CHECK(TK_PARSER_VECTOR_COUNT >= 80);
 }
 
@@ -141,6 +146,45 @@ static void test_prefixes(void) {
     }
 }
 
+// The device's tk-stake-<n> account, computed here independently of the parser.
+static void stake_account(const uint8_t *device, unsigned n, uint8_t out[TK_PUBKEY_LEN], char seed[12]) {
+    snprintf(seed, 12, "tk-stake-%u", n);
+    SHA256_CTX ctx;
+    sha256_Init(&ctx);
+    sha256_Update(&ctx, device, TK_PUBKEY_LEN);
+    sha256_Update(&ctx, (const uint8_t *)seed, strlen(seed));
+    sha256_Update(&ctx, TK_STAKE_PROGRAM_ID, TK_PUBKEY_LEN);
+    sha256_Final(&ctx, out);
+}
+
+// Stake/unstake outputs re-derived the slow way: the stake account from its index, and the stake
+// amount as the u64 right after the seed bytes in the message.
+static void check_consistent_stake(const uint8_t *msg, size_t len, const uint8_t *device, const tk_tx_t *tx) {
+    TK_CHECK(tx->stake_index < TK_STAKE_SEEDS);
+    uint8_t want[TK_PUBKEY_LEN];
+    char seed[12];
+    stake_account(device, tx->stake_index, want, seed);
+    TK_CHECK_MEM(tx->destination, want, TK_PUBKEY_LEN);
+    if (tx->kind == TK_TX_UNSTAKE) {
+        TK_CHECK(tx->amount == 0);
+        return;
+    }
+    const size_t sl = strlen(seed);
+    size_t found = 0;
+    uint64_t amount = 0;
+    for (size_t i = 8; i + sl + 8 <= len; i++) {
+        if (memcmp(msg + i, seed, sl) == 0 && msg[i - 8] == sl) {
+            amount = 0;
+            for (size_t b = 0; b < 8; b++) {
+                amount |= (uint64_t)msg[i + sl + b] << (8u * b);
+            }
+            found++;
+        }
+    }
+    TK_CHECK(found == 1);
+    TK_CHECK(amount == tx->amount);
+}
+
 // If a mutated message still parses, its outputs must be what the bytes actually say.
 static void check_consistent(const uint8_t *msg, size_t len, const tk_tx_t *tx) {
     // Re-derive destination and amount the slow way: the last 12 (SOL) or 10 (USDC) bytes are the
@@ -178,7 +222,11 @@ static void test_single_byte_mutations(void) {
                 const tk_parse_result_t r = parse_exact(buf, v->msg_len, v->device_pubkey, v->device_usdc_ata, &tx);
                 if (r == TK_PARSE_OK) {
                     still_ok++;
-                    check_consistent(buf, v->msg_len, &tx);
+                    if (tx.kind == TK_TX_STAKE || tx.kind == TK_TX_UNSTAKE) {
+                        check_consistent_stake(buf, v->msg_len, v->device_pubkey, &tx);
+                    } else {
+                        check_consistent(buf, v->msg_len, &tx);
+                    }
                 } else {
                     check_out_zero(&tx);
                 }

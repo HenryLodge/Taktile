@@ -80,6 +80,14 @@ typedef enum {
     TK_CLIP_CONTACTS,               // "contacts"
     TK_CLIP_WALLET_LOCKED,          // "wallet locked"
 
+    // Staking: SIGN_REQUEST Shapes C and D (core/src/tk_flow.c)
+    TK_CLIP_STAKE,             // "stake"
+    TK_CLIP_WITH,              // "with"
+    TK_CLIP_UNSTAKE,           // "unstake"
+    TK_CLIP_STAKE_ACCOUNT,     // "stake account" (then its number, 0-15)
+    TK_CLIP_VALIDATOR_NAME,    // the pinned validator's name (tools/validator.json): "Kiln"
+    TK_CLIP_UNKNOWN_VALIDATOR, // "unknown validator, do not sign"
+
     TK_CLIP_COUNT
 } tk_clip_t;
 

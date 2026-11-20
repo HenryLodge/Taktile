@@ -69,8 +69,8 @@ static void test_parser_end_to_end(void) {
     size_t resolved = 0;
     for (size_t i = 0; i < TK_PARSER_VECTOR_COUNT; i++) {
         const tk_parser_vector_t *v = &tk_parser_vectors[i];
-        if (v->status != TK_STATUS_OK) {
-            continue;
+        if (v->status != TK_STATUS_OK || v->kind == TK_VEC_KIND_STAKE || v->kind == TK_VEC_KIND_UNSTAKE) {
+            continue; // stake/unstake pay the device's own stake account, never a contact
         }
         tk_tx_t tx;
         TK_CHECK(tk_parse_message(v->msg, v->msg_len, v->device_pubkey, v->device_usdc_ata, &tx) == TK_PARSE_OK);

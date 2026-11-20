@@ -1845,5 +1845,36 @@
     "id": 362,
     "name": "TK_CLIP_WALLET_LOCKED",
     "text": "wallet locked"
+  },
+  {
+    "id": 363,
+    "name": "TK_CLIP_STAKE",
+    "text": "stake"
+  },
+  {
+    "id": 364,
+    "name": "TK_CLIP_WITH",
+    "text": "with"
+  },
+  {
+    "id": 365,
+    "name": "TK_CLIP_UNSTAKE",
+    "text": "unstake"
+  },
+  {
+    "id": 366,
+    "name": "TK_CLIP_STAKE_ACCOUNT",
+    "text": "stake account"
+  },
+  {
+    "id": 367,
+    "name": "TK_CLIP_VALIDATOR_NAME",
+    "text": "Kiln",
+    "say": "kiln"
+  },
+  {
+    "id": 368,
+    "name": "TK_CLIP_UNKNOWN_VALIDATOR",
+    "text": "unknown validator, do not sign"
   }
 ]

@@ -1,0 +1,6 @@
+{
+    "name": "Kiln",
+    "say": "kiln",
+    "voteAccount": "FwR3PbjS5iyqzLiLugrBqKSa5EKZ4vK9SKs7eQXtT59f",
+    "note": "The one validator the device will delegate to (docs/SOLANA.md Shape C). Identifies itself on-chain as 'Kiln devnet validator' (self-published validator info, not verified). Chosen 2026-11-19. Changing it needs node tools/gen-consts.mjs, gen-clips, gen-audio, pack-clips, a firmware build and a clip-pack flash. say: lowercase \"kiln\" (picked by listening; \"Kiln\" came out as \"kilneh\")."
+}
