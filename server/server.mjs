@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Taktile server: a localhost-only proxy for ElevenLabs Speech-to-Text and Text-to-Speech, so the
-// API key never reaches the browser. No dependencies (node:http + Node's fetch/FormData/Blob).
+// API key never reaches the browser, and the payment-request store (devnet only, never signs). One
+// dependency: @solana/web3.js (pinned, as in app/), for devnet reads.
 //
 //   GET  /api/health  -> { mode, stt, tts }
 //   POST /api/stt     raw audio body (audio/webm|ogg|wav|mpeg, <= 1 MB), ?names=A,B -> { text }
 //   POST /api/tts     { "text": "..." } (1-200 printable ASCII) -> audio/mpeg
 //   GET  /api/agent/token  -> { token } for the ElevenLabs disambiguation agent (WebRTC session)
+//   POST /api/requests, GET /api/requests?recipient=|payer=, GET /api/requests/:id -> payment requests
 //
 // Run: npm run dev (live) or npm run dev:canned (no ElevenLabs calls). Config: server/.env, see
 // .env.example and README.md. The key is never logged, returned, or included in an error.
@@ -18,6 +20,8 @@ import { createCache } from './lib/cache.mjs';
 import { HttpError, hostAllowed, makeRedactor, originAllowed, sendJson } from './lib/http.mjs';
 import { createLimiter } from './lib/limits.mjs';
 import { handleAgentToken } from './lib/agent.mjs';
+import { createRequestStore, handleCreateRequest, handleGetRequest, handleListRequests } from './lib/requests.mjs';
+import { createDevnetRpc } from './lib/solana.mjs';
 import { handleStt } from './lib/stt.mjs';
 import { handleTts } from './lib/tts.mjs';
 import { TIMEOUT_MS } from './lib/upstream.mjs';
@@ -45,6 +49,7 @@ export function loadConfig(env, argv = []) {
         keytermsMode: env.TK_STT_KEYTERMS_MODE === 'json' ? 'json' : 'repeat',
         cannedTranscript: env.TK_CANNED_TRANSCRIPT || 'send 0.01 SOL to Henry',
         agentId: env.ELEVENLABS_AGENT_ID || '',
+        requesterName: (env.TK_REQUESTER_NAME || '').slice(0, 32),
     };
 }
 
@@ -62,7 +67,20 @@ const ROUTES = {
     'POST /api/stt': handleStt,
     'POST /api/tts': handleTts,
     'GET /api/agent/token': handleAgentToken,
+    'POST /api/requests': handleCreateRequest,
+    'GET /api/requests': handleListRequests,
 };
+
+function findRoute(method, path) {
+    const exact = ROUTES[`${method} ${path}`];
+    if (exact) {
+        return exact;
+    }
+    if (method === 'GET' && path.startsWith('/api/requests/')) {
+        return handleGetRequest;
+    }
+    return undefined;
+}
 
 export function createServer({
     config,
@@ -71,6 +89,7 @@ export function createServer({
     cacheDir = join(HERE, 'cache'),
     log = (line) => console.log(line),
     timeoutMs = TIMEOUT_MS,
+    rpc = createDevnetRpc(),
 } = {}) {
     const redact = makeRedactor(config.apiKey);
     const safeLog = (line) => log(redact(line));
@@ -83,6 +102,7 @@ export function createServer({
         limiter: createLimiter({ now }),
         cache: createCache(cacheDir),
         state: { sttInFlight: false }, // shared across requests
+        requests: createRequestStore({ now, rpc, requesterName: config.requesterName }),
     };
 
     const server = http.createServer(async (req, res) => {
@@ -109,7 +129,7 @@ export function createServer({
             if (req.method === 'GET' && path === '/api/health') {
                 return sendJson(res, 200, health(config));
             }
-            const handler = ROUTES[`${req.method} ${path}`];
+            const handler = findRoute(req.method, path);
             if (!handler) {
                 req.resume();
                 throw new HttpError(404, 'not_found', 'no such endpoint');

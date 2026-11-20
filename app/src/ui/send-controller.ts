@@ -9,6 +9,17 @@ import type { ContactBook } from '../contacts.ts';
 import { chooseContact, startElevenLabsAgent } from '../disambiguate.ts';
 import { parseIntent, type Intent, type IntentKind } from '../intent.ts';
 import { HELP_LINES, activity, balance, staked } from '../queries.ts';
+import {
+    PaidWatcher,
+    RequestsError,
+    amountText,
+    createRequest,
+    describeFor,
+    describeRequests,
+    listRequests,
+    type PayRequest,
+} from '../requests.ts';
+import { base58 } from '../proto/base58.ts';
 import type { DeviceClient } from '../proto/client.ts';
 import { DEVICE_STATE, STATUS, eventText, statusText } from '../proto/codes.ts';
 import { createDevnetRpc, type Rpc } from '../rpc.ts';
@@ -21,8 +32,6 @@ const AGENT_KEY = 'tk.agent.v1';
 
 /** Commands that parse but are wired in later milestones (docs/EXTRATASKS.md). */
 const NOT_YET: Partial<Record<IntentKind, string>> = {
-    request: "Payment requests aren't available yet.",
-    requests: "Payment requests aren't available yet.",
     stake: "Staking isn't available yet.",
     unstake: "Staking isn't available yet.",
 };
@@ -84,6 +93,28 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
     let pendingAnswer: ((text: string | null) => void) | null = null;
     let abortAsk: AbortController | null = null;
     let cancelRequested = false;
+    const fetchApi = (input: string, init?: RequestInit) => fetch(input, init);
+    const myAddress = (): string | null => {
+        const pk = getDevice()?.pubkey;
+        return pk === null || pk === undefined ? null : base58(pk);
+    };
+    // Announces a request of ours once devnet shows it paid (polls server/ while any is pending).
+    const watcher = new PaidWatcher(
+        async () => {
+            const me = myAddress();
+            if (me === null) {
+                throw new Error('no device');
+            }
+            return listRequests(fetchApi, { recipient: me });
+        },
+        (r: PayRequest) => {
+            const name = book.list().find((c) => c.address === r.payer)?.name ?? (r.payerName || 'Someone');
+            const msg = `${name} paid your request for ${amountText(r)}.`;
+            log('app', `${msg} ${r.explorer ?? ''}`.trim());
+            chat('taktile', msg, r.explorer ? { link: r.explorer } : {});
+            sayLines([msg], { voice: true });
+        },
+    );
     const focus = { input: () => undefined, result: () => undefined } as SendController['focus'];
 
     document.addEventListener('keydown', (e) => {
@@ -320,6 +351,46 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
                       : await activity(q);
             finish();
             answer(lines, source);
+            focus.input();
+            return;
+        }
+        if (intent.kind === 'request' || intent.kind === 'requests') {
+            const me = myAddress();
+            if (me === null) {
+                alertUser('Connect a device that has a wallet first.');
+                return;
+            }
+            store.set({ running: true });
+            setConnection({ activity: 'Payment requests' });
+            try {
+                if (intent.kind === 'request') {
+                    const r = await createRequest(fetchApi, {
+                        recipient: me,
+                        token: intent.token,
+                        amount: intent.amount,
+                        payer: intent.contact,
+                    });
+                    watcher.track([r]);
+                    const who = intent.contact.name;
+                    answer(
+                        [`Requested ${amountText(r)} from ${who}. It will appear on ${who}'s Taktile Pay page.`],
+                        source,
+                    );
+                } else {
+                    const rs = await listRequests(fetchApi, { recipient: me });
+                    watcher.track(rs);
+                    answer(
+                        intent.contact === null ? describeRequests(rs, book.list()) : [describeFor(rs, intent.contact)],
+                        source,
+                    );
+                }
+            } catch (e) {
+                const msg = e instanceof RequestsError ? e.message : `Payment request failed: ${describeError(e)}`;
+                log('error', msg);
+                chat('taktile', msg, { level: 'alert' });
+                alertUser(msg, { voice: source === 'voice' });
+            }
+            finish();
             focus.input();
             return;
         }

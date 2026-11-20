@@ -1,6 +1,6 @@
 # server/
 
-Tiny localhost proxy for ElevenLabs Speech-to-Text and Text-to-Speech, so the API key never reaches the browser. Node 22.9+, **no dependencies** (`node:http` plus Node's built-in `fetch`, `FormData`, `Blob`).
+Tiny localhost proxy for ElevenLabs Speech-to-Text and Text-to-Speech, so the API key never reaches the browser, plus the payment-request store (devnet only). Node 22.9+. **One dependency:** `@solana/web3.js` 1.98.4, pinned exactly as in `app/` (devnet reads; the server never signs). Install with `npm ci --ignore-scripts`. `npm audit` reports the same 4 moderate advisories as `app/` (transitive, in web3.js's RPC client libraries; not reachable from the server's own code paths).
 
 ```bash
 cp .env.example .env            # then fill in the key and voice IDs
@@ -18,6 +18,9 @@ The server is untrusted like the rest of the laptop (`docs/SECURITY_MODEL.md`). 
 | --- | --- | --- |
 | `GET /api/health` | — | `{"mode":"live"\|"canned","stt":bool,"tts":bool}` (whether a key and voice are configured; never the key) |
 | `POST /api/stt` | The raw recording as the body, `Content-Type` `audio/webm` (MediaRecorder), `audio/ogg`, `audio/wav` or `audio/mpeg`, 1 KB–1 MB. Optional `?names=Henry,Max`: contact names (device name rules, up to 16) added to the recognizer's keyterms | `{"text":"..."}` |
+| `POST /api/requests` | JSON `{"recipient","token","amount","payer","payerName"?}`: base58 keys, `SOL` or `USDC`, amount in base units as a string (1 to 2^64-1), payer name up to 32 printable ASCII | `201` the request: `id`, a fresh random `reference` key, `requesterName` (`TK_REQUESTER_NAME`), `createdAt`, `expiresAt` (24 h), `status` `pending` |
+| `GET /api/requests?recipient=…` or `?payer=…` | Exactly one of the two | `{"requests":[...]}`, newest first. Pending requests are checked on devnet first (below) |
+| `GET /api/requests/:id` | — | One request (`404 not_found` if unknown) |
 | `GET /api/agent/token` | — | `{"token":"..."}`: a one-conversation WebRTC token for the disambiguation agent (`ELEVENLABS_AGENT_ID`, from `tools/setup-agent.mjs`). `503 no_agent` / `503 canned` make the app fall back to asking with its own voice. Limit 6/min, 60/day |
 | `POST /api/tts` | JSON `{"text":"..."}`, 1–200 printable ASCII characters | `audio/mpeg` (`X-TK-Cache: hit\|miss`) |
 
@@ -55,6 +58,14 @@ There are no retries anywhere: the app reports an error and the user tries again
   | 60/min, 1500/day | TTS, uncached requests only |
 
 - **TTS cache:** `server/cache/` (gitignored), keyed by SHA-256 of the text, voice, model, format and settings. A repeated phrase costs credits once.
+
+## Payment requests (docs/EXTRATASKS.md Part 2)
+
+"Request 5 USDC from Max" in the app creates a request here with the device wallet as recipient and Max's app-contact address as payer; Max's Taktile Pay page (`/pay`) lists the requests addressed to his wallet. Kept **in memory** (a restart forgets them; at most 200). Localhost only, like STT and TTS.
+
+**Paid detection:** reading a pending request asks devnet (`api.devnet.solana.com`, genesis hash checked first: I9) for the transactions that mention its `reference` key, at most once every 5 s per request. It counts as paid only when a confirmed, successful one raised the recipient's SOL (or its devnet-USDC token account) by at least the amount; the signature and an explorer link are then returned. RPC errors leave it pending.
+
+**Trust:** laptop-sourced (`docs/SECURITY_MODEL.md` "Command sources"). The server never signs, and the device takes no part (receiving needs no signature).
 
 ## Canned mode
 

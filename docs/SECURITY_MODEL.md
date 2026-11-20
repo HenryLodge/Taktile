@@ -37,6 +37,8 @@ The app's voice commands (docs/EXTRATASKS.md Part 1) differ in who answers, and 
 | **The device** | "what is my address" (`SPEAK_ADDRESS`), "who are my contacts" (`SPEAK_CONTACTS`), "lock" (`LOCK`), and every send (`SIGN_REQUEST`) | Trusted: spoken from the device's own key and contact book, in its own earpiece, the same way as a sign announcement. Locked: PIN first (I7). The replies carry only a status, and for `SPEAK_CONTACTS` the count (already public): no words, names or audio cross the link (I2) |
 | **The laptop** | balance, staked amount and status, recent activity, payment requests, help, repeat | Information only, from devnet RPC or app state, spoken by the app voice. A compromised laptop can lie about these. They are never an input to signing: the device does not see them, and every transaction is still announced and confirmed on the device (I1, I3, I6) |
 
+**Payment requests** (EXTRATASKS Part 2) are laptop-sourced end to end: `app/` creates them in `server/` with the device's public key as recipient, and the payer's wallet pays whatever the request says. A compromised laptop or server could swap the recipient for its own address. The payer's defense is the requester's 8-word address phrase, shown with every request and spoken by the requester's own device ("what is my address", `SPEAK_ADDRESS`): if the words differ, don't pay. The server never signs; the device signs nothing for a request (it only receives). Paid detection trusts devnet RPC, so "Max paid" is information, like a balance.
+
 "Cancel" is both: the app stops its own voice and sends `CANCEL`, which the device acts on during any flow. "Lock" can only make the device safer (it ends the session; it never opens one).
 
 ## What the checksum phrase does and does not do
