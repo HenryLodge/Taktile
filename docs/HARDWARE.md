@@ -18,7 +18,7 @@ Filled in by a human and checked on 2026-11-15 against two pin maps that agree w
 | I2S BCLK | UDA1334A BCLK + MAX98357A BCLK | GPIO5 (D5) | Shared bus, one I2S peripheral |
 | I2S LRCLK / WS | UDA1334A WSEL + MAX98357A LRC | GPIO6 (D6) | |
 | I2S DOUT | UDA1334A DIN + MAX98357A DIN | GPIO7 (D7) | |
-| SPK_EN | MAX98357A SD | GPIO4 (D4) | Drive LOW = speaker shut down (earpiece-only). Only `speaker mode` drives it high. **If this wire is missing, the speaker is always on** (the amp board pulls SD up), so secret audio reaches the speaker; check it with bring-up step 7 |
+| SPK_EN | MAX98357A SD | GPIO4 (D4) | Drive LOW = speaker shut down (earpiece-only). Only `speaker mode` drives it high. **If this wire is missing, the speaker is always on** (the amp board pulls SD up), so every clip, secret ones included, reaches the speaker even with speaker mode off; check it with bring-up step 7 |
 | I2C SDA / SCL | DRV2605L SDA / SCL | SDA=GPIO47, SCL=GPIO48 (the Metro's SDA/SCL header pins by AREF, the same lines as its STEMMA QT port) | Jumpers. DRV2605L **VIN to 3V3, not 5V**: its I2C pull-ups go to VIN. GND to GND, IN unconnected (internal trigger). Motor disc to its + / − outputs |
 | BTN_UP | button → GND | GPIO8 (D8) | Internal pull-up, active low |
 | BTN_DOWN | button → GND | GPIO9 (D9) | |

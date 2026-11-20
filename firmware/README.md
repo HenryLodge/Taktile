@@ -15,7 +15,7 @@ ESP-IDF (v5.5) project for the Adafruit Metro ESP32-S3. A thin layer: drivers pl
 | `main/main.c` | `app_main`: entropy on, speaker off, drivers, then the protocol loop (`tk_device_poll`) or the bring-up menu |
 | `main/rng.c` | Hardware RNG: entropy source on, startup + continuous health checks, fail closed |
 | `main/buttons.c` | Six buttons: 5 ms scan, 30 ms debounce, 2 s long press for OK and REJECT; presses that start during a clip never count (I6) |
-| `main/audio.c` | I2S0 at 16 kHz to the earpiece DAC and speaker amp; `SPK_EN` LOW for every secret clip (#9); clips from the clip pack, checked at boot, silent if it's missing or stale |
+| `main/audio.c` | I2S0 at 16 kHz to the earpiece DAC and speaker amp; `SPK_EN` LOW unless speaker mode is on (then every clip plays on the speaker too); clips from the clip pack, checked at boot, silent if it's missing or stale |
 | `main/haptics.c` | DRV2605L over I2C (GPIO47/48): ERM motor, four patterns from its effect library; fire-and-forget, off if the chip is missing |
 | `main/storage.c` | Plain NVS (namespace `taktile`), same contract as the simulator's storage. Fails closed and never erases the partition by itself |
 | `main/link.c` | USB-Serial-JTAG link (the board's USB-C port; CDC-ACM to the laptop) |
@@ -69,7 +69,7 @@ python $IDF_PATH/components/partition_table/parttool.py -p COMx --partition-tabl
 
 Without a valid pack every clip is silent; bring-up step 5 prints the pack status.
 
-**Speaker demo mode:** hold OK + BACK together for 3 s while the device is idle: "speaker mode on". Public clips then also play on the speaker; secret ones (PIN digits, checksum and recovery words) never do. The same chord turns it off; a reboot (RESET) always does. It does nothing during a flow, and SETUP is refused while it is on (docs/AUDIO.md).
+**Speaker demo mode:** hold OK + BACK together for 3 s while the device is idle: "speaker mode on". Every clip then also plays on the speaker, secret ones included (PIN digits, checksum and recovery words), so the room hears what the earbuds hear. The same chord turns it off; a reboot (RESET) always does. It does nothing during a flow (docs/AUDIO.md).
 
 **NVS** (bring-up step 9 prints its status). If it won't open (for example data left by the board's factory firmware), the firmware never erases it by itself: storage stays off. To erase it yourself, which deletes the wallet and contacts (**never on the funded demo wallet**, created 2026-11-18; its 24 words are the only backup):
 

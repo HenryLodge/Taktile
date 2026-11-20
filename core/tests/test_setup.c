@@ -104,14 +104,6 @@ static size_t count_ops(op_kind_t kind, int value) {
     return n;
 }
 
-static size_t secret_clips(void) {
-    size_t n = 0;
-    for (size_t i = 0; i < fake_op_count; i++) {
-        n += fake_ops[i].kind == OP_CLIP && fake_ops[i].secret;
-    }
-    return n;
-}
-
 static bool is_letter(int clip) {
     return clip >= TK_CLIP_LETTER_A && clip < TK_CLIP_LETTER_A + 26;
 }
@@ -298,15 +290,6 @@ static void test_refusals(void) {
     run();
     TK_CHECK(setup_status() == TK_STATUS_DEVICE_ERROR);
     TK_CHECK(count_ops(OP_CLIP, -1) == 0 && fw.create_calls == 0);
-
-    // Speaker mode: refused before any secret clip.
-    setup_fake(false);
-    fake.speaker_mode = true;
-    send_setup();
-    script_happy();
-    run();
-    TK_CHECK(setup_status() == TK_STATUS_DEVICE_ERROR);
-    TK_CHECK(secret_clips() == 0 && count_ops(OP_CLIP, TK_CLIP_RECOVERY_WORD) == 0 && fw.create_calls == 0);
 
     // RNG fails in PIN entry, and (separately) at generation (calls 1-12 are the 12 start digits).
     setup_fake(false);

@@ -1,9 +1,10 @@
 // Audio: I2S0, Philips, 16-bit stereo at 16 kHz, no MCLK. Clips are mono; each sample goes to both
 // channels (the UDA1334A plays both, the MAX98357A with SD driven HIGH plays the left one).
 //
-// SPK_EN (MAX98357A SD) is LOW except while a public clip plays in speaker mode. A secret clip
-// drives it LOW before its first sample is written (decision #9, I2), and every clip ends with
-// enough silence to drain the DMA buffers, so audio never spills into the next clip's routing.
+// SPK_EN (MAX98357A SD) is LOW except while a clip plays in speaker mode. Speaker mode is a
+// device-only demo toggle and plays every clip on the speaker, secret ones included (PIN digits,
+// checksum and recovery words; docs/AUDIO.md). Every clip ends with enough silence to drain the DMA
+// buffers, so audio never spills into the next clip's routing.
 //
 // The clip pack is mapped from the `clips` partition and checked once at init (header, every index
 // entry, CRC; core/src/tk_clippack.c). If anything fails, clips are silent: fail closed.
@@ -33,8 +34,7 @@
 // Gains, Q15, tuned by ear on the device (2026-11-16). Clips are peak-normalized to -3 dBFS.
 // Earpiece only: -9 dB (0.355); full scale is too loud straight into earbuds. Speaker on: 50%
 // (-6 dB); 100% was too loud and crackled, and 75% was also judged worse by ear. Both outputs
-// share the bus, so while the speaker is on the earbuds get the louder level too; secret clips
-// never turn the speaker on, so they always play at the earpiece level.
+// share the bus, so while the speaker is on the earbuds get the louder level too.
 #define GAIN_EARPIECE_Q15 11627
 #define GAIN_SPEAKER_Q15 16423
 #define SPK_SETTLE_MS 10 // after turning the amp on, before its first sample
@@ -160,7 +160,8 @@ static void drain(void) {
 }
 
 void tk_audio_play(uint16_t clip, bool secret) {
-    route(!secret && speaker_mode); // before any sample of this clip is written
+    (void)secret;        // speaker mode plays secret clips too (demo; docs/AUDIO.md)
+    route(speaker_mode); // before any sample of this clip is written
     tk_buttons_clip_start();
 
     const uint8_t *pcm = NULL;

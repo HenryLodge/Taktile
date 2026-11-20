@@ -98,7 +98,6 @@ typedef struct {
     bool storage_off;
 
     bool audio_bad;    // audio_ok() returns false
-    bool speaker_mode; // private_audio_only() returns false
 } fake_platform_t;
 
 static fake_platform_t fake;
@@ -319,15 +318,10 @@ static inline bool fp_audio_ok(void *ctx) {
     return !fake.audio_bad;
 }
 
-static inline bool fp_private_audio_only(void *ctx) {
-    (void)ctx;
-    return !fake.speaker_mode;
-}
-
 static const tk_platform_t FAKE_PLATFORM = {
     NULL, fp_play_clip, fp_haptic, fp_wait_button, fp_now, fp_random,
     fp_storage_get, fp_storage_set, fp_serial_read, fp_serial_write,
-    fp_audio_ok, fp_private_audio_only,
+    fp_audio_ok,
 };
 
 // ---- Decoding what the device wrote ----
