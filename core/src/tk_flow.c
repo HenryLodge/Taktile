@@ -205,14 +205,31 @@ bool tk_dev_audio_ok(const tk_device_t *d) {
     return audio_ok(d);
 }
 
-// "send <amount> <token> to <name> checksum <w1 w2 w3>"
+// send:    "send <amount> <token> to <name> checksum <w1 w2 w3>"
+// stake:   "stake <amount> SOL with <validator> stake account <n> checksum <w1 w2 w3>"
+// unstake: "unstake stake account <n> checksum <w1 w2 w3>"
+// The stake amount is the lamports moved into the stake account (the rent reserve included).
 static void announce(tk_device_t *d, const tk_tx_t *tx, const tk_contact_t *c, const uint8_t ck[TK_TX_PHRASE_WORDS]) {
     uint16_t clips[TK_SPEECH_AMOUNT_MAX];
-    say(d, TK_CLIP_SEND);
-    play_all(d, clips, tk_speech_amount(tx->kind, tx->amount, clips, TK_SPEECH_AMOUNT_MAX));
-    say(d, tx->kind == TK_TX_SOL ? TK_CLIP_SOL : TK_CLIP_USDC);
-    say(d, TK_CLIP_TO);
-    play_all(d, clips, tk_speech_spell(c->name, c->name_len, clips, TK_SPEECH_AMOUNT_MAX));
+    if (tx->kind == TK_TX_STAKE || tx->kind == TK_TX_UNSTAKE) {
+        if (tx->kind == TK_TX_STAKE) {
+            say(d, TK_CLIP_STAKE);
+            play_all(d, clips, tk_speech_amount(TK_TX_SOL, tx->amount, clips, TK_SPEECH_AMOUNT_MAX));
+            say(d, TK_CLIP_SOL);
+            say(d, TK_CLIP_WITH);
+            say(d, TK_CLIP_VALIDATOR_NAME); // the pinned validator: the parser refused any other
+        } else {
+            say(d, TK_CLIP_UNSTAKE);
+        }
+        say(d, TK_CLIP_STAKE_ACCOUNT);
+        play_all(d, clips, tk_speech_number(tx->stake_index, clips, TK_SPEECH_AMOUNT_MAX));
+    } else {
+        say(d, TK_CLIP_SEND);
+        play_all(d, clips, tk_speech_amount(tx->kind, tx->amount, clips, TK_SPEECH_AMOUNT_MAX));
+        say(d, tx->kind == TK_TX_SOL ? TK_CLIP_SOL : TK_CLIP_USDC);
+        say(d, TK_CLIP_TO);
+        play_all(d, clips, tk_speech_spell(c->name, c->name_len, clips, TK_SPEECH_AMOUNT_MAX));
+    }
     say(d, TK_CLIP_CHECKSUM);
     for (size_t i = 0; i < TK_TX_PHRASE_WORDS; i++) {
         ui_play(d, (uint16_t)(TK_CLIP_WORD_0 + ck[i]), true); // secret (I2)
@@ -350,17 +367,28 @@ static tk_status_t run_sign(tk_device_t *d, const uint8_t *msg, size_t len, flow
     }
 
     tk_tx_t tx;
-    if (tk_parse_message(msg, len, d->pubkey, d->usdc_ata, &tx) != TK_PARSE_OK) {
+    const tk_parse_result_t pr = tk_parse_message(msg, len, d->pubkey, d->usdc_ata, &tx);
+    if (pr != TK_PARSE_OK) {
         p->haptic(p->ctx, TK_HAPTIC_WARNING);
-        say(d, TK_CLIP_CANNOT_SIGN);
+        // A stake to any other validator gets its own warning; every other refusal sounds the same.
+        say(d, pr == TK_PARSE_STAKE_WRONG_VALIDATOR ? TK_CLIP_UNKNOWN_VALIDATOR : TK_CLIP_CANNOT_SIGN);
         return TK_STATUS_PARSE_UNSUPPORTED;
     }
-    const int idx = tk_contacts_find(d->contacts, tx.kind, tx.destination);
-    const tk_contact_t *contact = idx >= 0 ? tk_contacts_get(d->contacts, (uint8_t)idx) : NULL;
-    if (contact == NULL) {
-        p->haptic(p->ctx, TK_HAPTIC_WARNING);
-        say(d, TK_CLIP_UNKNOWN_RECIPIENT);
-        return TK_STATUS_UNKNOWN_RECIPIENT;
+    // Sends go to a contact (I3). A stake or unstake goes to the device's own derived stake account,
+    // which the parser recomputed: there is no recipient to look up.
+    const tk_contact_t *contact = NULL;
+    if (tx.kind == TK_TX_SOL || tx.kind == TK_TX_USDC) {
+        const int idx = tk_contacts_find(d->contacts, tx.kind, tx.destination);
+        contact = idx >= 0 ? tk_contacts_get(d->contacts, (uint8_t)idx) : NULL;
+        if (contact == NULL) {
+            p->haptic(p->ctx, TK_HAPTIC_WARNING);
+            say(d, TK_CLIP_UNKNOWN_RECIPIENT);
+            return TK_STATUS_UNKNOWN_RECIPIENT;
+        }
+    } else if (tx.kind != TK_TX_STAKE && tx.kind != TK_TX_UNSTAKE) {
+        p->haptic(p->ctx, TK_HAPTIC_WARNING); // unreachable: the parser only returns the four kinds
+        say(d, TK_CLIP_CANNOT_SIGN);
+        return TK_STATUS_PARSE_UNSUPPORTED;
     }
 
     tk_checksum_tx(msg, len, s->ck);
