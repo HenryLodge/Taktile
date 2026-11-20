@@ -22,6 +22,8 @@ export interface ChatEntry {
     link?: string;
     /** The app checksum words, shown large next to the sentence. */
     words?: string[];
+    /** Text with a Copy button under it (a payment request's Blink link). */
+    copy?: { label: string; value: string };
 }
 
 export interface ConnectionState {
@@ -100,7 +102,7 @@ export function log(source: LogSource, text: string): void {
 export function chat(
     role: ChatEntry['role'],
     text: string,
-    opts: { level?: ChatEntry['level']; link?: string; words?: string[] } = {},
+    opts: { level?: ChatEntry['level']; link?: string; words?: string[]; copy?: ChatEntry['copy'] } = {},
 ): void {
     const entry: ChatEntry = { id: nextChatId++, role, text, level: opts.level ?? 'info' };
     if (opts.link !== undefined) {
@@ -108,6 +110,9 @@ export function chat(
     }
     if (opts.words !== undefined) {
         entry.words = opts.words;
+    }
+    if (opts.copy !== undefined) {
+        entry.copy = opts.copy;
     }
     state = { ...state, chat: [...state.chat, entry].slice(-CHAT_MAX) };
     emit();

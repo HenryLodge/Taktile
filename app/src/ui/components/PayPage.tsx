@@ -15,6 +15,9 @@ import {
     findSolflare,
     isRejection,
     payRequest,
+    rememberWallet,
+    waitForSolflare,
+    walletRemembered,
     type ActionView,
     type WalletProvider,
 } from '../../pay.ts';
@@ -22,6 +25,7 @@ import { RequestsError, amountText, listRequests, type PayRequest } from '../../
 import { EXPLORER_TX } from '../../tx.ts';
 import { earcon } from '../../voice.ts';
 import { Button } from './Button.tsx';
+import { CopyField } from './CopyField.tsx';
 import { Logo } from './icons.tsx';
 import { Panel } from './Panel.tsx';
 
@@ -41,6 +45,14 @@ interface Item {
 const POLL_MS = 3000;
 const fetchApi = (input: string, init?: RequestInit) => fetch(input, init);
 const short = (a: string) => `${a.slice(0, 4)}…${a.slice(-4)}`;
+
+function storage(): Storage | null {
+    try {
+        return window.localStorage;
+    } catch {
+        return null;
+    }
+}
 
 export const PayPage = forwardRef<HTMLHeadingElement>(function PayPage(_props, heading) {
     const [address, setAddress] = useState<string | null>(null);
@@ -163,6 +175,56 @@ export const PayPage = forwardRef<HTMLHeadingElement>(function PayPage(_props, h
         };
     }, [address, pay, update, rerender]);
 
+    // After a reload: reconnect by itself if this profile connected before (and Solflare agrees).
+    useEffect(() => {
+        if (!walletRemembered(storage())) {
+            return undefined;
+        }
+        let cancelled = false;
+        setStatus('Reconnecting Solflare…');
+        void (async () => {
+            const w = await waitForSolflare(window);
+            if (cancelled) {
+                return;
+            }
+            if (w === null) {
+                setStatus('Solflare did not load. Reload the page, or press Connect Solflare.');
+                return;
+            }
+            try {
+                const a = await connectWallet(w);
+                if (!cancelled) {
+                    wallet.current = w;
+                    setAddress(a);
+                    setStatus('');
+                    say(`Reconnected ${short(a)}. Waiting for payment requests.`);
+                }
+            } catch {
+                rememberWallet(storage(), false); // revoked or another wallet: ask again
+                if (!cancelled) {
+                    setStatus('Solflare did not reconnect. Press Connect Solflare.');
+                }
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    async function disconnect(): Promise<void> {
+        rememberWallet(storage(), false);
+        const w = wallet.current;
+        wallet.current = null;
+        items.current.clear();
+        setAddress(null);
+        try {
+            await w?.disconnect?.();
+        } catch {
+            // already disconnected
+        }
+        say('Disconnected. This page will not reconnect Solflare by itself.');
+    }
+
     async function connect(): Promise<void> {
         const w = findSolflare(window);
         if (w === null) {
@@ -176,6 +238,8 @@ export const PayPage = forwardRef<HTMLHeadingElement>(function PayPage(_props, h
             const a = await connectWallet(w);
             wallet.current = w;
             setAddress(a);
+            setStatus('');
+            rememberWallet(storage(), true);
             say(`Connected ${short(a)}. Waiting for payment requests.`);
         } catch (e) {
             const msg = isRejection(e)
@@ -222,9 +286,15 @@ export const PayPage = forwardRef<HTMLHeadingElement>(function PayPage(_props, h
                             Connect Solflare
                         </Button>
                     ) : (
-                        <p>
-                            Connected: <span className="addr">{address}</span>
-                        </p>
+                        <>
+                            <p>
+                                Connected: <span className="addr">{address}</span>
+                            </p>
+                            <p className="hint">This page reconnects Solflare by itself after a reload.</p>
+                            <Button variant="ghost" size="sm" onPress={disconnect}>
+                                Disconnect
+                            </Button>
+                        </>
                     )}
                     {status !== '' && (
                         <p className="error" role="status">
@@ -257,6 +327,9 @@ export const PayPage = forwardRef<HTMLHeadingElement>(function PayPage(_props, h
                                                     <strong>{it.phrase.join(' ')}</strong>. Ask them to say &quot;what
                                                     is my address&quot; on their Taktile device; the 8 words must match.
                                                 </p>
+                                            )}
+                                            {it.req.blink !== undefined && (
+                                                <CopyField label="Copy Blink link" value={it.req.blink} />
                                             )}
                                             {it.text !== '' && (
                                                 <p className={it.phase === 'error' ? 'error' : 'hint'}>{it.text}</p>

@@ -107,7 +107,7 @@ _On the device_ is only a display hint. The device checks every recipient itself
 
 ## Taktile Pay (`/pay`): paying a payment request
 
-"Request 5 USDC from Max" (on the requester's side) creates a payment request in `server/` addressed to Max's wallet. Max keeps `http://localhost:5173/pay` open in his own browser profile with the **Solflare** extension set to **devnet**, and presses **Connect Solflare** once. From then on:
+"Request 5 USDC from Max" (on the requester's side) creates a payment request in `server/` addressed to Max's wallet. Max keeps `http://localhost:5173/pay` open in his own browser profile with the **Solflare** extension set to **devnet**, and presses **Connect Solflare** once. The page remembers that (a flag in this profile's local storage) and reconnects by itself after a reload; Solflare trusts the site after the first approval, so normally without a prompt. **Disconnect** forgets it; if Solflare refuses to reconnect, the page asks again. From then on:
 
 1. The page checks `server/` every 3 s for pending requests addressed to his wallet (`src/requests.ts`).
 2. For a new one it plays a tone and says "Payment request from Henry: 5 USDC", and fetches the request's **Solana Action** (`GET /api/actions/request/:id`): title, description, button label. It shows the requester's **8-word address phrase**: the requester's device says the same words for "what is my address", which is how Max checks who he is paying.
@@ -115,7 +115,7 @@ _On the device_ is only a display hint. The device checks every recipient itself
 4. It calls `window.solflare.signAndSendTransaction`, so **Solflare's approval window pops up by itself**. Max approves or rejects there. If Solflare wants a click first (or anything fails), the request's Pay button gets the focus with the reason, so Enter tries again.
 5. `server/` sees the payment on devnet (the reference key), the requester's app says "Max paid your request for 5 USDC", and this page says "Payment confirmed".
 
-One automatic prompt per request; after a rejection only the Pay button asks again. This page is a Blinks client: any other Actions client could pay the same request. It never uses the Phantom or Solflare SDKs (the Solflare SDK opens its own web wallet instead of the extension).
+One automatic prompt per request; after a rejection only the Pay button asks again. Each request also shows its **Blink link** (`solana-action:…`) with a Copy button; the requester's app shows the same link after "request …" (B3; it works off this laptop only through a tunnel, `server/README.md`). This page is a Blinks client: any other Actions client could pay the same request. It never uses the Phantom or Solflare SDKs (the Solflare SDK opens its own web wallet instead of the extension).
 
 ## My address phrase
 

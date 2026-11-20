@@ -27,7 +27,14 @@ const ID_RE = /^[0-9a-f]{24}$/;
 
 const short = (addr) => `${addr.slice(0, 4)}…${addr.slice(-4)}`;
 
-export function createRequestStore({ now = Date.now, rpc, requesterName = '', ttlMs = TTL_MS, refreshMs = REFRESH_MS } = {}) {
+export function createRequestStore({
+    now = Date.now,
+    rpc,
+    requesterName = '',
+    ttlMs = TTL_MS,
+    refreshMs = REFRESH_MS,
+    publicBase = 'http://localhost:8787',
+} = {}) {
     const byId = new Map();
     const checkedAt = new Map();
 
@@ -37,6 +44,9 @@ export function createRequestStore({ now = Date.now, rpc, requesterName = '', tt
         return {
             ...r,
             status,
+            // The request's Blink: its Solana Action URL with the solana-action: scheme (B3). Public
+            // only through a tunnel (TK_PUBLIC_URL); on localhost it works on this machine.
+            blink: `solana-action:${publicBase}/api/actions/request/${r.id}`,
             ...(r.signature ? { explorer: EXPLORER_TX(r.signature) } : {}),
         };
     };

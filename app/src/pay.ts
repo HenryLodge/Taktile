@@ -18,6 +18,7 @@ export interface WalletProvider {
     isSolflare?: boolean;
     publicKey?: { toBase58(): string } | null;
     connect(): Promise<unknown>;
+    disconnect?(): Promise<unknown>;
     signAndSendTransaction(tx: Transaction): Promise<unknown>;
 }
 
@@ -31,6 +32,44 @@ export function findSolflare(w: unknown = globalThis): WalletProvider | null {
     return typeof s.connect === 'function' && typeof s.signAndSendTransaction === 'function'
         ? (p as WalletProvider)
         : null;
+}
+
+/**
+ * The extension injects window.solflare a moment after the page loads: wait for it (polls every
+ * 100 ms, at most `timeoutMs`), so a reconnect on reload doesn't give up too early.
+ */
+export async function waitForSolflare(w: unknown = globalThis, timeoutMs = 3000): Promise<WalletProvider | null> {
+    for (let waited = 0; ; waited += 100) {
+        const p = findSolflare(w);
+        if (p !== null || waited >= timeoutMs) {
+            return p;
+        }
+        await new Promise((r) => setTimeout(r, 100));
+    }
+}
+
+// "Stay connected after a reload": only a flag in this browser profile's storage; the wallet itself
+// decides whether to reconnect without asking (it trusts this site after the first approval).
+const REMEMBER_KEY = 'tk.pay.solflare.v1';
+
+export function rememberWallet(storage: Pick<Storage, 'setItem'> | null, on: boolean): void {
+    try {
+        if (on) {
+            storage?.setItem(REMEMBER_KEY, '1');
+        } else {
+            (storage as Pick<Storage, 'removeItem'> | null)?.removeItem(REMEMBER_KEY);
+        }
+    } catch {
+        // storage blocked: Connect is needed after each reload
+    }
+}
+
+export function walletRemembered(storage: Pick<Storage, 'getItem'> | null): boolean {
+    try {
+        return storage?.getItem(REMEMBER_KEY) === '1';
+    } catch {
+        return false;
+    }
 }
 
 /** Connect and return the wallet address. */

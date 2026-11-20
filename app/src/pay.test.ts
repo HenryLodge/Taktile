@@ -12,7 +12,10 @@ import {
     isRejection,
     payRequest,
     postAction,
+    rememberWallet,
     signatureOf,
+    waitForSolflare,
+    walletRemembered,
     type FetchFn,
     type WalletProvider,
 } from './pay.ts';
@@ -229,4 +232,36 @@ test('findSolflare and signatureOf', () => {
     assert.equal(signatureOf('abc'), 'abc');
     assert.equal(signatureOf({ signature: 'abc' }), 'abc');
     assert.throws(() => signatureOf({}), PayError);
+});
+
+test('remember the wallet across reloads; blocked storage is harmless', () => {
+    const m = new Map<string, string>();
+    const store = {
+        getItem: (k: string) => m.get(k) ?? null,
+        setItem: (k: string, v: string) => void m.set(k, v),
+        removeItem: (k: string) => void m.delete(k),
+    };
+    assert.equal(walletRemembered(store), false);
+    rememberWallet(store, true);
+    assert.equal(walletRemembered(store), true);
+    rememberWallet(store, false);
+    assert.equal(walletRemembered(store), false);
+    const blocked = {
+        getItem: () => {
+            throw new Error('blocked');
+        },
+        setItem: () => {
+            throw new Error('blocked');
+        },
+    };
+    rememberWallet(blocked, true);
+    assert.equal(walletRemembered(blocked), false);
+    assert.equal(walletRemembered(null), false);
+});
+
+test('waitForSolflare: finds a provider injected late, gives up after the timeout', async () => {
+    const win: { solflare?: unknown } = {};
+    setTimeout(() => (win.solflare = wallet('s')), 150);
+    assert.notEqual(await waitForSolflare(win, 1000), null);
+    assert.equal(await waitForSolflare({}, 200), null);
 });

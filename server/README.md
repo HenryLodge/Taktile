@@ -20,7 +20,7 @@ The server is untrusted like the rest of the laptop (`docs/SECURITY_MODEL.md`). 
 | `POST /api/stt` | The raw recording as the body, `Content-Type` `audio/webm` (MediaRecorder), `audio/ogg`, `audio/wav` or `audio/mpeg`, 1 KB–1 MB. Optional `?names=Henry,Max`: contact names (device name rules, up to 16) added to the recognizer's keyterms | `{"text":"..."}` |
 | `POST /api/requests` | JSON `{"recipient","token","amount","payer","payerName"?}`: base58 keys, `SOL` or `USDC`, amount in base units as a string (1 to 2^64-1), payer name up to 32 printable ASCII | `201` the request: `id`, a fresh random `reference` key, `requesterName` (`TK_REQUESTER_NAME`), `createdAt`, `expiresAt` (24 h), `status` `pending` |
 | `GET /api/requests?recipient=…` or `?payer=…` | Exactly one of the two | `{"requests":[...]}`, newest first. Pending requests are checked on devnet first (below) |
-| `GET /api/requests/:id` | — | One request (`404 not_found` if unknown) |
+| `GET /api/requests/:id` | — | One request (`404 not_found` if unknown). Every request has `blink`: its `solana-action:` URL (below) |
 | `GET /actions.json` | — | Solana Actions rules: `/request/*` → `/api/actions/request/*` (**public**, below) |
 | `GET /api/actions/request/:id` | — | The request as a Solana Action (**public**, below) |
 | `POST /api/actions/request/:id` | JSON `{"account":"<payer base58>"}`, up to 1 KB | An unsigned transaction for the payer's wallet (**public**, below) |
@@ -79,6 +79,20 @@ Each payment request is also a standard Solana Action, the API behind Blinks, so
 - **Headers on every Actions response, including `OPTIONS` (204):** `Access-Control-Allow-Origin: *`, `Access-Control-Allow-Methods: GET,POST,PUT,OPTIONS`, `Access-Control-Allow-Headers: Content-Type, Authorization, Content-Encoding, Accept-Encoding, X-Accept-Action-Version, X-Accept-Blockchain-Ids`, `Access-Control-Expose-Headers: X-Action-Version, X-Blockchain-Ids`, `X-Action-Version: 2.4`, `X-Blockchain-Ids: solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` (devnet).
 - **Public on purpose:** these routes (and only these) skip the localhost Origin/Host checks, so a Blinks client can reach them through a tunnel. They can only read a request and build an unsigned transaction; creating requests, STT, TTS and the agent stay localhost-only. Limit 120/min. `TK_PUBLIC_URL` sets the base of the links (a tunnel); otherwise the request's Host is used.
 - Not claimed: Phantom and Solflare render Blinks natively only for registry-verified actions on X.com, which unregistered devnet actions are not.
+
+### Blink links and a tunnel (B3)
+
+Every request carries `blink`: `solana-action:<base>/api/actions/request/<id>`. The app shows it with a Copy button after "request …", and Taktile Pay shows it on each request. `<base>` is `TK_PUBLIC_URL`, or `http://localhost:<port>`, which only works on this machine. **The demo doesn't need a tunnel**: Taktile Pay runs on the same laptop.
+
+To let an Actions client elsewhere open a request, expose this server over public HTTPS and restart it with the tunnel URL:
+
+```bash
+cloudflared tunnel --url http://localhost:8787      # prints https://<random>.trycloudflare.com
+# or: ngrok http 8787                               # prints https://<random>.ngrok-free.app
+# then in server/.env:  TK_PUBLIC_URL=https://<random>.trycloudflare.com   and restart npm run dev
+```
+
+Through the tunnel only the Actions routes answer (`/actions.json`, `/api/actions/*`): their CORS headers allow any origin, and they can only read a request and build an unsigned transaction. Every other route (STT, TTS, agent, creating and listing requests) is refused with `403`, because the tunnel's `Host` is not localhost. Stop the tunnel when you're done; the request ids are unguessable (96 random bits), but anyone with a link can see the amount and the requester's address.
 
 ## Canned mode
 

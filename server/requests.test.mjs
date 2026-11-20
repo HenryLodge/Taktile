@@ -70,6 +70,9 @@ test('create: a pending request with a fresh id and reference, expiring in 24 h'
     assert.equal(a.expiresAt, 1000 + TTL_MS);
     assert.equal(a.requesterName, `Taktile wallet ${DEVICE.slice(0, 4)}…${DEVICE.slice(-4)}`);
     assert.equal(createRequestStore({ requesterName: 'Henry' }).create(body()).requesterName, 'Henry');
+    assert.equal(a.blink, `solana-action:http://localhost:8787/api/actions/request/${a.id}`);
+    const t = createRequestStore({ publicBase: 'https://abc.trycloudflare.com' }).create(body());
+    assert.equal(t.blink, `solana-action:https://abc.trycloudflare.com/api/actions/request/${t.id}`);
 });
 
 test('create: every bad field is refused with 400', () => {

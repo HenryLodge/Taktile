@@ -170,9 +170,13 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
     };
 
     /** A spoken answer: conversation, log, live region, and the app voice for spoken commands. */
-    const answer = (lines: readonly string[], source: 'typed' | 'voice') => {
+    const answer = (
+        lines: readonly string[],
+        source: 'typed' | 'voice',
+        extra: { copy?: { label: string; value: string } } = {},
+    ) => {
         const all = lines.join(' ');
-        chat('taktile', all);
+        chat('taktile', all, extra);
         log('app', all);
         sayLines(lines, { voice: source === 'voice' });
     };
@@ -375,7 +379,11 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
                     answer(
                         [`Requested ${amountText(r)} from ${who}. It will appear on ${who}'s Taktile Pay page.`],
                         source,
+                        r.blink === undefined ? {} : { copy: { label: 'Copy Blink link', value: r.blink } },
                     );
+                    if (r.blink !== undefined) {
+                        log('app', `Blink link: ${r.blink}`);
+                    }
                 } else {
                     const rs = await listRequests(fetchApi, { recipient: me });
                     watcher.track(rs);

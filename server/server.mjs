@@ -124,7 +124,12 @@ export function createServer({
         cache: createCache(cacheDir),
         state: { sttInFlight: false }, // shared across requests
         rpc,
-        requests: createRequestStore({ now, rpc, requesterName: config.requesterName }),
+        requests: createRequestStore({
+            now,
+            rpc,
+            requesterName: config.requesterName,
+            publicBase: config.publicUrl || `http://localhost:${config.port}`,
+        }),
     };
 
     const server = http.createServer(async (req, res) => {

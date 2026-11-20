@@ -130,3 +130,12 @@ test('PaidWatcher: a failing poll keeps watching', async () => {
     assert.equal(w.watching, 1);
     w.stop();
 });
+
+test('a request may carry its Blink link; anything but a solana-action: URL is refused', async () => {
+    const ok: FetchFn = async () =>
+        json(201, req({ blink: 'solana-action:http://localhost:8787/api/actions/request/x' }));
+    const r = await createRequest(ok, { recipient: ME, token: 'USDC', amount: 1n, payer: MAX });
+    assert.equal(r.blink, 'solana-action:http://localhost:8787/api/actions/request/x');
+    const bad: FetchFn = async () => json(201, req({ blink: 'javascript:alert(1)' }));
+    await assert.rejects(createRequest(bad, { recipient: ME, token: 'USDC', amount: 1n, payer: MAX }), RequestsError);
+});

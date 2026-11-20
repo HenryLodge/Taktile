@@ -25,6 +25,8 @@ export interface PayRequest {
     status: RequestStatus;
     signature: string | null;
     explorer?: string;
+    /** solana-action:<Action URL>, the request's Blink (B3). */
+    blink?: string;
 }
 
 export type FetchFn = (input: string, init?: RequestInit) => Promise<Response>;
@@ -49,7 +51,8 @@ function isRequest(x: unknown): x is PayRequest {
         typeof r.createdAt === 'number' &&
         typeof r.expiresAt === 'number' &&
         (r.status === 'pending' || r.status === 'paid' || r.status === 'expired') &&
-        (r.signature === null || typeof r.signature === 'string')
+        (r.signature === null || typeof r.signature === 'string') &&
+        (r.blink === undefined || (typeof r.blink === 'string' && r.blink.startsWith('solana-action:')))
     );
 }
 
