@@ -117,6 +117,15 @@ _On the device_ is only a display hint. The device checks every recipient itself
 
 One automatic prompt per request; after a rejection only the Pay button asks again. Each request also shows its **Blink link** (`solana-action:…`) with a Copy button; the requester's app shows the same link after "request …" (B3; it works off this laptop only through a tunnel, `server/README.md`). This page is a Blinks client: any other Actions client could pay the same request. It never uses the Phantom or Solflare SDKs (the Solflare SDK opens its own web wallet instead of the extension).
 
+## Staking ("stake 1 SOL", "unstake", "unstake all")
+
+One validator, pinned at build time (`tools/validator.json`, Kiln; `src/validator.ts` is generated from it). Stake accounts are the device's own `tk-stake-0` … `tk-stake-15` (`createWithSeed` from the device wallet), so the device recognizes them and stays the only signer.
+
+- **"stake 1 SOL"** (`src/stake.ts`): checks the minimum delegation (1 SOL on devnet), picks the lowest unused stake account, adds the rent-exempt reserve (0.00166624 SOL, which stays in the account), checks the balance, then runs the same steps as a send (`signAndBroadcast` in `src/send.ts`): PIN if locked, fresh blockhash, the app checksum ("Staking 1.00166624 SOL with Kiln, stake account 0. Checksum: …"), the device's own announcement, CONFIRM, verify, broadcast. The transaction is byte-equal to the parser's test vectors (`tx.test.ts`).
+- **"unstake"**: deactivates an active or activating stake account; with several, the app asks "Which stake account: 0 or 2?" (say the number, or "all"). **"unstake all"** signs one deactivation per account, each announced and confirmed on the device. The SOL stays in the account until it is withdrawn, which this version can't do yet.
+- **"how much do I have staked"** answers from devnet (`src/queries.ts`). Devnet stake becomes active at the next epoch boundary (an epoch is about 1–2 days on devnet).
+- "Stake 5 USDC" answers "Only SOL can be staked."
+
 ## My address phrase
 
 This is for the person _being_ added. Paste your wallet address (or press **Use this device's address**), then **Show my phrase**. The app shows the 8 words in large type, and **Read aloud** speaks them with the app voice. They are the same words the adding device reads (`addressPhrase` in `src/checksum.ts`, held to the same `tests/vectors/checksum.json` as the device).

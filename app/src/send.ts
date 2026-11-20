@@ -71,12 +71,155 @@ const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
 const sol = (lamports: bigint) => `${formatAmount(lamports, DECIMALS.SOL)} SOL`;
 const usdcText = (units: bigint) => `${formatAmount(units, DECIMALS.USDC)} USDC`;
 
-export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutcome> {
-    const sleep = d.sleep ?? defaultSleep;
-    const fail = (text: string, level: ReportLevel = 'alert'): SendOutcome => {
+const failWith =
+    (d: SendDeps) =>
+    (text: string, level: ReportLevel = 'alert'): SendOutcome => {
         void d.report({ phase: 'failed', text, level });
         return { ok: false, reason: text };
     };
+
+/** What the shared signing steps say about this transaction. */
+export interface SignWording {
+    /** "1 SOL to Henry", "1.00166624 SOL with Kiln, stake account 0", ... */
+    what: string;
+    /** Spoken with the checksum: "Sending" / "Staking" / "Unstaking". */
+    doing: string;
+    /** In the result: "Sent" / "Staked" / "Unstaked". */
+    done: string;
+}
+
+/**
+ * The steps every signature shares, after the caller's own checks: HELLO -> UNLOCK if locked (PIN on
+ * the device) -> fresh blockhash -> build the message -> app checksum -> SIGN_REQUEST (announcement,
+ * CONFIRM on the device) -> verify the signature -> blockhash still valid? -> broadcast -> confirm.
+ * `build` gets the blockhash and returns the exact message bytes the device will see.
+ */
+export async function signAndBroadcast(
+    build: (blockhash: string) => Uint8Array | Promise<Uint8Array>,
+    words: SignWording,
+    d: SendDeps,
+): Promise<SendOutcome> {
+    const sleep = d.sleep ?? defaultSleep;
+    const fail = failWith(d);
+    const info = (phase: SendPhase, text: string) => void d.report({ phase, text, level: 'info' });
+    const CANCELLED = 'Cancelled. Nothing was sent.';
+
+    let sent: { sig: string; appPhrase: string[] } | null = null;
+    try {
+        if (d.cancelled?.()) {
+            return fail(CANCELLED, 'info');
+        }
+
+        // PIN first, so the blockhash below is fresh when the device signs.
+        const h = await d.client.hello();
+        if (h.state === DEVICE_STATE.NO_WALLET) {
+            return fail(statusText(STATUS.NO_WALLET));
+        }
+        if (h.state === DEVICE_STATE.LOCKED) {
+            info('unlocking', 'Unlocking. Enter your PIN on the device.');
+            const st = await d.unlock();
+            if (st !== STATUS.OK) {
+                return fail(st === null ? 'Unlock failed. Nothing was sent.' : `${statusText(st)} Nothing was sent.`);
+            }
+        }
+        if (d.cancelled?.()) {
+            return fail(CANCELLED, 'info');
+        }
+
+        // Build.
+        info('building', 'Getting a fresh blockhash from devnet.');
+        const bh = await d.rpc.latestBlockhash();
+        const message = await build(bh.blockhash);
+        const appPhrase = await txPhrase(message);
+        // The app voice says the three words before the device starts its own announcement.
+        const spoken = d.report({
+            phase: 'checksum',
+            text: `${words.doing} ${words.what}. Checksum: ${appPhrase.join(', ')}.`,
+            level: 'info',
+            words: appPhrase,
+        });
+        if (spoken instanceof Promise) {
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            await Promise.race([
+                spoken.catch(() => undefined),
+                new Promise<void>((r) => (timer = setTimeout(r, d.checksumWaitMs ?? 8000))),
+            ]);
+            clearTimeout(timer);
+        }
+        if (d.cancelled?.()) {
+            return fail(CANCELLED, 'info');
+        }
+
+        // The device announces, the user confirms there.
+        const { status, signature } = await d.client.signRequest(message, (e) => info('device', eventText(e)));
+        if (status !== STATUS.OK || signature === null) {
+            const tail = status === STATUS.REJECTED_BY_USER || status === STATUS.CANCELLED ? ' Nothing was sent.' : '';
+            return fail(`${statusText(status)}${tail}`, status === STATUS.CANCELLED ? 'info' : 'alert');
+        }
+        if (!(await verifySignature(d.pubkey, message, signature))) {
+            return fail("The device's signature did not verify. Nothing was sent.");
+        }
+
+        // Broadcast, if the blockhash is still valid.
+        const height = await d.rpc.blockHeight();
+        if (height > bh.lastValidBlockHeight) {
+            return fail('Too slow: the blockhash expired before the device signed. Nothing was sent. Try again.');
+        }
+        info('broadcasting', 'Signed. Sending to devnet.');
+        const sig = base58(signature);
+        const txid = await d.rpc.sendRaw(signedTransaction(signature, message));
+        sent = { sig, appPhrase };
+        if (txid !== sig) {
+            info('broadcasting', `Note: devnet returned transaction ID ${txid}, expected ${sig}.`);
+        }
+
+        // Confirmation.
+        info('confirming', 'Sent. Waiting for devnet to confirm.');
+        const deadline = (d.confirmTimeoutMs ?? 60_000) / (d.pollMs ?? 1500);
+        for (let i = 0; i < deadline; i++) {
+            const st = await d.rpc.signatureStatus(sig);
+            if (st.state === 'confirmed') {
+                void d.report({
+                    phase: 'done',
+                    text: `${words.done} and confirmed: ${words.what}. The explorer link is on screen.`,
+                    level: 'info',
+                });
+                return { ok: true, signature: sig, explorer: EXPLORER_TX(sig), confirmed: true, appPhrase };
+            }
+            if (st.state === 'failed') {
+                return fail(`Devnet rejected the transaction: ${st.error}`);
+            }
+            await sleep(d.pollMs ?? 1500);
+        }
+        void d.report({
+            phase: 'done',
+            text: `${words.done}, but not confirmed yet. Check the explorer link.`,
+            level: 'info',
+        });
+        return { ok: true, signature: sig, explorer: EXPLORER_TX(sig), confirmed: false, appPhrase };
+    } catch (e) {
+        const m = e instanceof Error ? e.message : String(e);
+        if (sent !== null) {
+            // Broadcast already happened: never claim nothing was sent.
+            void d.report({
+                phase: 'done',
+                text: `${words.done}, but checking confirmation failed (${m}). Check the explorer link.`,
+                level: 'info',
+            });
+            return {
+                ok: true,
+                signature: sent.sig,
+                explorer: EXPLORER_TX(sent.sig),
+                confirmed: false,
+                appPhrase: sent.appPhrase,
+            };
+        }
+        return fail(`${words.doing} failed: ${m}`);
+    }
+}
+
+export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutcome> {
+    const fail = failWith(d);
     const info = (phase: SendPhase, text: string) => void d.report({ phase, text, level: 'info' });
 
     if (d.client.flowRunning) {
@@ -90,9 +233,8 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
     const amount = intent.amount;
     const what = `${formatAmount(amount, DECIMALS[intent.token])} ${intent.token} to ${intent.contact.name}`;
 
-    let sent: { sig: string; appPhrase: string[] } | null = null;
     try {
-        // 1. Will it fail on-chain anyway? (Not a limit: the device would sign, devnet would refuse.)
+        // Will it fail on-chain anyway? (Not a limit: the device would sign, devnet would refuse.)
         info('checking', 'Checking balances on devnet.');
         const have = await d.rpc.balance(d.pubkey);
         const needSol = usdc ? FEE_LAMPORTS : amount + FEE_LAMPORTS;
@@ -115,116 +257,16 @@ export async function runSend(intent: SendIntent, d: SendDeps): Promise<SendOutc
                 );
             }
         }
-
-        const CANCELLED = 'Cancelled. Nothing was sent.';
-        if (d.cancelled?.()) {
-            return fail(CANCELLED, 'info');
-        }
-
-        // 2. PIN first, so the blockhash below is fresh when the device signs.
-        const h = await d.client.hello();
-        if (h.state === DEVICE_STATE.NO_WALLET) {
-            return fail(statusText(STATUS.NO_WALLET));
-        }
-        if (h.state === DEVICE_STATE.LOCKED) {
-            info('unlocking', 'Unlocking. Enter your PIN on the device.');
-            const st = await d.unlock();
-            if (st !== STATUS.OK) {
-                return fail(st === null ? 'Unlock failed. Nothing was sent.' : `${statusText(st)} Nothing was sent.`);
-            }
-        }
-
-        if (d.cancelled?.()) {
-            return fail(CANCELLED, 'info');
-        }
-
-        // 3. Build.
-        info('building', 'Getting a fresh blockhash from devnet.');
-        const bh = await d.rpc.latestBlockhash();
-        const message = usdc
-            ? usdcTransferMessage(d.pubkey, to, amount, bh.blockhash)
-            : solTransferMessage(d.pubkey, to, amount, bh.blockhash);
-        const appPhrase = await txPhrase(message);
-        // The app voice says the three words before the device starts its own announcement.
-        const spoken = d.report({
-            phase: 'checksum',
-            text: `Sending ${what}. Checksum: ${appPhrase.join(', ')}.`,
-            level: 'info',
-            words: appPhrase,
-        });
-        if (spoken instanceof Promise) {
-            let timer: ReturnType<typeof setTimeout> | undefined;
-            await Promise.race([
-                spoken.catch(() => undefined),
-                new Promise<void>((r) => (timer = setTimeout(r, d.checksumWaitMs ?? 8000))),
-            ]);
-            clearTimeout(timer);
-        }
-
-        if (d.cancelled?.()) {
-            return fail(CANCELLED, 'info');
-        }
-
-        // 4. The device announces, the user confirms there.
-        const { status, signature } = await d.client.signRequest(message, (e) => info('device', eventText(e)));
-        if (status !== STATUS.OK || signature === null) {
-            const tail = status === STATUS.REJECTED_BY_USER || status === STATUS.CANCELLED ? ' Nothing was sent.' : '';
-            return fail(`${statusText(status)}${tail}`, status === STATUS.CANCELLED ? 'info' : 'alert');
-        }
-        if (!(await verifySignature(d.pubkey, message, signature))) {
-            return fail("The device's signature did not verify. Nothing was sent.");
-        }
-
-        // 5. Broadcast, if the blockhash is still valid.
-        const height = await d.rpc.blockHeight();
-        if (height > bh.lastValidBlockHeight) {
-            return fail('Too slow: the blockhash expired before the device signed. Nothing was sent. Try again.');
-        }
-        info('broadcasting', 'Signed. Sending to devnet.');
-        const sig = base58(signature);
-        const txid = await d.rpc.sendRaw(signedTransaction(signature, message));
-        sent = { sig, appPhrase };
-        if (txid !== sig) {
-            info('broadcasting', `Note: devnet returned transaction ID ${txid}, expected ${sig}.`);
-        }
-
-        // 6. Confirmation.
-        info('confirming', 'Sent. Waiting for devnet to confirm.');
-        const deadline = (d.confirmTimeoutMs ?? 60_000) / (d.pollMs ?? 1500);
-        for (let i = 0; i < deadline; i++) {
-            const st = await d.rpc.signatureStatus(sig);
-            if (st.state === 'confirmed') {
-                void d.report({
-                    phase: 'done',
-                    text: `Sent and confirmed: ${what}. The explorer link is on screen.`,
-                    level: 'info',
-                });
-                return { ok: true, signature: sig, explorer: EXPLORER_TX(sig), confirmed: true, appPhrase };
-            }
-            if (st.state === 'failed') {
-                return fail(`Devnet rejected the transaction: ${st.error}`);
-            }
-            await sleep(d.pollMs ?? 1500);
-        }
-        void d.report({ phase: 'done', text: 'Sent, but not confirmed yet. Check the explorer link.', level: 'info' });
-        return { ok: true, signature: sig, explorer: EXPLORER_TX(sig), confirmed: false, appPhrase };
     } catch (e) {
-        const m = e instanceof Error ? e.message : String(e);
-        if (sent !== null) {
-            // Broadcast already happened: never claim nothing was sent.
-            void d.report({
-                phase: 'done',
-                text: `Sent, but checking confirmation failed (${m}). Check the explorer link.`,
-                level: 'info',
-            });
-            return {
-                ok: true,
-                signature: sent.sig,
-                explorer: EXPLORER_TX(sent.sig),
-                confirmed: false,
-                appPhrase: sent.appPhrase,
-            };
-        }
-        return fail(`Send failed: ${m}`);
+        return fail(`Send failed: ${e instanceof Error ? e.message : String(e)}`);
     }
+
+    return signAndBroadcast(
+        (blockhash) =>
+            usdc
+                ? usdcTransferMessage(d.pubkey, to, amount, blockhash)
+                : solTransferMessage(d.pubkey, to, amount, blockhash),
+        { what, doing: 'Sending', done: 'Sent' },
+        d,
+    );
 }

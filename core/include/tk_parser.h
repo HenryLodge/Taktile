@@ -1,4 +1,5 @@
-// Solana legacy message parser: accepts exactly the two shapes in docs/SOLANA.md, rejects all else.
+// Solana legacy message parser: accepts exactly the shapes in docs/SOLANA.md (A: SOL transfer, B: USDC
+// TransferChecked, C: stake with the pinned validator, D: unstake), rejects all else.
 //
 // Untrusted input. Every read is bounds-checked; no allocation, no recursion.
 
@@ -16,12 +17,17 @@
 typedef enum {
     TK_TX_SOL = 1,  // Shape A: System Program Transfer
     TK_TX_USDC = 2, // Shape B: SPL Token TransferChecked, devnet USDC
+    TK_TX_STAKE = 3,   // Shape C: CreateAccountWithSeed + Initialize + DelegateStake (pinned validator)
+    TK_TX_UNSTAKE = 4, // Shape D: Deactivate one of the device's own stake accounts
 } tk_tx_kind_t;
 
 typedef struct {
     tk_tx_kind_t kind;
-    uint64_t amount;                      // lamports, or USDC base units (6 decimals)
+    uint64_t amount;                      // lamports, or USDC base units (6 decimals). Stake: lamports
+                                          // funded (rent reserve included). Unstake: 0.
     uint8_t destination[TK_PUBKEY_LEN];   // SOL: recipient wallet. USDC: recipient token account.
+                                          // Stake/unstake: the device's own stake account.
+    uint8_t stake_index;                  // Stake/unstake: n in seed "tk-stake-<n>" (0-15); else 0
 } tk_tx_t;
 
 // Why a message was rejected. Stays on the device: on the wire every rejection is
@@ -51,6 +57,20 @@ typedef enum {
     TK_PARSE_TOKEN_WRONG_DECIMALS,
     TK_PARSE_TOKEN_WRONG_SOURCE,  // source != the device's USDC token account
     TK_PARSE_TOKEN_OWNER_NOT_DEVICE,
+    // Shapes C and D (staking), in check order
+    TK_PARSE_STAKE_LAYOUT,              // wrong program, discriminator, data length or account count
+    TK_PARSE_STAKE_FUNDER_NOT_DEVICE,   // CreateAccountWithSeed funder != device
+    TK_PARSE_STAKE_BASE_NOT_DEVICE,     // CreateAccountWithSeed base != device
+    TK_PARSE_STAKE_SEED,                // seed is not exactly "tk-stake-0" .. "tk-stake-15"
+    TK_PARSE_STAKE_WRONG_OWNER,         // new account owner != Stake Program
+    TK_PARSE_STAKE_WRONG_SPACE,         // space != 200
+    TK_PARSE_STAKE_ADDRESS_MISMATCH,    // new account != SHA256(base || seed || owner)
+    TK_PARSE_STAKE_WRONG_ACCOUNT,       // Initialize/Delegate on a different stake account
+    TK_PARSE_STAKE_WRONG_SYSVAR,        // rent, clock, stake history or config ID wrong
+    TK_PARSE_STAKE_AUTHORITY_NOT_DEVICE, // staker, withdrawer or signing authority != device
+    TK_PARSE_STAKE_LOCKUP,              // lockup not entirely zero (timestamp, epoch, custodian)
+    TK_PARSE_STAKE_WRONG_VALIDATOR,     // vote account != the pinned validator
+    TK_PARSE_STAKE_NOT_DERIVED,         // Deactivate on an account that is not one of the device's tk-stake-<n>
 } tk_parse_result_t;
 
 // Parse a legacy message. device_usdc_ata is the device's own USDC associated token account,

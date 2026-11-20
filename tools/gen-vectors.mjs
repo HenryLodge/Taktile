@@ -19,16 +19,23 @@ import {
     TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
 import {
+    Authorized,
     Keypair,
+    Lockup,
     Message,
     MessageV0,
     PublicKey,
+    STAKE_CONFIG_ID,
+    StakeProgram,
+    SYSVAR_CLOCK_PUBKEY,
+    SYSVAR_RENT_PUBKEY,
+    SYSVAR_STAKE_HISTORY_PUBKEY,
     SystemProgram,
     Transaction,
     TransactionInstruction,
 } from '@solana/web3.js';
 
-import { CONSTANTS } from './gen-consts.mjs';
+import { CONSTANTS, STAKE_SEEDS, STAKE_SPACE, loadValidator } from './gen-consts.mjs';
 import { loadWords } from './gen-words.mjs';
 
 const MAX_MESSAGE_LEN = 1232; // docs/SOLANA.md
@@ -40,6 +47,9 @@ export const PARSE_REASONS = [
     'BAD_HEADER', 'FEE_PAYER', 'DUPLICATE_KEY', 'INSTRUCTION_COUNT', 'INDEX_OUT_OF_RANGE', 'UNSUPPORTED_PROGRAM',
     'SOL_LAYOUT', 'SOL_FROM_NOT_DEVICE',
     'TOKEN_LAYOUT', 'TOKEN_WRONG_MINT', 'TOKEN_WRONG_DECIMALS', 'TOKEN_WRONG_SOURCE', 'TOKEN_OWNER_NOT_DEVICE',
+    'STAKE_LAYOUT', 'STAKE_FUNDER_NOT_DEVICE', 'STAKE_BASE_NOT_DEVICE', 'STAKE_SEED', 'STAKE_WRONG_OWNER',
+    'STAKE_WRONG_SPACE', 'STAKE_ADDRESS_MISMATCH', 'STAKE_WRONG_ACCOUNT', 'STAKE_WRONG_SYSVAR',
+    'STAKE_AUTHORITY_NOT_DEVICE', 'STAKE_LOCKUP', 'STAKE_WRONG_VALIDATOR', 'STAKE_NOT_DERIVED',
 ];
 const U64_MAX = (1n << 64n) - 1n;
 
@@ -55,6 +65,24 @@ const USDC_DECIMALS = 6;
 if (!SYSTEM_PROGRAM.equals(SystemProgram.programId)) {
     throw new Error('gen-consts System Program differs from web3.js');
 }
+const STAKE_PROGRAM = pinned.TK_STAKE_PROGRAM_ID;
+const STAKE_CONFIG = pinned.TK_STAKE_CONFIG_ID;
+const RENT = pinned.TK_SYSVAR_RENT_ID;
+const CLOCK = pinned.TK_SYSVAR_CLOCK_ID;
+const STAKE_HISTORY = pinned.TK_SYSVAR_STAKE_HISTORY_ID;
+for (const [ours, theirs, what] of [
+    [STAKE_PROGRAM, StakeProgram.programId, 'Stake Program'],
+    [STAKE_CONFIG, STAKE_CONFIG_ID, 'stake config'],
+    [RENT, SYSVAR_RENT_PUBKEY, 'rent sysvar'],
+    [CLOCK, SYSVAR_CLOCK_PUBKEY, 'clock sysvar'],
+    [STAKE_HISTORY, SYSVAR_STAKE_HISTORY_PUBKEY, 'stake history sysvar'],
+]) {
+    if (!ours.equals(theirs)) {
+        throw new Error(`gen-consts ${what} differs from web3.js`);
+    }
+}
+const VOTE = new PublicKey(loadValidator().voteAccount); // the pinned validator (Kiln)
+const OTHER_VOTE = new PublicKey('vgcDar2pryHvMgPkKaZfh8pQy4BJxv7SpwUG7zinWjG'); // a real devnet validator, not pinned
 
 // ---- Deterministic test inputs ----
 
@@ -142,8 +170,10 @@ export function encodeCompactU16(value) {
     }
 }
 
-// Walks a well-formed legacy message with exactly one instruction (the generator only walks its
-// own valid messages). Returns the fields in order, each { name, start, end }.
+// Walks a well-formed legacy message (the generator only walks its own valid messages). Returns the
+// fields in order, each { name, start, end }. Instruction 0's fields have no prefix (the names the
+// single-instruction vectors always used); instruction i > 0 uses "ix<i>.". The returned
+// programIdIndex/accounts/data are instruction 0's; `ixs` has all of them.
 export function walkLegacy(buf) {
     const fields = [];
     let off = 0;
@@ -171,21 +201,26 @@ export function walkLegacy(buf) {
     }
     field('recent_blockhash', 32);
     const m = compact('num_instructions');
-    if (m !== 1) {
-        throw new Error('walker expects exactly one instruction');
+    const ixs = [];
+    for (let x = 0; x < m; x++) {
+        const p = x === 0 ? '' : `ix${x}.`;
+        const programIdIndex = buf[field(`${p}program_id_index`, 1)];
+        const k = compact(`${p}num_accounts`);
+        const accounts = [];
+        for (let i = 0; i < k; i++) {
+            accounts.push(buf[field(`${p}account_index[${i}]`, 1)]);
+        }
+        const l = compact(`${p}data_len`);
+        const dataStart = field(`${p}data`, l);
+        ixs.push({ programIdIndex, accounts, data: buf.subarray(dataStart, dataStart + l) });
     }
-    const programIdIndex = buf[field('program_id_index', 1)];
-    const k = compact('num_accounts');
-    const accounts = [];
-    for (let i = 0; i < k; i++) {
-        accounts.push(buf[field(`account_index[${i}]`, 1)]);
-    }
-    const l = compact('data_len');
-    const dataStart = field('data', l);
     if (off !== buf.length) {
-        throw new Error('trailing bytes after the instruction');
+        throw new Error('trailing bytes after the instructions');
     }
-    return { fields, keys, programIdIndex, accounts, data: buf.subarray(dataStart, off) };
+    if (ixs.length === 0) {
+        throw new Error('walker expects at least one instruction');
+    }
+    return { fields, keys, ixs, ...ixs[0] };
 }
 
 const fieldOf = (layout, name) => {
@@ -248,17 +283,318 @@ function selfCheckOk(v, expectProgram, expectDest, expectAmount) {
     }
 }
 
+// ---- Staking (Shapes C and D) ----
+
+export const stakeSeed = (n) => `tk-stake-${n}`;
+export const RENT_EXEMPT_200 = 1_666_240n; // getMinimumBalanceForRentExemption(200) on devnet, 2026-11-19
+const ONE_SOL = 1_000_000_000n;
+const ZERO_KEY = new PublicKey(new Uint8Array(32));
+
+/** createWithSeed's definition: SHA256(base || seed || owner). No curve check (it is not a PDA). */
+export function seedAddress(base, seed, owner = STAKE_PROGRAM) {
+    return new PublicKey(
+        createHash('sha256').update(base.toBuffer()).update(Buffer.from(seed, 'latin1')).update(owner.toBuffer()).digest(),
+    );
+}
+
+const u32 = (n) => {
+    const b = Buffer.alloc(4);
+    b.writeUInt32LE(n);
+    return b;
+};
+const u64 = (n) => {
+    const b = Buffer.alloc(8);
+    b.writeBigUInt64LE(BigInt.asUintN(64, BigInt(n)));
+    return b;
+};
+const meta = (pubkey, isSigner, isWritable) => ({ pubkey, isSigner, isWritable });
+
+// System CreateAccountWithSeed, every field by hand: u32 3 | base | u64 seed_len | seed | u64 lamports |
+// u64 space | owner. Accounts [funder (signer, w), new (w)] when base = funder (web3.js layout).
+function createWithSeedIx(o = {}) {
+    const seed = o.seed ?? stakeSeed(0);
+    const base = o.base ?? DEVICE;
+    const seedBytes = Buffer.from(seed, 'latin1');
+    const data = Buffer.concat([
+        u32(o.disc ?? 3),
+        base.toBuffer(),
+        u64(o.seedLen ?? seedBytes.length),
+        seedBytes,
+        u64(o.lamports ?? ONE_SOL + RENT_EXEMPT_200),
+        u64(o.space ?? STAKE_SPACE),
+        (o.owner ?? STAKE_PROGRAM).toBuffer(),
+    ]);
+    const funder = o.funder ?? DEVICE;
+    const keys = [
+        meta(funder, funder.equals(DEVICE), true),
+        meta(o.newAccount ?? seedAddress(base, seed), false, true),
+        ...(o.extraBase ? [meta(base, base.equals(DEVICE), false)] : []),
+    ];
+    return new TransactionInstruction({ programId: o.program ?? SYSTEM_PROGRAM, keys, data: o.data ?? data });
+}
+
+// Stake Initialize: u32 0 | staker | withdrawer | i64 ts | u64 epoch | custodian (116 bytes). [stake (w), rent].
+function initializeIx(stake, o = {}) {
+    const data = Buffer.concat([
+        u32(o.disc ?? 0),
+        (o.staker ?? DEVICE).toBuffer(),
+        (o.withdrawer ?? DEVICE).toBuffer(),
+        u64(o.timestamp ?? 0n),
+        u64(o.epoch ?? 0n),
+        (o.custodian ?? ZERO_KEY).toBuffer(),
+    ]);
+    return new TransactionInstruction({
+        programId: o.program ?? STAKE_PROGRAM,
+        keys: [meta(o.stake ?? stake, false, true), meta(o.rent ?? RENT, false, false), ...(o.extra ?? [])],
+        data: o.data ?? data,
+    });
+}
+
+// Stake DelegateStake: u32 2. [stake (w), vote, clock, stake history, config, authority (signer)].
+function delegateIx(stake, o = {}) {
+    const auth = o.authority ?? DEVICE;
+    return new TransactionInstruction({
+        programId: STAKE_PROGRAM,
+        keys: [
+            meta(o.stake ?? stake, false, true),
+            meta(o.vote ?? VOTE, false, false),
+            meta(o.clock ?? CLOCK, false, false),
+            meta(o.history ?? STAKE_HISTORY, false, false),
+            meta(o.config ?? STAKE_CONFIG, false, false),
+            meta(auth, auth.equals(DEVICE), false),
+        ].filter((k, i) => !(o.dropConfig && i === 4)),
+        data: o.data ?? u32(o.disc ?? 2),
+    });
+}
+
+// Stake Deactivate: u32 5. [stake (w), clock, authority (signer)].
+function deactivateIx(stake, o = {}) {
+    const auth = o.authority ?? DEVICE;
+    return new TransactionInstruction({
+        programId: STAKE_PROGRAM,
+        keys: [
+            meta(stake, false, true),
+            meta(o.clock ?? CLOCK, false, false),
+            meta(auth, auth.equals(DEVICE), false),
+            ...(o.extra ?? []),
+        ],
+        data: o.data ?? u32(o.disc ?? 5),
+    });
+}
+
+/** Shape C with defaults: seed n, 1 SOL + rent, delegated to the pinned validator. */
+function stakeIxs(o = {}) {
+    const seed = o.seed ?? stakeSeed(o.n ?? 0);
+    const created = o.create?.newAccount ?? seedAddress(o.create?.base ?? DEVICE, seed);
+    return [
+        createWithSeedIx({ seed, ...o.create }),
+        initializeIx(created, o.init),
+        delegateIx(created, o.delegate),
+    ];
+}
+
+// The OK messages must be exactly what web3.js builds (the app builds them with web3.js in S4).
+function web3Stake(n, lamports) {
+    const seed = stakeSeed(n);
+    const stake = seedAddress(DEVICE, seed);
+    return legacy([
+        SystemProgram.createAccountWithSeed({
+            fromPubkey: DEVICE,
+            newAccountPubkey: stake,
+            basePubkey: DEVICE,
+            seed,
+            lamports: Number(lamports),
+            space: STAKE_SPACE,
+            programId: STAKE_PROGRAM,
+        }),
+        StakeProgram.initialize({
+            stakePubkey: stake,
+            authorized: new Authorized(DEVICE, DEVICE),
+            lockup: new Lockup(0, 0, ZERO_KEY),
+        }),
+        StakeProgram.delegate({ stakePubkey: stake, authorizedPubkey: DEVICE, votePubkey: VOTE }),
+    ]);
+}
+const web3Unstake = (n) =>
+    legacy([StakeProgram.deactivate({ stakePubkey: seedAddress(DEVICE, stakeSeed(n)), authorizedPubkey: DEVICE })]);
+
+// Independent read-back of an OK stake/unstake vector with the multi-instruction walker.
+function selfCheckStake(v, kind, n, amount, destination) {
+    const bytes = Buffer.from(v.message_hex, 'hex');
+    if (!Buffer.from(Message.from(bytes).serialize()).equals(bytes)) {
+        throw new Error(`${v.name}: web3.js round trip differs`);
+    }
+    const lay = walkLegacy(bytes);
+    const key = (ix, i) => new PublicKey(lay.keys[ix.accounts[i]]);
+    const expected = seedAddress(DEVICE, stakeSeed(n));
+    if (!expected.equals(destination)) {
+        throw new Error(`${v.name}: destination is not tk-stake-${n}`);
+    }
+    if (kind === 'stake') {
+        const [c, i, d] = lay.ixs;
+        if (lay.ixs.length !== 3 || !key(c, 1).equals(expected) || !key(i, 0).equals(expected) || !key(d, 0).equals(expected)) {
+            throw new Error(`${v.name}: stake account mismatch`);
+        }
+        if (!key(d, 1).equals(VOTE) || c.data.readBigUInt64LE(4 + 32 + 8 + stakeSeed(n).length) !== amount) {
+            throw new Error(`${v.name}: wrong vote account or lamports`);
+        }
+    } else if (lay.ixs.length !== 1 || !key(lay.ixs[0], 0).equals(expected) || amount !== 0n) {
+        throw new Error(`${v.name}: wrong unstake`);
+    }
+}
+
+function buildStakeVectors(ok, bad) {
+    const L = ONE_SOL + RENT_EXEMPT_200;
+    const S0 = seedAddress(DEVICE, stakeSeed(0));
+
+    // -- OK: byte-equal to web3.js --
+    for (const [name, n, lamports] of [
+        ['stake_ok_seed0', 0, L],
+        ['stake_ok_seed15', 15, L],
+        ['stake_ok_zero_lamports', 0, 0n],
+    ]) {
+        const ours = legacy(stakeIxs({ n, create: { lamports } }));
+        if (!ours.equals(web3Stake(n, lamports))) {
+            throw new Error(`${name}: hand-built message differs from web3.js`);
+        }
+        ok(name, ours, 'stake', lamports, seedAddress(DEVICE, stakeSeed(n)), n);
+    }
+    for (const n of [0, 15]) {
+        const ours = legacy([deactivateIx(seedAddress(DEVICE, stakeSeed(n)))]);
+        if (!ours.equals(web3Unstake(n))) {
+            throw new Error(`unstake ${n}: hand-built message differs from web3.js`);
+        }
+        ok(`unstake_ok_seed${n}`, ours, 'unstake', 0n, seedAddress(DEVICE, stakeSeed(n)), n);
+    }
+    const stakeOk = legacy(stakeIxs());
+    const unstakeOk = legacy([deactivateIx(S0)]);
+    const sLay = walkLegacy(stakeOk);
+    const uLay = walkLegacy(unstakeOk);
+
+    // -- Structure: truncation at every field, trailing byte, index range, duplicate key --
+    for (const [label, base, lay] of [['stake', stakeOk, sLay], ['unstake', unstakeOk, uLay]]) {
+        const cuts = new Set(lay.fields.map((f) => f.start));
+        cuts.add(base.length - 1);
+        for (const cut of [...cuts].sort((a, b) => a - b)) {
+            bad(`msg_truncated_${label}_at_${String(cut).padStart(3, '0')}`, 'TRUNCATED', base.subarray(0, cut));
+        }
+        bad(`msg_trailing_byte_${label}`, 'TRAILING_BYTES', Buffer.concat([base, Buffer.from([0x00])]));
+    }
+    const N = sLay.keys.length;
+    bad('stake_ix1_account_index_out_of_range', 'INDEX_OUT_OF_RANGE', patch(stakeOk, fieldOf(sLay, 'ix1.account_index[1]').start, [N]));
+    bad('stake_ix2_account_index_out_of_range', 'INDEX_OUT_OF_RANGE', patch(stakeOk, fieldOf(sLay, 'ix2.account_index[5]').start, [0xff]));
+    bad('stake_ix2_program_index_out_of_range', 'INDEX_OUT_OF_RANGE', patch(stakeOk, fieldOf(sLay, 'ix2.program_id_index').start, [N]));
+    const s0Idx = sLay.keys.findIndex((k) => k.equals(S0.toBuffer()));
+    bad('stake_account_is_device_key', 'DUPLICATE_KEY', patch(stakeOk, fieldOf(sLay, `account_keys[${s0Idx}]`).start, DEVICE.toBuffer()));
+
+    // -- Instruction count (D4: Shape C is exactly 3, Shapes A, B, D exactly 1) --
+    const [c0, i0, d0] = stakeIxs();
+    bad('stake_count_create_and_initialize_only', 'INSTRUCTION_COUNT', legacy([c0, i0]));
+    bad('stake_count_create_only', 'INSTRUCTION_COUNT', legacy([c0]));
+    bad('stake_count_four_instructions', 'INSTRUCTION_COUNT', legacy([c0, i0, d0, solTransfer(1n)]));
+    bad('stake_count_extra_deactivate', 'INSTRUCTION_COUNT', legacy([c0, i0, d0, deactivateIx(S0)]));
+    bad('stake_count_initialize_first', 'INSTRUCTION_COUNT', legacy([i0, c0, d0]));
+    bad('stake_count_delegate_first', 'INSTRUCTION_COUNT', legacy([d0, c0, i0]));
+    bad('unstake_count_two_deactivates', 'INSTRUCTION_COUNT', legacy([deactivateIx(S0), deactivateIx(seedAddress(DEVICE, stakeSeed(1)))]));
+
+    // -- Shape C, CreateAccountWithSeed --
+    bad('stake_create_seed_len_too_long', 'STAKE_LAYOUT', legacy(stakeIxs({ create: { seedLen: 11 } })));
+    bad('stake_create_seed_len_too_short', 'STAKE_LAYOUT', legacy(stakeIxs({ create: { seedLen: 9 } })));
+    bad('stake_create_seed_len_huge', 'STAKE_LAYOUT', legacy(stakeIxs({ create: { seedLen: 0xffffffffffffffffn } })));
+    bad('stake_create_explicit_base_account', 'STAKE_LAYOUT', legacy(stakeIxs({ create: { extraBase: true } })));
+    // Not CreateAccountWithSeed: then it isn't Shape C, and a 3-instruction message is refused by count.
+    bad('stake_create_wrong_discriminator', 'INSTRUCTION_COUNT', patch(stakeOk, fieldOf(sLay, 'data').start, [0x0a]));
+    bad('stake_create_data_short', 'STAKE_LAYOUT', legacy([createWithSeedIx({ data: createWithSeedIx().data.subarray(0, 40) }), i0, d0]));
+    bad('stake_create_funder_not_device', 'STAKE_FUNDER_NOT_DEVICE', legacy(stakeIxs({ create: { funder: MALLORY } })));
+    bad('stake_create_base_not_device', 'STAKE_BASE_NOT_DEVICE', legacy(stakeIxs({ create: { base: MALLORY } })));
+    for (const [label, seed] of [
+        ['16', 'tk-stake-16'],
+        ['99', 'tk-stake-99'],
+        ['leading_zero', 'tk-stake-01'],
+        ['uppercase', 'TK-stake-0'],
+        ['no_number', 'tk-stake-'],
+        ['trailing_space', 'tk-stake-0 '],
+        ['empty', ''],
+        ['other', 'tk-steak-0'],
+        ['minus', 'tk-stake--1'],
+    ]) {
+        bad(`stake_seed_${label}`, 'STAKE_SEED', legacy(stakeIxs({ seed })));
+    }
+    bad('stake_create_owner_system', 'STAKE_WRONG_OWNER', legacy(stakeIxs({ create: { owner: SYSTEM_PROGRAM, newAccount: seedAddress(DEVICE, stakeSeed(0), SYSTEM_PROGRAM) } })));
+    bad('stake_create_space_199', 'STAKE_WRONG_SPACE', legacy(stakeIxs({ create: { space: 199 } })));
+    bad('stake_create_space_201', 'STAKE_WRONG_SPACE', legacy(stakeIxs({ create: { space: 201 } })));
+    bad('stake_create_address_other_seed', 'STAKE_ADDRESS_MISMATCH', legacy(stakeIxs({ create: { newAccount: seedAddress(DEVICE, stakeSeed(1)) } })));
+    bad('stake_create_address_random', 'STAKE_ADDRESS_MISMATCH', legacy(stakeIxs({ create: { newAccount: CAROL } })));
+    bad('stake_create_address_from_system_owner', 'STAKE_ADDRESS_MISMATCH', legacy(stakeIxs({ create: { newAccount: seedAddress(DEVICE, stakeSeed(0), SYSTEM_PROGRAM) } })));
+
+    // -- Shape C, Initialize (the critical check: staker = withdrawer = device, lockup empty) --
+    bad('stake_init_withdrawer_not_device', 'STAKE_AUTHORITY_NOT_DEVICE', legacy(stakeIxs({ init: { withdrawer: MALLORY } })));
+    bad('stake_init_staker_not_device', 'STAKE_AUTHORITY_NOT_DEVICE', legacy(stakeIxs({ init: { staker: MALLORY } })));
+    bad('stake_init_both_not_device', 'STAKE_AUTHORITY_NOT_DEVICE', legacy(stakeIxs({ init: { staker: MALLORY, withdrawer: MALLORY } })));
+    bad('stake_init_lockup_custodian', 'STAKE_LOCKUP', legacy(stakeIxs({ init: { custodian: MALLORY } })));
+    bad('stake_init_lockup_custodian_device', 'STAKE_LOCKUP', legacy(stakeIxs({ init: { custodian: DEVICE } })));
+    bad('stake_init_lockup_epoch', 'STAKE_LOCKUP', legacy(stakeIxs({ init: { epoch: 1n } })));
+    bad('stake_init_lockup_epoch_max', 'STAKE_LOCKUP', legacy(stakeIxs({ init: { epoch: U64_MAX } })));
+    bad('stake_init_lockup_timestamp', 'STAKE_LOCKUP', legacy(stakeIxs({ init: { timestamp: 1n } })));
+    bad('stake_init_lockup_timestamp_negative', 'STAKE_LOCKUP', legacy(stakeIxs({ init: { timestamp: -1n } })));
+    bad('stake_init_wrong_stake_account', 'STAKE_WRONG_ACCOUNT', legacy(stakeIxs({ init: { stake: seedAddress(DEVICE, stakeSeed(1)) } })));
+    bad('stake_init_wrong_rent', 'STAKE_WRONG_SYSVAR', legacy(stakeIxs({ init: { rent: CLOCK } })));
+    bad('stake_init_wrong_discriminator', 'STAKE_LAYOUT', legacy(stakeIxs({ init: { disc: 9 } }))); // InitializeChecked
+    bad('stake_init_data_short', 'STAKE_LAYOUT', legacy([c0, initializeIx(S0, { data: i0.data.subarray(0, 115) }), d0]));
+    bad('stake_init_data_long', 'STAKE_LAYOUT', legacy([c0, initializeIx(S0, { data: Buffer.concat([i0.data, Buffer.from([0])]) }), d0]));
+    bad('stake_init_three_accounts', 'STAKE_LAYOUT', legacy(stakeIxs({ init: { extra: [meta(MALLORY, false, false)] } })));
+    bad('stake_init_system_program', 'STAKE_LAYOUT', legacy(stakeIxs({ init: { program: SYSTEM_PROGRAM } })));
+    bad('stake_init_and_delegate_swapped', 'STAKE_LAYOUT', legacy([c0, d0, i0]));
+    bad('stake_create_twice', 'STAKE_LAYOUT', legacy([c0, c0, d0]));
+
+    // -- Shape C, DelegateStake --
+    bad('stake_delegate_other_validator', 'STAKE_WRONG_VALIDATOR', legacy(stakeIxs({ delegate: { vote: OTHER_VOTE } })));
+    bad('stake_delegate_vote_mallory', 'STAKE_WRONG_VALIDATOR', legacy(stakeIxs({ delegate: { vote: MALLORY } })));
+    bad('stake_delegate_authority_not_device', 'STAKE_AUTHORITY_NOT_DEVICE', legacy(stakeIxs({ delegate: { authority: MALLORY } })));
+    bad('stake_delegate_wrong_stake_account', 'STAKE_WRONG_ACCOUNT', legacy(stakeIxs({ delegate: { stake: seedAddress(DEVICE, stakeSeed(1)) } })));
+    bad('stake_delegate_wrong_clock', 'STAKE_WRONG_SYSVAR', legacy(stakeIxs({ delegate: { clock: RENT } })));
+    bad('stake_delegate_wrong_history', 'STAKE_WRONG_SYSVAR', legacy(stakeIxs({ delegate: { history: CLOCK } })));
+    bad('stake_delegate_wrong_config', 'STAKE_WRONG_SYSVAR', legacy(stakeIxs({ delegate: { config: MALLORY } })));
+    bad('stake_delegate_without_config', 'STAKE_LAYOUT', legacy(stakeIxs({ delegate: { dropConfig: true } })));
+    bad('stake_delegate_wrong_discriminator', 'STAKE_LAYOUT', legacy(stakeIxs({ delegate: { disc: 1 } }))); // Authorize
+    bad('stake_delegate_data_long', 'STAKE_LAYOUT', legacy(stakeIxs({ delegate: { data: Buffer.concat([u32(2), Buffer.from([0])]) } })));
+
+    // -- Shape D, Deactivate, and other Stake instructions alone --
+    bad('unstake_not_derived_random', 'STAKE_NOT_DERIVED', legacy([deactivateIx(CAROL)]));
+    bad('unstake_not_derived_mallory_seed0', 'STAKE_NOT_DERIVED', legacy([deactivateIx(seedAddress(MALLORY, stakeSeed(0)))]));
+    bad('unstake_not_derived_seed16', 'STAKE_NOT_DERIVED', legacy([deactivateIx(seedAddress(DEVICE, stakeSeed(16)))]));
+    bad('unstake_authority_not_device', 'STAKE_AUTHORITY_NOT_DEVICE', legacy([deactivateIx(S0, { authority: MALLORY })]));
+    bad('unstake_wrong_clock', 'STAKE_WRONG_SYSVAR', legacy([deactivateIx(S0, { clock: RENT })]));
+    bad('unstake_four_accounts', 'STAKE_LAYOUT', legacy([deactivateIx(S0, { extra: [meta(MALLORY, false, false)] })]));
+    bad('unstake_data_long', 'STAKE_LAYOUT', legacy([deactivateIx(S0, { data: Buffer.concat([u32(5), Buffer.from([0])]) })]));
+    bad('stake_authorize_withdrawer_alone', 'STAKE_LAYOUT', legacy([StakeProgram.authorize({ stakePubkey: S0, authorizedPubkey: DEVICE, newAuthorizedPubkey: MALLORY, stakeAuthorizationType: { index: 1 } }).instructions[0]]));
+    bad('stake_withdraw_alone', 'STAKE_LAYOUT', legacy([StakeProgram.withdraw({ stakePubkey: S0, authorizedPubkey: DEVICE, toPubkey: MALLORY, lamports: 1 }).instructions[0]]));
+    bad('stake_set_lockup_alone', 'STAKE_LAYOUT', legacy([deactivateIx(S0, { disc: 6 })]));
+    bad('stake_split_alone', 'STAKE_LAYOUT', legacy([deactivateIx(S0, { disc: 3 })]));
+}
+
 export function buildParserVectors() {
     const vectors = [];
-    const ok = (name, bytes, kind, amount, destination) => {
+    const ok = (name, bytes, kind, amount, destination, stakeIndex = null) => {
         const v = {
             name,
             message_hex: hex(bytes),
             device_pubkey: hex(DEVICE.toBuffer()),
             device_usdc_ata: hex(DEVICE_ATA.toBuffer()),
-            expect: { status: 'OK', reason: 'OK', kind, amount: amount.toString(), destination: hex(destination.toBuffer()) },
+            expect: {
+                status: 'OK',
+                reason: 'OK',
+                kind,
+                amount: amount.toString(),
+                destination: hex(destination.toBuffer()),
+                stake_index: stakeIndex,
+            },
         };
-        selfCheckOk(v, kind === 'sol' ? SYSTEM_PROGRAM : TOKEN_PROGRAM, destination, amount);
+        if (kind === 'sol' || kind === 'usdc') {
+            selfCheckOk(v, kind === 'sol' ? SYSTEM_PROGRAM : TOKEN_PROGRAM, destination, amount);
+        } else {
+            selfCheckStake(v, kind, stakeIndex, amount, destination);
+        }
         vectors.push(v);
     };
     // reason: the tk_parse_result_t the parser must return (without the TK_PARSE_ prefix).
@@ -271,7 +607,7 @@ export function buildParserVectors() {
             message_hex: hex(bytes),
             device_pubkey: hex(DEVICE.toBuffer()),
             device_usdc_ata: hex(DEVICE_ATA.toBuffer()),
-            expect: { status: 'PARSE_UNSUPPORTED', reason, kind: null, amount: null, destination: null },
+            expect: { status: 'PARSE_UNSUPPORTED', reason, kind: null, amount: null, destination: null, stake_index: null },
         });
     };
 
@@ -366,6 +702,8 @@ export function buildParserVectors() {
     bad('usdc_three_accounts', 'TOKEN_LAYOUT', legacy([rebuild(u, { keys: [u.keys[0], u.keys[1], u.keys[2]] })]));
     bad('usdc_data_len_9', 'TOKEN_LAYOUT', legacy([rebuild(u, { data: u.data.subarray(0, 9) })]));
     bad('usdc_data_len_11', 'TOKEN_LAYOUT', legacy([rebuild(u, { data: Buffer.concat([u.data, Buffer.from([0])]) })]));
+
+    buildStakeVectors(ok, bad);
 
     vectors.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
     const names = new Set(vectors.map((v) => v.name));
@@ -620,7 +958,7 @@ function renderParserHeader(vectors) {
         '#include "tk_parser.h"',
         '#include "tk_proto.h"',
         '',
-        'typedef enum { TK_VEC_KIND_NONE = 0, TK_VEC_KIND_SOL, TK_VEC_KIND_USDC } tk_vec_kind_t;',
+        'typedef enum { TK_VEC_KIND_NONE = 0, TK_VEC_KIND_SOL, TK_VEC_KIND_USDC, TK_VEC_KIND_STAKE, TK_VEC_KIND_UNSTAKE } tk_vec_kind_t;',
         '',
         'typedef struct {',
         '    const char *name;',
@@ -633,6 +971,7 @@ function renderParserHeader(vectors) {
         '    tk_vec_kind_t kind;',
         '    uint64_t amount;         // valid when status == TK_STATUS_OK',
         '    uint8_t destination[32]; // valid when status == TK_STATUS_OK',
+        '    uint8_t stake_index;     // stake/unstake: n in tk-stake-<n>',
         '} tk_parser_vector_t;',
         '',
     ];
@@ -646,7 +985,7 @@ function renderParserHeader(vectors) {
     for (const v of vectors) {
         const bytes = Buffer.from(v.message_hex, 'hex');
         const e = v.expect;
-        const kind = e.kind === 'sol' ? 'TK_VEC_KIND_SOL' : e.kind === 'usdc' ? 'TK_VEC_KIND_USDC' : 'TK_VEC_KIND_NONE';
+        const kind = { sol: 'TK_VEC_KIND_SOL', usdc: 'TK_VEC_KIND_USDC', stake: 'TK_VEC_KIND_STAKE', unstake: 'TK_VEC_KIND_UNSTAKE' }[e.kind] ?? 'TK_VEC_KIND_NONE';
         const dest = e.destination ? Buffer.from(e.destination, 'hex') : Buffer.alloc(32);
         out.push('    {');
         out.push(`        "${v.name}", tk_vec_msg_${cIdent(v.name)}, ${bytes.length},`);
@@ -660,6 +999,7 @@ function renderParserHeader(vectors) {
         out.push('        {');
         out.push(cBytes(dest, '            '));
         out.push('        },');
+        out.push(`        ${e.stake_index ?? 0},`);
         out.push('    },');
     }
     out.push('};', '', '#define TK_PARSER_VECTOR_COUNT (sizeof(tk_parser_vectors) / sizeof(tk_parser_vectors[0]))', '', '#endif', '');

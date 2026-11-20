@@ -24,7 +24,7 @@ test('parseClipEnum: values, expressions, comments', () => {
 
 test('clips: one per ID 0..TK_CLIP_COUNT-1, words and anchors in place', () => {
     const clips = buildClips();
-    assert.equal(clips.length, 359);
+    assert.equal(clips.length, 369);
     clips.forEach((c, i) => assert.equal(c.id, i));
     assert.equal(new Set(clips.map((c) => c.name)).size, clips.length);
     const words = loadWords();
@@ -39,11 +39,15 @@ test('clips: one per ID 0..TK_CLIP_COUNT-1, words and anchors in place', () => {
     assert.equal(byName.TK_CLIP_SPEAKER_MODE_OFF.id, 350);
     assert.equal(byName.TK_CLIP_DIGIT.text, 'pin digit number');
     assert.equal(byName['TK_CLIP_TWENTY_ONE+3'].text, 'twenty four');
-    assert.equal(clips[clips.length - 4].name, 'TK_CLIP_TWENTY_ONE+3');
+    assert.equal(byName['TK_CLIP_TWENTY_ONE+3'].id, 355); // IDs are pinned: appending never moves one
     assert.equal(byName.TK_CLIP_PRESS_CONFIRM_ADD.text, 'press confirm to add or reject to cancel');
-    assert.equal(clips[clips.length - 2].name, 'TK_CLIP_CONTACT_ADDED');
+    assert.equal(byName.TK_CLIP_CONTACT_ADDED.id, 357);
     assert.equal(byName.TK_CLIP_UNLOCKED.text, 'wallet unlocked');
-    assert.equal(clips[clips.length - 1].name, 'TK_CLIP_UNLOCKED');
+    assert.equal(byName.TK_CLIP_UNLOCKED.id, 358);
+    assert.equal(byName.TK_CLIP_WALLET_LOCKED.id, 362); // voice commands (2026-11-19)
+    assert.equal(byName.TK_CLIP_STAKE.id, 363); // staking (2026-11-19)
+    assert.equal(byName.TK_CLIP_VALIDATOR_NAME.text, 'Kiln'); // tools/validator.json
+    assert.equal(clips[clips.length - 1].name, 'TK_CLIP_UNKNOWN_VALIDATOR');
     // Every letter is sent as its spoken name; the text (what the sim prints) stays the letter.
     assert.equal(byName.TK_CLIP_LETTER_A.text, 'A');
     assert.equal(byName['TK_CLIP_LETTER_A+18'].say, 'ess');

@@ -227,3 +227,40 @@ test('stop() while held: the line is dropped, never played', async () => {
     await p;
     assert.deepEqual(played, []);
 });
+
+test('numbersToWords: the app voice gets words for numbers, not digits', async () => {
+    const { numbersToWords, integerWords } = await import('./speech.ts');
+    assert.equal(
+        numbersToWords('Staking 1.00166624 SOL with Kiln, stake account 0.'),
+        'Staking one point zero zero one six six six two four SOL with Kiln, stake account zero.',
+    );
+    assert.equal(numbersToWords('You have 1.25 SOL and 10 USDC.'), 'You have one point two five SOL and ten USDC.');
+    assert.equal(numbersToWords('stake account 6, 2 hours ago'), 'stake account six, two hours ago');
+    assert.equal(numbersToWords('Taktile wallet 91Qk…WGR8'), 'Taktile wallet 91Qk…WGR8'); // inside a word: unchanged
+    assert.equal(integerWords('1205'), 'one thousand two hundred five');
+    assert.equal(
+        integerWords('18446744073'),
+        'eighteen billion four hundred forty six million seven hundred forty four thousand seventy three',
+    );
+    assert.equal(integerWords('100'), 'one hundred');
+    assert.equal(integerWords('1000000'), 'one million');
+});
+
+test('the speaker sends worded numbers, but keeps digits when words would pass 200 characters', async () => {
+    const bodies: string[] = [];
+    const player: AudioPlayer = { play: async () => undefined, stop: () => undefined };
+    const s = new Speaker({
+        fetch: async (_u, init) => {
+            bodies.push(JSON.parse(String(init?.body)).text);
+            return new Response(new Blob(['x']), { status: 200 });
+        },
+        player,
+        fallback: null,
+        enabled: () => true,
+    });
+    await s.speak('Sending 0.06 SOL to Henry. Checksum: aardvark, adrift, bookshelf.');
+    assert.equal(bodies[0], 'Sending zero point zero six SOL to Henry. Checksum: aardvark, adrift, bookshelf.');
+    const huge = 'Sending 18446744073.709551615 SOL to Henry Long Name. Checksum: aardvark, adrift, bookshelf.';
+    await s.speak(huge);
+    assert.equal(bodies[1], huge); // words would be too long: the checksum words must not be cut off
+});

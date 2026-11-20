@@ -13,6 +13,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { loadValidator } from './gen-consts.mjs';
 import { loadWords } from './gen-words.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -79,6 +80,12 @@ export const TEXT = {
     TK_CLIP_YOU_HAVE: 'you have',
     TK_CLIP_CONTACTS: 'contacts',
     TK_CLIP_WALLET_LOCKED: 'wallet locked',
+    TK_CLIP_STAKE: 'stake',
+    TK_CLIP_WITH: 'with',
+    TK_CLIP_UNSTAKE: 'unstake',
+    TK_CLIP_STAKE_ACCOUNT: 'stake account',
+    TK_CLIP_VALIDATOR_NAME: () => [loadValidator().name], // tools/validator.json
+    TK_CLIP_UNKNOWN_VALIDATOR: 'unknown validator, do not sign',
 };
 
 // Pronunciation fixes, by clip name (see the header comment). Empty until listening says otherwise.
@@ -107,6 +114,11 @@ const LETTER_PICKS = {
 const pickFor = (i) => LETTER_PICKS[String.fromCharCode(65 + i)];
 
 export const SAY = Object.fromEntries(LETTER_NAMES.map((say, i) => [letterName(i), pickFor(i)?.say ?? say]));
+// The validator's name, when the plain name comes out wrong (tools/validator.json "say").
+const validatorSay = loadValidator().say;
+if (validatorSay !== undefined) {
+    SAY.TK_CLIP_VALIDATOR_NAME = validatorSay;
+}
 
 // Per-clip text-to-speech settings, merged over gen-audio's defaults (and part of the cache key).
 export const TTS = Object.fromEntries(

@@ -9,7 +9,8 @@
       "reason": "INDEX_OUT_OF_RANGE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -22,7 +23,8 @@
       "reason": "INDEX_OUT_OF_RANGE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -35,7 +37,8 @@
       "reason": "DUPLICATE_KEY",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -48,7 +51,8 @@
       "reason": "DUPLICATE_KEY",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -61,7 +65,8 @@
       "reason": "INDEX_OUT_OF_RANGE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -74,7 +79,8 @@
       "reason": "INDEX_OUT_OF_RANGE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -87,7 +93,8 @@
       "reason": "BAD_HEADER",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -100,7 +107,8 @@
       "reason": "BAD_HEADER",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -113,7 +121,8 @@
       "reason": "INSTRUCTION_COUNT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -126,7 +135,8 @@
       "reason": "BAD_HEADER",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -139,7 +149,8 @@
       "reason": "FEE_PAYER",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -152,7 +163,8 @@
       "reason": "BAD_HEADER",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -165,7 +177,8 @@
       "reason": "BAD_COMPACT_U16",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -178,7 +191,8 @@
       "reason": "BAD_COMPACT_U16",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -191,7 +205,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -204,7 +219,8 @@
       "reason": "BAD_COMPACT_U16",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -217,7 +233,8 @@
       "reason": "BAD_COMPACT_U16",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -230,7 +247,8 @@
       "reason": "TOO_LARGE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -243,7 +261,36 @@
       "reason": "TRAILING_BYTES",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_trailing_byte_stake",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000406010306080500040200000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRAILING_BYTES",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_trailing_byte_unstake",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010203010300040500000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRAILING_BYTES",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -256,7 +303,8 @@
       "reason": "TRAILING_BYTES",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -269,7 +317,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -282,7 +331,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -295,7 +345,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -308,7 +359,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -321,7 +373,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -334,7 +387,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -347,7 +401,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -360,7 +415,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -373,7 +429,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -386,7 +443,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -399,7 +457,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -412,7 +471,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -425,7 +485,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -438,7 +499,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -451,7 +513,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -464,7 +527,792 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_000",
+    "message_hex": "",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_001",
+    "message_hex": "01",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_002",
+    "message_hex": "0100",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_003",
+    "message_hex": "010007",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_004",
+    "message_hex": "01000709",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_036",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_068",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_100",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_132",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc6",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_164",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_196",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d100000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_228",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_260",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a00000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_292",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_324",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_325",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_326",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10302",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_327",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1030202",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_328",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_329",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10302020001",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_330",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1030202000166",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_432",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_433",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000004",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_434",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc0000000000402",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_435",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_436",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000004020107",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_437",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc0000000000402010774",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_553",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_554",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_555",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000406",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_556",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040601",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_557",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_558",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000406010306",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_559",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040601030608",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_560",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_561",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000406010306080500",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_562",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040601030608050004",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_stake_at_565",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040601030608050004020000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_000",
+    "message_hex": "",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_001",
+    "message_hex": "01",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_002",
+    "message_hex": "0100",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_003",
+    "message_hex": "010002",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_004",
+    "message_hex": "01000204",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_036",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_068",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_100",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_132",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_164",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_165",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_166",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_167",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010203",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_168",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020301",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_169",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030103",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_170",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010203010300",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_171",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020301030004",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "msg_truncated_unstake_at_174",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020301030004050000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "TRUNCATED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -477,7 +1325,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -490,7 +1339,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -503,7 +1353,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -516,7 +1367,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -529,7 +1381,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -542,7 +1395,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -555,7 +1409,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -568,7 +1423,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -581,7 +1437,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -594,7 +1451,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -607,7 +1465,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -620,7 +1479,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -633,7 +1493,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -646,7 +1507,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -659,7 +1521,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -672,7 +1535,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -685,7 +1549,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -698,7 +1563,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -711,7 +1577,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -724,7 +1591,8 @@
       "reason": "TRUNCATED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -737,7 +1605,8 @@
       "reason": "VERSIONED",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -750,7 +1619,8 @@
       "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -763,7 +1633,8 @@
       "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -776,7 +1647,8 @@
       "reason": "SOL_FROM_NOT_DEVICE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -789,7 +1661,8 @@
       "reason": "SOL_FROM_NOT_DEVICE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -802,7 +1675,8 @@
       "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -815,7 +1689,8 @@
       "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -828,7 +1703,8 @@
       "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -841,7 +1717,8 @@
       "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -854,7 +1731,8 @@
       "reason": "OK",
       "kind": "sol",
       "amount": "1500000",
-      "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e"
+      "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
+      "stake_index": null
     }
   },
   {
@@ -867,7 +1745,8 @@
       "reason": "OK",
       "kind": "sol",
       "amount": "18446744073709551615",
-      "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e"
+      "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
+      "stake_index": null
     }
   },
   {
@@ -880,7 +1759,8 @@
       "reason": "OK",
       "kind": "sol",
       "amount": "0",
-      "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e"
+      "destination": "27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e",
+      "stake_index": null
     }
   },
   {
@@ -893,7 +1773,8 @@
       "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -906,7 +1787,1100 @@
       "reason": "SOL_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_account_is_device_key",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "DUPLICATE_KEY",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_authorize_withdrawer_alone",
+    "message_hex": "01000104427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10103030102002801000000bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142801000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_count_create_and_initialize_only",
+    "message_hex": "01000305427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f000000000000000000000000000000000000000000000000000000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a00000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded102020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000030201047400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INSTRUCTION_COUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_count_create_only",
+    "message_hex": "01000103427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INSTRUCTION_COUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_count_delegate_first",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10304060103060805000402000000020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INSTRUCTION_COUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_count_extra_deactivate",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded104020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000406010306080500040200000004030106000405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INSTRUCTION_COUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_count_four_instructions",
+    "message_hex": "0100070a427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc27e804b8011de010cd456a88075f05b9813deacc6c95eac51c6174f5624d7d5e5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded104030200026603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000050202087400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005060204070906000402000000030200010c020000000100000000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INSTRUCTION_COUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_count_initialize_first",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INSTRUCTION_COUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_address_from_system_owner",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bce3b44d9944dd8e0d0862f444a5b8ea50ec7943bce59dfd5f2e0e24ec4ba3fca00000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_ADDRESS_MISMATCH",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_address_other_seed",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc18eb0fd118a9214d092f8e730ae37b7a487d54c2bf4d4f01aec2ab92695ee8a70000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_ADDRESS_MISMATCH",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_address_random",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bcca868adadd946083950fc71afecf144c632e00ba0cced50787064815548fb2bb0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_ADDRESS_MISMATCH",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_base_not_device",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc4cc15a561081e8fef65becb928affebd68e8f6efcd94fe0ca646e6529daea9a50000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d14280a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_BASE_NOT_DEVICE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_data_short",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200012803000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_explicit_base_account",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10302030001006603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_funder_not_device",
+    "message_hex": "0100070a427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485fbfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d14280000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103030202016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000050201087400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005060104070906000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_FUNDER_NOT_DEVICE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_owner_system",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bce3b44d9944dd8e0d0862f444a5b8ea50ec7943bce59dfd5f2e0e24ec4ba3fca00000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c8000000000000000000000000000000000000000000000000000000000000000000000000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_OWNER",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_seed_len_huge",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bcffffffffffffffff746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_seed_len_too_long",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0b00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_seed_len_too_short",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0900000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_space_199",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c70000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_SPACE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_space_201",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c90000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_SPACE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_twice",
+    "message_hex": "01000608427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000004060103060705000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_create_wrong_discriminator",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10302020001660a000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INSTRUCTION_COUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_authority_not_device",
+    "message_hex": "0100080a427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d1428ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000050201087400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005060104070906030402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_AUTHORITY_NOT_DEVICE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_data_long",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000406010306080500050200000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_other_validator",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f000000000000000000000000000000000000000000000000000000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff40000000dc0911e8a79901e57b9b1c96cb3d4b68c4b93c1c0f2da1c03a7b2f177be85df338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000030201067400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003060108050704000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_VALIDATOR",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_vote_mallory",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142806a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_VALIDATOR",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_without_config",
+    "message_hex": "01000608427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201067400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040501030507000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_wrong_clock",
+    "message_hex": "01000608427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201067400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060705000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_SYSVAR",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_wrong_config",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d1428ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000050201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005060104060803000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_SYSVAR",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_wrong_discriminator",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000401000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_wrong_history",
+    "message_hex": "01000608427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a00000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060605000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_SYSVAR",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_delegate_wrong_stake_account",
+    "message_hex": "0100070a427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc18eb0fd118a9214d092f8e730ae37b7a487d54c2bf4d4f01aec2ab92695ee8a75459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103030200026603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000050202087400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005060104070906000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_ACCOUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_and_delegate_swapped",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000004060103060805000402000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_both_not_device",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d1428bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_AUTHORITY_NOT_DEVICE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_data_long",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077500000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_data_short",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077300000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_lockup_custodian",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142804060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LOCKUP",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_lockup_custodian_device",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc04060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LOCKUP",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_lockup_epoch",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LOCKUP",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_lockup_epoch_max",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000ffffffffffffffff000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LOCKUP",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_lockup_timestamp",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LOCKUP",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_lockup_timestamp_negative",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bcffffffffffffffff0000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LOCKUP",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_staker_not_device",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d1428427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_AUTHORITY_NOT_DEVICE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_system_program",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000020201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_three_accounts",
+    "message_hex": "0100080a427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000bfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d1428ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000005030108037400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005060104070906000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_withdrawer_not_device",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bcbfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_AUTHORITY_NOT_DEVICE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_wrong_discriminator",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077409000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_wrong_rent",
+    "message_hex": "01000608427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201067400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060705000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_SYSVAR",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_init_wrong_stake_account",
+    "message_hex": "0100070a427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc18eb0fd118a9214d092f8e730ae37b7a487d54c2bf4d4f01aec2ab92695ee8a75459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103030200026603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000050201087400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005060204070906000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_ACCOUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_ix1_account_index_out_of_range",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201097400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INDEX_OUT_OF_RANGE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_ix2_account_index_out_of_range",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805ff0402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INDEX_OUT_OF_RANGE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_ix2_program_index_out_of_range",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INDEX_OUT_OF_RANGE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_ok_seed0",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "OK",
+      "reason": "OK",
+      "kind": "stake",
+      "amount": "1001666240",
+      "destination": "5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f",
+      "stake_index": 0
+    }
+  },
+  {
+    "name": "stake_ok_seed15",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc042823e02b192f64a12eb6a32c1f4b904e711dbe894516d82389cc21c5547a620000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016703000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0b00000000000000746b2d7374616b652d3135c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "OK",
+      "reason": "OK",
+      "kind": "stake",
+      "amount": "1001666240",
+      "destination": "042823e02b192f64a12eb6a32c1f4b904e711dbe894516d82389cc21c5547a62",
+      "stake_index": 15
+    }
+  },
+  {
+    "name": "stake_ok_zero_lamports",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d7374616b652d300000000000000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "OK",
+      "reason": "OK",
+      "kind": "stake",
+      "amount": "0",
+      "destination": "5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f",
+      "stake_index": 0
+    }
+  },
+  {
+    "name": "stake_seed_16",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc568306dde1853fb4330848ecf3e50231a9fafbfdfaae340152f0686e35cbb97c0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016703000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0b00000000000000746b2d7374616b652d3136c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_SEED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_seed_99",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc281577a30f3e7e02b7ddf7acd9da1a392dad0608aa4bd9051eeb842c5cf16e1f0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016703000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0b00000000000000746b2d7374616b652d3939c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_SEED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_seed_empty",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bce0e24debdf1b6229ba4d945c535b7069126efe4de6f2d91fe4020eca89124c7e0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200015c03000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0000000000000000c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_SEED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_seed_leading_zero",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bcfd8bb44f8e96b9d886c689e737f62ef6f853129fc63271ac7d3b7fe7f6f25b8a0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016703000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0b00000000000000746b2d7374616b652d3031c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_SEED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_seed_minus",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bcc9cadb208c47a2dcfc04c78035252da2ae030e91fdbf87bed64a0dda6a7ad6cc0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016703000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0b00000000000000746b2d7374616b652d2d31c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_SEED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_seed_no_number",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc814447d741920c64499acbe27a45d2b89c09276864ab9274404012a5c9d7f21e0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016503000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0900000000000000746b2d7374616b652dc036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_SEED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_seed_other",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc2870a761d47eee8d94fa8fabe9b9b5cc899c1bb9896c81d77f1b6ef70798a2160000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000746b2d737465616b2d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_SEED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_seed_trailing_space",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5516223b27fbb6806483a4971972fee4606914b4965975fd4f08c86a98f8ec700000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016703000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0b00000000000000746b2d7374616b652d3020c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_SEED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_seed_uppercase",
+    "message_hex": "01000709427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc3f67bc1a33ae51800705f96545fe15d914afa9c5d703f26365ff1bc0d751f5cc0000000000000000000000000000000000000000000000000000000000000000ddf42a04800a54de2e583f94f17b089725b772d1333526271241532776d2ffc606a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a1d817a502050b680791e6ce6db88e1e5b7150f61fc6790a4eb4d10000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded103020200016603000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc0a00000000000000544b2d7374616b652d30c036b43b00000000c80000000000000006a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc000000000040201077400000000427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004060103060805000402000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_SEED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_set_lockup_alone",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030103000406000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_split_alone",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030103000403000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "stake_withdraw_alone",
+    "message_hex": "01000306427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485fbfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142806a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b210000000006a7d517193584d0feed9bb3431d13206be544281b57b8566cc5375ff4000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded101030501020405000c040000000100000000000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "unstake_authority_not_device",
+    "message_hex": "01000305427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485fbfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142806a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10103030104020405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_AUTHORITY_NOT_DEVICE",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "unstake_count_two_deactivates",
+    "message_hex": "01000205427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc18eb0fd118a9214d092f8e730ae37b7a487d54c2bf4d4f01aec2ab92695ee8a75459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1020303020400040500000003030104000405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "INSTRUCTION_COUNT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "unstake_data_long",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010203010300050500000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "unstake_four_accounts",
+    "message_hex": "01000305427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485fbfaf2a12489c6d98c66002d7f1ce84516910e2933e911131de93e00c7d1d142806a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded1010304010400020405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_LAYOUT",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "unstake_not_derived_mallory_seed0",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc4cc15a561081e8fef65becb928affebd68e8f6efcd94fe0ca646e6529daea9a506a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030103000405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_NOT_DERIVED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "unstake_not_derived_random",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bcca868adadd946083950fc71afecf144c632e00ba0cced50787064815548fb2bb06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030103000405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_NOT_DERIVED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "unstake_not_derived_seed16",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc568306dde1853fb4330848ecf3e50231a9fafbfdfaae340152f0686e35cbb97c06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030103000405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_NOT_DERIVED",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
+    }
+  },
+  {
+    "name": "unstake_ok_seed0",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030103000405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "OK",
+      "reason": "OK",
+      "kind": "unstake",
+      "amount": "0",
+      "destination": "5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f",
+      "stake_index": 0
+    }
+  },
+  {
+    "name": "unstake_ok_seed15",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc042823e02b192f64a12eb6a32c1f4b904e711dbe894516d82389cc21c5547a6206a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d51718c774c928566398691d5eb68b5eb8a39b4b6d5c73555b2100000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030103000405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "OK",
+      "reason": "OK",
+      "kind": "unstake",
+      "amount": "0",
+      "destination": "042823e02b192f64a12eb6a32c1f4b904e711dbe894516d82389cc21c5547a62",
+      "stake_index": 15
+    }
+  },
+  {
+    "name": "unstake_wrong_clock",
+    "message_hex": "01000204427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc5459f38d0443c98c9157d33efac09e9610bca9799507efc87e53756f9c9a485f06a1d8179137542a983437bdfe2a7ab2557f535c8a78722b68a49dc00000000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a00000000338d11be117d524d4764e366fc30d19850d8270c2a512abe13480bb8db3fded10102030103000405000000",
+    "device_pubkey": "427ff53a173c8644ade89f73862e3c66e35d833aa0dfd47238a0dbffe0c766bc",
+    "device_usdc_ata": "ea381d994ea12b984d2d9cfbc98b0c00caba9e3fe9b9cd6f006ffd528021d513",
+    "expect": {
+      "status": "PARSE_UNSUPPORTED",
+      "reason": "STAKE_WRONG_SYSVAR",
+      "kind": null,
+      "amount": null,
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -919,7 +2893,8 @@
       "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -932,7 +2907,8 @@
       "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -945,7 +2921,8 @@
       "reason": "TOKEN_WRONG_DECIMALS",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -958,7 +2935,8 @@
       "reason": "TOKEN_WRONG_DECIMALS",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -971,7 +2949,8 @@
       "reason": "OK",
       "kind": "usdc",
       "amount": "2500000",
-      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8"
+      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8",
+      "stake_index": null
     }
   },
   {
@@ -984,7 +2963,8 @@
       "reason": "OK",
       "kind": "usdc",
       "amount": "1",
-      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8"
+      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8",
+      "stake_index": null
     }
   },
   {
@@ -997,7 +2977,8 @@
       "reason": "OK",
       "kind": "usdc",
       "amount": "0",
-      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8"
+      "destination": "848c4cca4becc7006d0a0a89f3675c20603b19e8691f4e23e4e3000eb0079ba8",
+      "stake_index": null
     }
   },
   {
@@ -1010,7 +2991,8 @@
       "reason": "TOKEN_OWNER_NOT_DEVICE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -1023,7 +3005,8 @@
       "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -1036,7 +3019,8 @@
       "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -1049,7 +3033,8 @@
       "reason": "TOKEN_WRONG_SOURCE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -1062,7 +3047,8 @@
       "reason": "TOKEN_WRONG_SOURCE",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -1075,7 +3061,8 @@
       "reason": "TOKEN_LAYOUT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -1088,7 +3075,8 @@
       "reason": "UNSUPPORTED_PROGRAM",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   },
   {
@@ -1101,7 +3089,8 @@
       "reason": "TOKEN_WRONG_MINT",
       "kind": null,
       "amount": null,
-      "destination": null
+      "destination": null,
+      "stake_index": null
     }
   }
 ]

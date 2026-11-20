@@ -12,6 +12,9 @@ import {
     TOKEN_PROGRAM,
     signedTransaction,
     solTransferMessage,
+    stakeAccount,
+    stakeMessage,
+    unstakeMessage,
     usdcAta,
     usdcTransferMessage,
     usdcTransferMessageToAta,
@@ -22,7 +25,13 @@ interface ParserVector {
     name: string;
     message_hex: string;
     device_pubkey: string;
-    expect: { status: string; kind: string | null; amount: string | null; destination: string | null };
+    expect: {
+        status: string;
+        kind: string | null;
+        amount: string | null;
+        destination: string | null;
+        stake_index?: number | null;
+    };
 }
 const parser = JSON.parse(
     readFileSync(new URL('../../tests/vectors/parser.json', import.meta.url), 'utf8'),
@@ -161,4 +170,27 @@ test('USDC amount range and self-send', () => {
     const d = new Uint8Array(32).fill(7);
     assert.throws(() => usdcTransferMessage(d, d, 1n, BLOCKHASH), /device itself/);
     assert.throws(() => usdcTransferMessage(d, new Uint8Array(32).fill(1), 1n << 64n, BLOCKHASH), /range/);
+});
+
+test('Shapes C and D are byte-identical to every OK stake and unstake vector (pinned validator)', async () => {
+    const { VALIDATOR } = await import('./validator.ts');
+    const oks = parser.filter(
+        (x) => x.expect.status === 'OK' && (x.expect.kind === 'stake' || x.expect.kind === 'unstake'),
+    );
+    assert.ok(oks.length >= 5);
+    for (const v of oks) {
+        const n = v.expect.stake_index ?? -1;
+        const device = hex(v.device_pubkey);
+        const msg =
+            v.expect.kind === 'stake'
+                ? await stakeMessage(device, n, BigInt(v.expect.amount ?? '0'), VALIDATOR.voteAccount, BLOCKHASH)
+                : await unstakeMessage(device, n, BLOCKHASH);
+        assert.equal(Buffer.from(msg).toString('hex'), v.message_hex, v.name);
+        assert.equal(
+            Buffer.from((await stakeAccount(device, n)).toBytes()).toString('hex'),
+            v.expect.destination,
+            v.name,
+        );
+    }
+    await assert.rejects(stakeAccount(hex(oks[0]?.device_pubkey ?? ''), 16));
 });

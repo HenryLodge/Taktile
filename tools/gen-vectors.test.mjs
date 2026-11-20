@@ -73,12 +73,14 @@ test('OK vectors carry kind, amount and destination; rejections carry none', () 
     for (const v of vectors) {
         const e = v.expect;
         if (e.status === 'OK') {
-            assert.ok(e.kind === 'sol' || e.kind === 'usdc');
+            assert.ok(['sol', 'usdc', 'stake', 'unstake'].includes(e.kind));
             assert.match(e.amount, /^\d+$/);
             assert.match(e.destination, /^[0-9a-f]{64}$/);
+            const staking = e.kind === 'stake' || e.kind === 'unstake';
+            assert.ok(staking ? Number.isInteger(e.stake_index) && e.stake_index >= 0 && e.stake_index <= 15 : e.stake_index === null);
         } else {
             assert.equal(e.status, 'PARSE_UNSUPPORTED');
-            assert.deepEqual([e.kind, e.amount, e.destination], [null, null, null]);
+            assert.deepEqual([e.kind, e.amount, e.destination, e.stake_index], [null, null, null, null]);
         }
     }
     assert.equal(byName.sol_ok_u64_max.expect.amount, '18446744073709551615');
@@ -168,4 +170,39 @@ test('contacts vectors: book of 3, every contact found by both kinds, malicious 
         assert.ok(l, `missing ${name}`);
         assert.equal(l.expect_index, -1, name);
     }
+});
+
+test('stake account addresses: seedAddress (SHA256(base || seed || owner)) equals web3.js createWithSeed', async () => {
+    const { PublicKey, StakeProgram } = await import('@solana/web3.js');
+    const { seedAddress, stakeSeed, wallet } = await import('./gen-vectors.mjs');
+    const device = wallet('device');
+    for (let n = 0; n < 16; n++) {
+        const theirs = await PublicKey.createWithSeed(device, stakeSeed(n), StakeProgram.programId);
+        assert.ok(seedAddress(device, stakeSeed(n)).equals(theirs), `tk-stake-${n}`);
+    }
+});
+
+test('stake vectors: the critical checks and every staking reason are covered', () => {
+    const must = {
+        stake_init_withdrawer_not_device: 'STAKE_AUTHORITY_NOT_DEVICE',
+        stake_init_staker_not_device: 'STAKE_AUTHORITY_NOT_DEVICE',
+        stake_init_lockup_custodian: 'STAKE_LOCKUP',
+        stake_init_lockup_epoch: 'STAKE_LOCKUP',
+        stake_init_lockup_timestamp: 'STAKE_LOCKUP',
+        stake_delegate_other_validator: 'STAKE_WRONG_VALIDATOR',
+        stake_create_address_random: 'STAKE_ADDRESS_MISMATCH',
+        stake_seed_16: 'STAKE_SEED',
+        stake_authorize_withdrawer_alone: 'STAKE_LAYOUT',
+        stake_withdraw_alone: 'STAKE_LAYOUT',
+        unstake_not_derived_random: 'STAKE_NOT_DERIVED',
+        stake_count_four_instructions: 'INSTRUCTION_COUNT',
+    };
+    for (const [name, reason] of Object.entries(must)) {
+        assert.equal(byName[name]?.expect.reason, reason, name);
+    }
+    for (const name of ['stake_ok_seed0', 'stake_ok_seed15', 'unstake_ok_seed0', 'unstake_ok_seed15']) {
+        assert.equal(byName[name]?.expect.status, 'OK', name);
+    }
+    assert.equal(byName.stake_ok_seed0.expect.amount, '1001666240'); // 1 SOL + the rent-exempt reserve
+    assert.ok(vectors.filter((v) => v.name.startsWith('msg_truncated_stake_')).length >= 30);
 });

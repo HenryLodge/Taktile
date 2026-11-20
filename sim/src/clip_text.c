@@ -368,6 +368,12 @@ static const char *const TEXT[] = {
     "you have", // 360 TK_CLIP_YOU_HAVE
     "contacts", // 361 TK_CLIP_CONTACTS
     "wallet locked", // 362 TK_CLIP_WALLET_LOCKED
+    "stake", // 363 TK_CLIP_STAKE
+    "with", // 364 TK_CLIP_WITH
+    "unstake", // 365 TK_CLIP_UNSTAKE
+    "stake account", // 366 TK_CLIP_STAKE_ACCOUNT
+    "Kiln", // 367 TK_CLIP_VALIDATOR_NAME
+    "unknown validator, do not sign", // 368 TK_CLIP_UNKNOWN_VALIDATOR
 };
 
 _Static_assert(sizeof(TEXT) / sizeof(TEXT[0]) == TK_CLIP_COUNT, "rerun tools/gen-clips.mjs");

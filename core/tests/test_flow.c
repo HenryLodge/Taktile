@@ -1199,6 +1199,131 @@ static void test_voice_busy(void) {
     TK_CHECK(nframes > 0 && frames[nframes - 1].seq == VSEQ); // the flow's own reply comes last
 }
 
+// ---- Staking: Shapes C and D ----
+
+// The announcement up to and including the checksum words, from the op log.
+static size_t announcement(uint16_t *out, bool *secret, size_t cap) {
+    size_t n = 0;
+    for (size_t i = 0; i < fake_op_count && n < cap; i++) {
+        if (fake_ops[i].kind != OP_CLIP) {
+            continue;
+        }
+        if (fake_ops[i].value == TK_CLIP_ENTER_PIN || fake_ops[i].value == TK_CLIP_PRESS_CONFIRM) {
+            break;
+        }
+        out[n] = (uint16_t)fake_ops[i].value;
+        secret[n] = fake_ops[i].secret;
+        n++;
+    }
+    return n;
+}
+
+// "stake one point zero zero one six six six two four SOL with Kiln stake account fifteen checksum w w w"
+static void test_stake_locked(void) {
+    const tk_parser_vector_t *v = vec("stake_ok_seed15");
+    setup(true, false, false); // no contacts at all: a stake needs none
+    sign_request(v);
+    script_correct_pin();
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    check_signature(v);
+    check_sign_invariant();
+    TK_CHECK(fw.sign_calls == 1 && fw.unlock_calls == 1);
+
+    uint8_t ck[TK_TX_PHRASE_WORDS];
+    tk_checksum_tx(v->msg, v->msg_len, ck);
+    uint16_t want[64];
+    size_t w = 0;
+    want[w++] = TK_CLIP_STAKE;
+    w += tk_speech_amount(TK_TX_SOL, v->amount, want + w, 64 - w); // 1.00166624
+    want[w++] = TK_CLIP_SOL;
+    want[w++] = TK_CLIP_WITH;
+    want[w++] = TK_CLIP_VALIDATOR_NAME;
+    want[w++] = TK_CLIP_STAKE_ACCOUNT;
+    want[w++] = TK_CLIP_ZERO + 15;
+    want[w++] = TK_CLIP_CHECKSUM;
+    for (size_t i = 0; i < TK_TX_PHRASE_WORDS; i++) {
+        want[w++] = (uint16_t)(TK_CLIP_WORD_0 + ck[i]);
+    }
+    uint16_t got[64];
+    bool secret[64];
+    const size_t n = announcement(got, secret, 64);
+    TK_CHECK(n == w && memcmp(got, want, w * sizeof(uint16_t)) == 0);
+    for (size_t i = 0; i < n; i++) {
+        TK_CHECK(secret[i] == (i >= n - TK_TX_PHRASE_WORDS)); // I2: only the checksum words are secret
+    }
+    TK_CHECK(clip_count(TK_CLIP_UNKNOWN_RECIPIENT) == 0 && clip_count(TK_CLIP_SIGNED) == 1);
+}
+
+// "unstake stake account zero checksum w w w", unlocked: no PIN, still CONFIRM.
+static void test_unstake_unlocked(void) {
+    const tk_parser_vector_t *v = vec("unstake_ok_seed0");
+    setup(true, true, false);
+    sign_request(v);
+    fake_press(TK_BTN_CONFIRM);
+    run();
+    check_signature(v);
+    check_sign_invariant();
+    TK_CHECK(fw.unlock_calls == 0);
+    uint8_t ck[TK_TX_PHRASE_WORDS];
+    tk_checksum_tx(v->msg, v->msg_len, ck);
+    const uint16_t want[] = {TK_CLIP_UNSTAKE, TK_CLIP_STAKE_ACCOUNT, TK_CLIP_ZERO, TK_CLIP_CHECKSUM,
+                             (uint16_t)(TK_CLIP_WORD_0 + ck[0]), (uint16_t)(TK_CLIP_WORD_0 + ck[1]),
+                             (uint16_t)(TK_CLIP_WORD_0 + ck[2])};
+    uint16_t got[64];
+    bool secret[64];
+    const size_t n = announcement(got, secret, 64);
+    TK_CHECK(n == sizeof(want) / sizeof(want[0]) && memcmp(got, want, sizeof(want)) == 0);
+}
+
+// Every stake needs CONFIRM: REJECT, a timeout, and a press during the announcement all refuse.
+static void test_stake_needs_confirm(void) {
+    const tk_parser_vector_t *v = vec("stake_ok_seed0");
+    setup(true, true, false);
+    sign_request(v);
+    fake_press(TK_BTN_REJECT);
+    run();
+    TK_CHECK(reply_status() == TK_STATUS_REJECTED_BY_USER && fw.sign_calls == 0);
+
+    setup(true, true, false);
+    sign_request(v);
+    fake_press_during_clip(TK_BTN_CONFIRM); // press-ahead (I6): discarded
+    run();
+    TK_CHECK(reply_status() == TK_STATUS_REJECTED_BY_USER && fw.sign_calls == 0);
+}
+
+// A stake to any other validator: warning, "unknown validator, do not sign", nothing announced or signed.
+static void test_stake_wrong_validator(void) {
+    for (int i = 0; i < 2; i++) {
+        const tk_parser_vector_t *v = vec(i == 0 ? "stake_delegate_other_validator" : "stake_delegate_vote_mallory");
+        setup(true, true, true);
+        sign_request(v);
+        fake_press(TK_BTN_CONFIRM);
+        run();
+        TK_CHECK(reply_status() == TK_STATUS_PARSE_UNSUPPORTED && fw.sign_calls == 0);
+        TK_CHECK(all_clips() == 1 && clip_count(TK_CLIP_UNKNOWN_VALIDATOR) == 1);
+        TK_CHECK(clip_count(TK_CLIP_STAKE) == 0 && clip_count(TK_CLIP_CANNOT_SIGN) == 0);
+    }
+}
+
+// The critical check reaches the device as a plain refusal: never announced, never signed.
+static void test_stake_attacker_withdrawer(void) {
+    static const char *const names[] = {"stake_init_withdrawer_not_device", "stake_init_staker_not_device",
+                                        "stake_init_lockup_custodian", "stake_create_address_random",
+                                        "unstake_not_derived_mallory_seed0", "stake_authorize_withdrawer_alone"};
+    for (size_t i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+        setup(true, true, true);
+        sign_request(vec(names[i]));
+        fake_press(TK_BTN_CONFIRM);
+        run();
+        TK_CHECK(reply_status() == TK_STATUS_PARSE_UNSUPPORTED && fw.sign_calls == 0);
+        TK_CHECK(all_clips() == 1 && clip_count(TK_CLIP_CANNOT_SIGN) == 1);
+        if (fw.sign_calls != 0 || clip_count(TK_CLIP_CANNOT_SIGN) != 1) {
+            fprintf(stderr, "stake refusal %s\n", names[i]);
+        }
+    }
+}
+
 int main(void) {
     test_fake_wallet_is_vector_device();
     test_happy_sol_locked();
@@ -1225,6 +1350,11 @@ int main(void) {
     test_speak_contacts();
     test_lock();
     test_voice_busy();
+    test_stake_locked();
+    test_unstake_unlocked();
+    test_stake_needs_confirm();
+    test_stake_wrong_validator();
+    test_stake_attacker_withdrawer();
     test_random_scripts();
     return tk_test_result();
 }

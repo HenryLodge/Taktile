@@ -35,6 +35,7 @@ BAD_PAYLOAD = 3
 CONTACT_EXISTS = 0x0A
 OK, REJECTED, UNKNOWN_RECIPIENT, BUSY, CANCELLED, WALLET_EXISTS = 0, 1, 2, 6, 7, 8
 LOCKED_OUT = 4
+PARSE_UNSUPPORTED = 3
 EV_ANNOUNCING, EV_AWAITING_PIN, EV_AWAITING_CONFIRM = 1, 2, 3
 NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
 KEY_UP, KEY_OK = b"\x1b[A", b"\n"
@@ -299,6 +300,27 @@ def main():
         ws.send(frame(LOCK, 13))
         f, _ = ws.until(LOCK | RESP, 13)
         check(f[2] == bytes([DEVICE_ERROR]), f"LOCK on the dev wallet {f[2].hex()}")
+
+        # Staking (Shapes C and D): no contact needed; the device names the validator (Kiln) and the
+        # stake account it recomputed itself, then the usual CONFIRM.
+        for seq, name, first, n in [(40, "stake_ok_seed0", "stake", "zero"), (41, "unstake_ok_seed15", "unstake", "fifteen")]:
+            start = len(sim.all)
+            ws.send(frame(SIGN_REQUEST, seq, bytes.fromhex(parser[name]["message_hex"])))
+            sim.wait_line(lambda l: "press confirm" in l)
+            time.sleep(CLIP_MS * 3 / 1000)
+            sim.key(b"c")
+            f, _ = ws.until(SIGN_REQUEST | RESP, seq)
+            check(f[2][0] == OK and len(f[2]) == 65, f"{name} reply {f[2][:1].hex()}")
+            said = announced(sim, start)
+            check(said[0] == first and "stake account" in said and said[said.index("stake account") + 1] == n,
+                  f"{name} said {said}")
+            check(("Kiln" in said) == (first == "stake"), f"{name}: validator name {said}")
+        start = len(sim.all)
+        ws.send(frame(SIGN_REQUEST, 42, bytes.fromhex(parser["stake_delegate_other_validator"]["message_hex"])))
+        f, _ = ws.until(SIGN_REQUEST | RESP, 42)
+        check(f[2] == bytes([PARSE_UNSUPPORTED]), f"wrong validator reply {f[2].hex()}")
+        sim.settle()
+        check(announced(sim, start) == ["unknown validator, do not sign"], f"wrong validator said {announced(sim, start)}")
     finally:
         sim.stop()
 

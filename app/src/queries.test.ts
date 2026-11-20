@@ -34,6 +34,8 @@ function rpc(over: Partial<Rpc> = {}): Rpc {
         transactions: async () => [],
         stakeAccounts: async (a) => a.map(() => null),
         epoch: async () => 100n,
+        rentExempt: async () => 1_666_240n,
+        minimumDelegation: async () => 1_000_000_000n,
         ...over,
     };
 }
