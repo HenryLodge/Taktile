@@ -97,6 +97,12 @@ export const ArrowLeftIcon = () => (
     </Icon>
 );
 
+export const ArrowDownIcon = () => (
+    <Icon>
+        <path d="M12 5v14M6 13l6 6 6-6" />
+    </Icon>
+);
+
 export const GridIcon = () => (
     <Icon size={16}>
         <rect x="4" y="4" width="6" height="6" rx="1.5" />
