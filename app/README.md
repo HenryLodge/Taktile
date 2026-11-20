@@ -19,6 +19,7 @@ npm run build      # production bundle in dist/
 
 - **`/` (home):** the talk orb and the conversation. Hold Space (or press Enter on the orb) to talk. The orb turns dark green and follows your voice level. Your words appear on the right, and Taktile's key replies (checksum, questions, result with the explorer link, errors) on the left. On load, the app reconnects without a picker to a USB device this browser was already allowed to use.
 - **`/data`:** everything else: connect (USB or simulator), typed commands and toggles, contacts, my address phrase, device details, the full log, and keyboard help.
+- **`/pay`:** Taktile Pay, the **payer's** page (below). It stands alone: no device, no talk orb.
 
 Both are views of one page (`src/ui/route.ts`, both stay mounted), so switching keeps the connection open. Space works on both.
 
@@ -26,17 +27,18 @@ Both are views of one page (`src/ui/route.ts`, both stay mounted), so switching 
 
 ## Layout
 
-| Path                                         | What                                                                                                                                                                                                                                    |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/proto/frame.ts`, `crc32.ts`             | Frame encode and streaming decode, same rules as `core/src/tk_proto.c`                                                                                                                                                                  |
-| `src/proto/client.ts`                        | `DeviceClient`: seq pairing, events, one on-device flow at a time, timeouts (a flow that times out is cancelled on the device), typed HELLO / GET_PUBKEY / UNLOCK / CONTACT_LIST_COUNT / SPEAK_ADDRESS / SPEAK_CONTACTS / LOCK / CANCEL |
-| `src/proto/codes.ts`                         | Message types, statuses, events, errors, and the sentence the app says for each                                                                                                                                                         |
-| `src/transport/`                             | `Transport` interface; `webserial.ts` (vendor `0x303A`), `websocket.ts` (`ws://localhost:8765`), `mock.ts` (scripted replies, for tests)                                                                                                |
-| `src/connection.ts`                          | Connect, HELLO refresh every 15 s, unlock, cancel                                                                                                                                                                                       |
-| `src/state.ts`, `src/announce.ts`, `src/ui/` | Store, live regions (polite status + assertive alerts), React UI                                                                                                                                                                        |
-| `src/intent.ts`                              | Deterministic command parser: send, request, stake, unstake, balance, staked, activity, requests, address, contacts, lock, repeat, cancel, help (`docs/EXTRATASKS.md` Part 1)                                                           |
-| `src/queries.ts`                             | Read-only voice answers from devnet: balance, staked (the 16 `tk-stake-<n>` accounts), the last 3 transactions, help. Information only, never an input to signing                                                                       |
-| `src/checksum.ts`                            | App-side checksum phrases (`tests/vectors/checksum.json`)                                                                                                                                                                               |
+| Path                                                             | What                                                                                                                                                                                                                                    |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/proto/frame.ts`, `crc32.ts`                                 | Frame encode and streaming decode, same rules as `core/src/tk_proto.c`                                                                                                                                                                  |
+| `src/proto/client.ts`                                            | `DeviceClient`: seq pairing, events, one on-device flow at a time, timeouts (a flow that times out is cancelled on the device), typed HELLO / GET_PUBKEY / UNLOCK / CONTACT_LIST_COUNT / SPEAK_ADDRESS / SPEAK_CONTACTS / LOCK / CANCEL |
+| `src/proto/codes.ts`                                             | Message types, statuses, events, errors, and the sentence the app says for each                                                                                                                                                         |
+| `src/transport/`                                                 | `Transport` interface; `webserial.ts` (vendor `0x303A`), `websocket.ts` (`ws://localhost:8765`), `mock.ts` (scripted replies, for tests)                                                                                                |
+| `src/connection.ts`                                              | Connect, HELLO refresh every 15 s, unlock, cancel                                                                                                                                                                                       |
+| `src/state.ts`, `src/announce.ts`, `src/ui/`                     | Store, live regions (polite status + assertive alerts), React UI                                                                                                                                                                        |
+| `src/intent.ts`                                                  | Deterministic command parser: send, request, stake, unstake, balance, staked, activity, requests, address, contacts, lock, repeat, cancel, help (`docs/EXTRATASKS.md` Part 1)                                                           |
+| `src/queries.ts`                                                 | Read-only voice answers from devnet: balance, staked (the 16 `tk-stake-<n>` accounts), the last 3 transactions, help. Information only, never an input to signing                                                                       |
+| `src/requests.ts`, `src/pay.ts`, `src/ui/components/PayPage.tsx` | Payment requests (requester side) and Taktile Pay (payer side: Solana Action round trip, transaction check, Solflare)                                                                                                                   |
+| `src/checksum.ts`                                                | App-side checksum phrases (`tests/vectors/checksum.json`)                                                                                                                                                                               |
 
 ## Sending (SOL and USDC)
 
@@ -102,6 +104,18 @@ The app shows the device's progress on screen and in the live region. It never s
 When the device isn't connected, the contact is saved in the app and its row offers **Add to device** later.
 
 _On the device_ is only a display hint. The device checks every recipient itself when signing, and contacts can't be removed from the device yet (CONTACT_REMOVE is deferred).
+
+## Taktile Pay (`/pay`): paying a payment request
+
+"Request 5 USDC from Max" (on the requester's side) creates a payment request in `server/` addressed to Max's wallet. Max keeps `http://localhost:5173/pay` open in his own browser profile with the **Solflare** extension set to **devnet**, and presses **Connect Solflare** once. From then on:
+
+1. The page checks `server/` every 3 s for pending requests addressed to his wallet (`src/requests.ts`).
+2. For a new one it plays a tone and says "Payment request from Henry: 5 USDC", and fetches the request's **Solana Action** (`GET /api/actions/request/:id`): title, description, button label. It shows the requester's **8-word address phrase**: the requester's device says the same words for "what is my address", which is how Max checks who he is paying.
+3. It POSTs `{account}` to the Action, decodes the returned transaction and **checks it before Solflare sees it** (`src/pay.ts` `checkPayment`): one instruction, exactly the requested amount and token to the requester, the request's reference key, Max as fee payer and only signer, nothing signed yet. Anything else is refused.
+4. It calls `window.solflare.signAndSendTransaction`, so **Solflare's approval window pops up by itself**. Max approves or rejects there. If Solflare wants a click first (or anything fails), the request's Pay button gets the focus with the reason, so Enter tries again.
+5. `server/` sees the payment on devnet (the reference key), the requester's app says "Max paid your request for 5 USDC", and this page says "Payment confirmed".
+
+One automatic prompt per request; after a rejection only the Pay button asks again. This page is a Blinks client: any other Actions client could pay the same request. It never uses the Phantom or Solflare SDKs (the Solflare SDK opens its own web wallet instead of the extension).
 
 ## My address phrase
 

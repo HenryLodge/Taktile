@@ -51,6 +51,15 @@ The laptop proposes a transaction; the device parses it, decides who it's really
 
 When signing, a SOL destination is looked up only among contacts' wallets and a USDC destination only among their USDC token accounts; anything else is "unknown recipient".
 
+## Payment request flow (laptop only; EXTRATASKS Part 2)
+
+1. The requester says "request 5 USDC from Max". `app` creates a request in `server/` (`POST /api/requests`): recipient = the device wallet (`GET_PUBKEY`), payer = Max's app-contact address, a fresh random `reference` key. The device is not involved: receiving needs no signature.
+2. Max's browser has `app` `/pay` open with Solflare (devnet). It finds the request (`GET /api/requests?payer=`), fetches it as a **Solana Action** (`GET /api/actions/request/:id`), POSTs `{account}`, and gets an unsigned transaction: a transfer to the requester with the `reference` appended read-only.
+3. `/pay` checks the transaction against the request, then Solflare's approval window opens (`signAndSendTransaction`); Max approves; Solflare signs and sends it to devnet.
+4. `server/` finds the transaction by its `reference` (`getSignaturesForAddress`) and checks that the requester's balance rose by the amount; the requester's app announces "Max paid".
+
+Trust: all laptop-sourced (SECURITY_MODEL "Command sources"); the server never signs; the payer's check of the recipient is the requester's 8-word address phrase.
+
 ## Build targets
 
 | Target | Contents | Purpose |

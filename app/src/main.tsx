@@ -17,6 +17,7 @@ import { BrowserPlayer, Speaker, browserFallback } from './speech.ts';
 import { log } from './state.ts';
 import { App } from './ui/App.tsx';
 import { autoReconnect } from './ui/connect-actions.ts';
+import { route } from './ui/route.ts';
 import { ControllersContext, type Controllers } from './ui/context.ts';
 import type { DemoModule } from './ui/demo-types.ts';
 import { startHealthPolling } from './ui/health.ts';
@@ -75,7 +76,9 @@ async function start(): Promise<void> {
             </ControllersContext.Provider>
         </StrictMode>,
     );
-    await autoReconnect();
+    if (route.get().view !== 'pay') {
+        await autoReconnect(); // the payer's page never touches a device
+    }
 }
 
 void start();
