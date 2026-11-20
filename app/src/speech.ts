@@ -45,6 +45,69 @@ interface Item {
     cancelled: boolean;
 }
 
+const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven',
+    'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']; // prettier-ignore
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+const SCALES = ['', 'thousand', 'million', 'billion', 'trillion', 'quadrillion', 'quintillion'];
+
+function below1000(n: number): string[] {
+    const out: string[] = [];
+    if (n >= 100) {
+        out.push(ONES[Math.floor(n / 100)] ?? '', 'hundred');
+        n %= 100;
+    }
+    if (n >= 20) {
+        out.push(TENS[Math.floor(n / 10)] ?? '');
+        n %= 10;
+        if (n > 0) {
+            out.push(ONES[n] ?? '');
+        }
+    } else if (n > 0) {
+        out.push(ONES[n] ?? '');
+    }
+    return out;
+}
+
+/** A whole number in English words, read like the device reads it: 1205 -> "one thousand two hundred five". */
+export function integerWords(digits: string): string {
+    let n = BigInt(digits);
+    if (n === 0n) {
+        return 'zero';
+    }
+    const groups: string[] = [];
+    for (let scale = 0; n > 0n; scale++) {
+        const g = Number(n % 1000n);
+        n /= 1000n;
+        if (g > 0) {
+            groups.unshift([...below1000(g), SCALES[scale] ?? ''].filter(Boolean).join(' '));
+        }
+    }
+    return groups.join(' ');
+}
+
+/**
+ * Numbers spelled out for the app voice, which mispronounces digits and decimal points ("1.00166624"):
+ * "one point zero zero one six six six two four". Digits after the point are read one by one, as the
+ * device does. Numbers inside words (addresses like "91Qk") are left alone.
+ */
+export function numbersToWords(text: string): string {
+    return text.replace(/(?<![\w.])(\d+)(?:\.(\d+))?(?![\w])/g, (_m, whole: string, frac: string | undefined) => {
+        const w =
+            whole.length > 21
+                ? whole
+                      .split('')
+                      .map((d) => ONES[Number(d)])
+                      .join(' ')
+                : integerWords(whole);
+        return frac === undefined
+            ? w
+            : `${w} point ${frac
+                  .split('')
+                  .map((d) => ONES[Number(d)])
+                  .join(' ')}`;
+    });
+}
+
 /** Printable ASCII only (the server's rule), common typography mapped, at most 200 characters. */
 export function sanitize(text: string): string {
     const s = text
@@ -77,7 +140,11 @@ export class Speaker {
 
     /** Queues a line; resolves when it has been spoken, dropped or stopped. */
     speak(text: string, priority: Priority = 'normal'): Promise<void> {
-        const clean = sanitize(text);
+        // Numbers as words; if that would pass the server's 200-character limit (and cut off the end,
+        // which may be the checksum words), the line keeps its digits.
+        const plain = sanitize(text);
+        const worded = sanitize(numbersToWords(plain));
+        const clean = numbersToWords(plain).length <= MAX_TTS_CHARS ? worded : plain;
         if (clean === '' || !this.d.enabled()) {
             return Promise.resolve();
         }
