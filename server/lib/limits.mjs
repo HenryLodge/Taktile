@@ -18,6 +18,8 @@ export const RULES = {
         { windowMs: MINUTE, max: 6 },
         { windowMs: DAY, max: 60 },
     ],
+    // Solana Actions: public routes (any client, maybe through a tunnel); each POST asks devnet.
+    actions: [{ windowMs: MINUTE, max: 120 }],
 };
 
 export function createLimiter({ now = Date.now, rules = RULES } = {}) {

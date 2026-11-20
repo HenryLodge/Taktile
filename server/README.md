@@ -21,6 +21,9 @@ The server is untrusted like the rest of the laptop (`docs/SECURITY_MODEL.md`). 
 | `POST /api/requests` | JSON `{"recipient","token","amount","payer","payerName"?}`: base58 keys, `SOL` or `USDC`, amount in base units as a string (1 to 2^64-1), payer name up to 32 printable ASCII | `201` the request: `id`, a fresh random `reference` key, `requesterName` (`TK_REQUESTER_NAME`), `createdAt`, `expiresAt` (24 h), `status` `pending` |
 | `GET /api/requests?recipient=…` or `?payer=…` | Exactly one of the two | `{"requests":[...]}`, newest first. Pending requests are checked on devnet first (below) |
 | `GET /api/requests/:id` | — | One request (`404 not_found` if unknown) |
+| `GET /actions.json` | — | Solana Actions rules: `/request/*` → `/api/actions/request/*` (**public**, below) |
+| `GET /api/actions/request/:id` | — | The request as a Solana Action (**public**, below) |
+| `POST /api/actions/request/:id` | JSON `{"account":"<payer base58>"}`, up to 1 KB | An unsigned transaction for the payer's wallet (**public**, below) |
 | `GET /api/agent/token` | — | `{"token":"..."}`: a one-conversation WebRTC token for the disambiguation agent (`ELEVENLABS_AGENT_ID`, from `tools/setup-agent.mjs`). `503 no_agent` / `503 canned` make the app fall back to asking with its own voice. Limit 6/min, 60/day |
 | `POST /api/tts` | JSON `{"text":"..."}`, 1–200 printable ASCII characters | `audio/mpeg` (`X-TK-Cache: hit\|miss`) |
 
@@ -66,6 +69,16 @@ There are no retries anywhere: the app reports an error and the user tries again
 **Paid detection:** reading a pending request asks devnet (`api.devnet.solana.com`, genesis hash checked first: I9) for the transactions that mention its `reference` key, at most once every 5 s per request. It counts as paid only when a confirmed, successful one raised the recipient's SOL (or its devnet-USDC token account) by at least the amount; the signature and an explorer link are then returned. RPC errors leave it pending.
 
 **Trust:** laptop-sourced (`docs/SECURITY_MODEL.md` "Command sources"). The server never signs, and the device takes no part (receiving needs no signature).
+
+## Solana Actions (Blinks; docs/EXTRATASKS.md Part 2 B1)
+
+Each payment request is also a standard Solana Action, the API behind Blinks, so any Actions client can pay it; Max's Taktile Pay page is one (`app/` `/pay`). Shapes and headers follow `@solana/actions-spec` 2.4.2 and `@solana/actions` (checked 2026-11-19), written by hand (`lib/actions.mjs`).
+
+- **GET** `/api/actions/request/:id`: `{type:"action", icon, title:"Payment request from <TK_REQUESTER_NAME>", description:"<amount> <token> to <short address> on Solana devnet. Address phrase: <8 words>. …", label:"Pay <amount> <token>", links.actions:[{type:"transaction", label, href}]}`. The address phrase is the requester's 8 words (the same ones their device says for "what is my address"), so the payer can check the recipient. `404` with `{message}` if the request is unknown, expired or paid.
+- **POST** with `{account}`: `{type:"transaction", transaction:<base64>, message}`. A legacy transaction with the payer as fee payer and a fresh devnet blockhash: a System transfer (SOL) or SPL Token `TransferChecked` between the two devnet-USDC token accounts (USDC), with the request's `reference` key appended read-only. **Unsigned: the server never signs.** `400` with `{message}` for a bad account, paying your own request, or a missing devnet-USDC account (payer or requester).
+- **Headers on every Actions response, including `OPTIONS` (204):** `Access-Control-Allow-Origin: *`, `Access-Control-Allow-Methods: GET,POST,PUT,OPTIONS`, `Access-Control-Allow-Headers: Content-Type, Authorization, Content-Encoding, Accept-Encoding, X-Accept-Action-Version, X-Accept-Blockchain-Ids`, `Access-Control-Expose-Headers: X-Action-Version, X-Blockchain-Ids`, `X-Action-Version: 2.4`, `X-Blockchain-Ids: solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` (devnet).
+- **Public on purpose:** these routes (and only these) skip the localhost Origin/Host checks, so a Blinks client can reach them through a tunnel. They can only read a request and build an unsigned transaction; creating requests, STT, TTS and the agent stay localhost-only. Limit 120/min. `TK_PUBLIC_URL` sets the base of the links (a tunnel); otherwise the request's Host is used.
+- Not claimed: Phantom and Solflare render Blinks natively only for registry-verified actions on X.com, which unregistered devnet actions are not.
 
 ## Canned mode
 
