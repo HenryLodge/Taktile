@@ -23,7 +23,8 @@ import { base58 } from '../proto/base58.ts';
 import type { DeviceClient } from '../proto/client.ts';
 import { DEVICE_STATE, STATUS, eventText, statusText } from '../proto/codes.ts';
 import { createDevnetRpc, type Rpc } from '../rpc.ts';
-import { runSend, type Report, type SendPhase } from '../send.ts';
+import { runSend, type Report, type SendDeps, type SendOutcome, type SendPhase } from '../send.ts';
+import { listStakeAccounts, parseAccountChoice, runStake, runUnstake, unstakeable } from '../stake.ts';
 import type { Speaker } from '../speech.ts';
 import { chat, getState, log, setConnection } from '../state.ts';
 import { createStore, type Store } from './store.ts';
@@ -31,10 +32,7 @@ import { createStore, type Store } from './store.ts';
 const AGENT_KEY = 'tk.agent.v1';
 
 /** Commands that parse but are wired in later milestones (docs/EXTRATASKS.md). */
-const NOT_YET: Partial<Record<IntentKind, string>> = {
-    stake: "Staking isn't available yet.",
-    unstake: "Staking isn't available yet.",
-};
+const NOT_YET: Partial<Record<IntentKind, string>> = {};
 
 export interface SendState {
     /** The command field on /data (voice transcripts and "did you mean" fill it too). */
@@ -256,6 +254,73 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
         }
     }
 
+    /** The device, RPC and reporting a signing flow needs (send, stake, unstake). */
+    function signDeps(device: { client: DeviceClient; pubkey: Uint8Array }, activity: string, r: Rpc): SendDeps {
+        return {
+            client: device.client,
+            pubkey: device.pubkey,
+            rpc: r,
+            unlock: async () => {
+                const st = await unlockStatus();
+                setConnection({ activity });
+                return st;
+            },
+            report,
+            cancelled: () => cancelRequested,
+        };
+    }
+
+    /** After a signing flow: the explorer link in the conversation, focus on the result. */
+    function afterSign(result: SendOutcome, fallback: string): void {
+        if (result.ok) {
+            store.set({ explorer: result.explorer, command: '' });
+            log('app', `Explorer: ${result.explorer}`);
+            chat('taktile', lastDone || fallback, { link: result.explorer });
+            lastDone = '';
+            focus.result();
+        } else {
+            focus.input();
+        }
+    }
+
+    /** "unstake" / "unstake all": which accounts, asked out loud when there are several. */
+    async function unstakeFlow(all: boolean, deps: SendDeps, source: 'typed' | 'voice'): Promise<void> {
+        let choices: number[];
+        try {
+            choices = unstakeable(await listStakeAccounts(deps.rpc, deps.pubkey)).map((a) => a.index);
+        } catch (e) {
+            const msg = `Unstaking failed: ${describeError(e)}`;
+            log('error', msg);
+            chat('taktile', msg, { level: 'alert' });
+            alertUser(msg, { voice: source === 'voice' });
+            return;
+        }
+        if (choices.length === 0) {
+            answer(['There is nothing staked to unstake.'], source);
+            return;
+        }
+        let targets = choices;
+        if (!all && choices.length > 1) {
+            const list = `${choices.slice(0, -1).join(', ')} or ${choices.at(-1)}`;
+            answer([`Which stake account: ${list}? Say the number, or all.`], 'voice');
+            const reply = await listenOnce(20_000);
+            const pick = reply === null ? null : parseAccountChoice(reply, choices);
+            if (pick === null) {
+                answer(['Not unstaking.'], source);
+                return;
+            }
+            targets = pick === 'all' ? choices : [pick];
+        }
+        // One Shape D per account, each announced and confirmed on the device.
+        for (const n of targets) {
+            const r = await runUnstake(n, deps);
+            afterSign(r, `Unstaked stake account ${n}.`);
+            if (!r.ok) {
+                return;
+            }
+        }
+    }
+
     async function runCommand(raw: string, source: 'typed' | 'voice'): Promise<void> {
         const text = raw.trim();
         if (pendingAnswer) {
@@ -414,6 +479,38 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
             focus.input();
             return;
         }
+        if (intent.kind === 'stake' || intent.kind === 'unstake') {
+            const device = getDevice();
+            if (device === null || device.pubkey === null) {
+                alertUser('Connect a device that has a wallet first.');
+                return;
+            }
+            const activity = intent.kind === 'stake' ? 'Staking' : 'Unstaking';
+            lastDone = '';
+            cancelRequested = false;
+            store.set({
+                running: true,
+                phase: null,
+                phaseText: '',
+                phaseLevel: 'info',
+                explorer: null,
+                checksum: null,
+            });
+            if (source === 'voice') {
+                say(`Heard: ${text}.`);
+            }
+            setConnection({ activity });
+            rpc ??= createDevnetRpc();
+            const deps = signDeps({ client: device.client, pubkey: device.pubkey }, activity, rpc);
+            if (intent.kind === 'stake') {
+                const r = await runStake(intent.amount, deps);
+                afterSign(r, 'Staked.');
+            } else {
+                await unstakeFlow(intent.all, deps, source);
+            }
+            finish();
+            return;
+        }
         if (intent.kind !== 'send' && intent.kind !== 'ambiguous') {
             focus.input();
             return;
@@ -484,27 +581,12 @@ export function createSendController(book: ContactBook, speaker: Speaker): SendC
         }
         setConnection({ activity: 'Sending' });
         rpc ??= createDevnetRpc();
-        const result = await runSend(intent, {
-            client: device.client,
-            pubkey: device.pubkey,
-            rpc,
-            unlock: async () => {
-                const st = await unlockStatus();
-                setConnection({ activity: 'Sending' });
-                return st;
-            },
-            report,
-            cancelled: () => cancelRequested,
-        });
+        const result = await runSend(
+            intent,
+            signDeps({ client: device.client, pubkey: device.pubkey }, 'Sending', rpc),
+        );
         finish();
-        if (result.ok) {
-            store.set({ explorer: result.explorer, command: '' });
-            log('app', `Explorer: ${result.explorer}`);
-            chat('taktile', lastDone || 'Sent.', { link: result.explorer });
-            focus.result();
-        } else {
-            focus.input();
-        }
+        afterSign(result, 'Sent.');
     }
 
     return {

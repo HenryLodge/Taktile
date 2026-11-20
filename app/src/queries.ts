@@ -215,5 +215,5 @@ export function activity(d: QueryDeps, count = 3): Promise<string[]> {
 /** About 15 s of speech. Each line stays under the app voice's per-line limit. */
 export const HELP_LINES = [
     'You can say: send 5 USDC to Henry. What is my balance. How much do I have staked. What was my last transaction.',
-    'What is my address. Who are my contacts. Lock my wallet. Repeat that. Cancel. Or help.',
+    'Stake 1 SOL. Unstake. Request 5 USDC from Henry. What is my address. Who are my contacts. Lock my wallet. Repeat that. Cancel.',
 ];

@@ -24,6 +24,10 @@ export interface Rpc {
     /** One entry per address, null when the account doesn't exist or isn't a stake account. */
     stakeAccounts(addresses: Uint8Array[]): Promise<(StakeInfo | null)[]>;
     epoch(): Promise<bigint>;
+    /** Lamports a `space`-byte account needs to be rent-exempt (a stake account: 200 bytes). */
+    rentExempt(space: number): Promise<bigint>;
+    /** The smallest delegation the stake program accepts (devnet: 1 SOL, 2026-11-19). */
+    minimumDelegation(): Promise<bigint>;
 }
 
 export interface SigInfo {
@@ -199,5 +203,9 @@ export function createDevnetRpc(): Rpc {
                 return r.value.map((acc) => (acc === null ? null : stakeInfo(acc.lamports, acc.data)));
             }),
         epoch: () => call(async () => BigInt((await conn.getEpochInfo('confirmed')).epoch)),
+        rentExempt: (space) =>
+            call(async () => BigInt(await conn.getMinimumBalanceForRentExemption(space, 'confirmed'))),
+        minimumDelegation: () =>
+            call(async () => BigInt((await conn.getStakeMinimumDelegation({ commitment: 'confirmed' })).value)),
     };
 }

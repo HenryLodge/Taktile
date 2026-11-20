@@ -3,7 +3,15 @@
 // (tx.test.ts checks byte equality with tests/vectors/parser.json). The device is the fee payer and
 // the only signer (I5).
 
-import { PublicKey, SystemProgram, Transaction, TransactionInstruction } from '@solana/web3.js';
+import {
+    Authorized,
+    Lockup,
+    PublicKey,
+    StakeProgram,
+    SystemProgram,
+    Transaction,
+    TransactionInstruction,
+} from '@solana/web3.js';
 import { Buffer } from 'buffer';
 
 export const EXPLORER_TX = (sig: string): string => `https://explorer.solana.com/tx/${sig}?cluster=devnet`;
@@ -86,6 +94,66 @@ export function solTransferMessage(
     }
     const tx = new Transaction({ feePayer: from, recentBlockhash: blockhash });
     tx.add(SystemProgram.transfer({ fromPubkey: from, toPubkey: dest, lamports }));
+    return new Uint8Array(tx.compileMessage().serialize());
+}
+
+// ---- Staking (Shapes C and D, docs/SOLANA.md): byte-equal to tests/vectors/parser.json stake_ok_* ----
+
+export const STAKE_SPACE = 200;
+export const STAKE_SEEDS = 16;
+export const stakeSeed = (n: number): string => `tk-stake-${n}`;
+
+/** The device's own stake account tk-stake-<n> (createWithSeed: base = device, owner = Stake Program). */
+export async function stakeAccount(device: Uint8Array, n: number): Promise<PublicKey> {
+    if (!Number.isInteger(n) || n < 0 || n >= STAKE_SEEDS) {
+        throw new Error('stake account index must be 0-15');
+    }
+    return PublicKey.createWithSeed(new PublicKey(device), stakeSeed(n), StakeProgram.programId);
+}
+
+/**
+ * Shape C: create stake account n with `lamports` (the stake plus the rent-exempt reserve),
+ * initialize it with the device as staker and withdrawer and no lockup, and delegate it to `vote`
+ * (the pinned validator; the device refuses any other). Returns the message bytes for SIGN_REQUEST.
+ */
+export async function stakeMessage(
+    device: Uint8Array,
+    n: number,
+    lamports: bigint,
+    vote: string,
+    blockhash: string,
+): Promise<Uint8Array> {
+    if (lamports < 0n || lamports > BigInt(Number.MAX_SAFE_INTEGER)) {
+        throw new Error('stake amount out of range'); // web3.js takes lamports as a number here
+    }
+    const me = new PublicKey(device);
+    const stake = await stakeAccount(device, n);
+    const tx = new Transaction({ feePayer: me, recentBlockhash: blockhash });
+    tx.add(
+        SystemProgram.createAccountWithSeed({
+            fromPubkey: me,
+            newAccountPubkey: stake,
+            basePubkey: me,
+            seed: stakeSeed(n),
+            lamports: Number(lamports),
+            space: STAKE_SPACE,
+            programId: StakeProgram.programId,
+        }),
+        StakeProgram.initialize({
+            stakePubkey: stake,
+            authorized: new Authorized(me, me),
+            lockup: new Lockup(0, 0, PublicKey.default),
+        }),
+        StakeProgram.delegate({ stakePubkey: stake, authorizedPubkey: me, votePubkey: new PublicKey(vote) }),
+    );
+    return new Uint8Array(tx.compileMessage().serialize());
+}
+
+/** Shape D: deactivate stake account n. */
+export async function unstakeMessage(device: Uint8Array, n: number, blockhash: string): Promise<Uint8Array> {
+    const me = new PublicKey(device);
+    const tx = new Transaction({ feePayer: me, recentBlockhash: blockhash });
+    tx.add(StakeProgram.deactivate({ stakePubkey: await stakeAccount(device, n), authorizedPubkey: me }));
     return new Uint8Array(tx.compileMessage().serialize());
 }
 
