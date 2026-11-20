@@ -1409,3 +1409,15 @@ input[aria-invalid='true'] {
         outline-color: Highlight;
     }
 }
+
+.copy-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.copy-field code {
+    overflow-wrap: anywhere;
+}

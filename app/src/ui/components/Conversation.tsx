@@ -9,6 +9,7 @@ import type { ChatEntry } from '../../state.ts';
 import { useControllers } from '../context.ts';
 import { reducedMotion, useAppState, useStore } from '../store.ts';
 import { AlertIcon, CheckIcon, ExternalIcon } from './icons.tsx';
+import { CopyField } from './CopyField.tsx';
 
 function ChecksumBubble({ m }: { m: ChatEntry }) {
     const lead = m.text.replace(/\s*Checksum:.*$/, '');
@@ -51,6 +52,7 @@ function Bubble({ m }: { m: ChatEntry }) {
                 </span>
             )}
             <span className="bubble-text">{m.text}</span>
+            {m.copy !== undefined && <CopyField label={m.copy.label} value={m.copy.value} />}
             {m.link !== undefined && (
                 <a className="bubble-link" href={m.link} target="_blank" rel="noopener">
                     View on Solana Explorer (devnet) <ExternalIcon />

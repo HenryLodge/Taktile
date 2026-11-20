@@ -11,5 +11,8 @@
     "dev:canned": "node --env-file-if-exists=.env server.mjs --canned",
     "test": "node --test --test-timeout=20000",
     "probe": "node --env-file-if-exists=.env probe.mjs"
+  },
+  "dependencies": {
+    "@solana/web3.js": "1.98.4"
   }
 }
