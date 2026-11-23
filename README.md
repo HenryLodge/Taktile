@@ -1,14 +1,26 @@
 # Taktile: send, request, stake on Solana without batting an eye (literally)
 
+<table>
+<tr>
+<td width="50%" valign="top">
+
+🏆 **First Place UBC 2026**\
+🏆 **Best use of ElevenLabs UBC 2026**
+
 **A screenless Solana hardware wallet that talks, built for blind and low-vision users, and safe on a laptop you don't trust.**
 
-> Devpost: <https://devpost.com/software/taktile?ref_content=user-portfolio&ref_feature=in_progres>
-
----
+> Devpost: [click here](https://devpost.com/software/taktile)
 
 A hardware wallet's last line of defense is a tiny screen showing where your money is really going. Malware on your computer can't fake that screen. But if you're blind, the screen doesn't help you, and you're back to trusting a screen reader on the same laptop the malware lives on.
 
 Taktile replaces the screen with a private earpiece. An ESP32-S3 parses the raw Solana transaction bytes itself and looks the recipient up in **its own** contact book. It then speaks the real amount and recipient into your ear. Nothing is signed until you enter a PIN on its buttons and press CONFIRM. The laptop handles voice input, the UI and broadcasting, and it is treated as hostile from start to finish.
+
+</td>
+<td width="50%" valign="middle">
+<img src="docs/assets/IMG_0979.jpeg" width="100%" alt="The Taktile prototype held in two open hands: an Adafruit Metro ESP32-S3 board and a breadboard mounted on cardboard, with six colored push buttons (two blue, two yellow, one green, one red), a purple audio amplifier board, a small vibration motor, and a round speaker on red and yellow wires resting in one palm.">
+</td>
+</tr>
+</table>
 
 ## Architecture
 
@@ -106,8 +118,6 @@ We deploy no programs. These IDs are compiled into the firmware as byte arrays g
 The API key lives only in `server/.env`. The server binds to localhost, redacts the key from logs, rate-limits, never retries and caches TTS.
 
 ## Hardware
-
-<Photo.>
 
 - **Board:** Adafruit Metro ESP32-S3 (16 MB flash).
 - **Earpiece:** UDA1334A I2S DAC with wired earbuds.
